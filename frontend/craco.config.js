@@ -3,16 +3,6 @@ const webpack = require('webpack');
 const path = require('path');
 
 module.exports = {
-  // Output build to parent directory (root/build)
-  webpack: {
-    configure: (webpackConfig, { env, paths }) => {
-      // Override build output directory
-      paths.appBuild = path.resolve(__dirname, '../build');
-      webpackConfig.output.path = path.resolve(__dirname, '../build');
-
-      return webpackConfig;
-    },
-  },
   devServer: {
     // Send Permissions-Policy as a real HTTP header so Chrome respects it.
     // The meta http-equiv approach does NOT work for Permissions-Policy.
@@ -21,31 +11,9 @@ module.exports = {
     },
   },
   webpack: {
-    plugins: {
-      add: process.env.NODE_ENV === 'production' ? [
-        // Gzip compression (only in production)
-        new CompressionPlugin({
-          filename: '[path][base].gz',
-          algorithm: 'gzip',
-          test: /\.(js|css|html|svg)$/,
-          threshold: 10240, // Only compress files > 10KB
-          minRatio: 0.8,
-        }),
-        // Brotli compression (better than gzip, only in production)
-        new CompressionPlugin({
-          filename: '[path][base].br',
-          algorithm: 'brotliCompress',
-          test: /\.(js|css|html|svg)$/,
-          compressionOptions: {
-            level: 11,
-          },
-          threshold: 10240, // Only compress files > 10KB
-          minRatio: 0.8,
-        }),
-      ] : [],
-    },
-    configure: (webpackConfig) => {
+    configure: (webpackConfig, { env, paths }) => {
       // Override build output directory
+      paths.appBuild = path.resolve(__dirname, '../build');
       webpackConfig.output.path = path.resolve(__dirname, '../build');
 
       // Vendor bundle splitting
@@ -96,6 +64,29 @@ module.exports = {
       webpackConfig.optimization.usedExports = true;
 
       return webpackConfig;
+    },
+    plugins: {
+      add: process.env.NODE_ENV === 'production' ? [
+        // Gzip compression (only in production)
+        new CompressionPlugin({
+          filename: '[path][base].gz',
+          algorithm: 'gzip',
+          test: /\.(js|css|html|svg)$/,
+          threshold: 10240, // Only compress files > 10KB
+          minRatio: 0.8,
+        }),
+        // Brotli compression (better than gzip, only in production)
+        new CompressionPlugin({
+          filename: '[path][base].br',
+          algorithm: 'brotliCompress',
+          test: /\.(js|css|html|svg)$/,
+          compressionOptions: {
+            level: 11,
+          },
+          threshold: 10240, // Only compress files > 10KB
+          minRatio: 0.8,
+        }),
+      ] : [],
     },
   },
 };
