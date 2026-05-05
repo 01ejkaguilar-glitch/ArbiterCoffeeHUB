@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button, Card, Alert, ListGroup } from 'react-bootstrap';
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock, FaFacebookF, FaTwitter, FaInstagram } from 'react-icons/fa';
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock, FaFacebookF, FaInstagram } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import SEO from '../../components/SEO';

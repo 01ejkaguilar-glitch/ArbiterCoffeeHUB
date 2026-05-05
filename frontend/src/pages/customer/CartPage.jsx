@@ -4,22 +4,16 @@ import { Link } from 'react-router-dom';
 import PageShell from '../../components/layout/PageShell';
 import BottomNavigation from '../../components/mobile/BottomNavigation';
 import PullToRefresh from '../../components/mobile/PullToRefresh';
-import { FaTrash, FaMinus, FaPlus } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
 import { useCart } from '../../context/CartContext';
 import { BACKEND_BASE_URL } from '../../config/api';
 
 const CartPage = () => {
-  const { cart, cartCount, updateCartItem, removeFromCart } = useCart();
+  const { cart, cartCount, removeFromCart } = useCart();
 
   // Handler to remove item from cart
   const handleRemove = (itemId) => {
     removeFromCart(itemId);
-  };
-
-  const handleQuantityChange = async (itemId, newQuantity) => {
-    if (newQuantity > 0) {
-      await updateCartItem(itemId, newQuantity);
-    }
   };
 
   // Handler to reload cart
@@ -52,7 +46,7 @@ const CartPage = () => {
                           <div className="d-flex align-items-center">
                             <img
                               src={item.product?.image_url ? `${BACKEND_BASE_URL}${item.product.image_url}` : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjQwIiB5PSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zNWVtIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjEwIj5Db2ZmZWU8L3RleHQ+Cjxzdmc+'}
-                              alt={`${item.product?.name} product image`}
+                              alt={item.product?.name || 'Product'}
                               width="80"
                               height="80"
                               className="me-3 rounded"
