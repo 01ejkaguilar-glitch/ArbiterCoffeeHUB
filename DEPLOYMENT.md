@@ -36,9 +36,9 @@ Add these secrets:
 
 | Secret Name | Value |
 |-------------|-------|
-| `FTP_HOST` | `147.93.79.218` |
-| `FTP_USERNAME` | `u843463747.arbitercoffee.shop` |
-| `FTP_PASSWORD` | `Aguilar#0121` |
+| `FTP_HOST` | your Hostinger FTP host |
+| `FTP_USERNAME` | your Hostinger FTP username |
+| `FTP_PASSWORD` | your Hostinger FTP password |
 
 ### 2. Initial Server Setup
 
