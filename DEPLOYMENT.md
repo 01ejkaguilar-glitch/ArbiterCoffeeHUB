@@ -42,7 +42,7 @@ Add these secrets:
 
 ### 2. Initial Server Setup
 
-Upload these folders manually to `public_html/` via FTP:
+Upload these folders manually to `/home/u843463747/domains/arbitercoffee.shop/` via FTP:
 
 - `app/`
 - `bootstrap/`
@@ -60,7 +60,7 @@ Upload these folders manually to `public_html/` via FTP:
 
 ### 3. Create .env on Server
 
-Create `.env` file in `public_html/`:
+Create `.env` file in `/home/u843463747/domains/arbitercoffee.shop/`:
 
 ```env
 APP_ENV=production
@@ -86,14 +86,15 @@ REVERB_SCHEME=https
 ### 4. Set Permissions
 
 ```bash
-chmod -R 755 public_html/storage
-chmod -R 755 public_html/bootstrap/cache
+cd /home/u843463747/domains/arbitercoffee.shop
+chmod -R 755 storage
+chmod -R 755 bootstrap/cache
 ```
 
 ### 5. Run Migrations
 
 ```bash
-cd public_html
+cd /home/u843463747/domains/arbitercoffee.shop
 php artisan migrate --force
 php artisan key:generate
 ```
@@ -108,7 +109,7 @@ php artisan key:generate
 4. **IMPORTANT**: After deployment, run these commands on your Hostinger server via SSH:
 
 ```bash
-cd public_html
+cd /home/u843463747/domains/arbitercoffee.shop
 composer install --no-dev --optimize-autoloader
 php artisan cache:clear
 php artisan config:clear
@@ -144,7 +145,7 @@ The build output will be in the root `build/` folder.
 After deployment, run these via SSH:
 
 ```bash
-cd public_html
+cd /home/u843463747/domains/arbitercoffee.shop
 
 # Clear cache
 php artisan cache:clear
@@ -159,7 +160,7 @@ php artisan migrate --force
 ## Server Structure
 
 ```
-public_html/
+/home/u843463747/domains/arbitercoffee.shop/
 ├── app/              # Laravel app
 ├── bootstrap/        # Laravel bootstrap
 ├── build/            # React build (deployed by GitHub Actions)
@@ -188,7 +189,7 @@ public_html/
 
 ### Frontend Not Loading
 
-1. Check `build/` folder exists in `public_html/`
+1. Check `build/` folder exists in `/home/u843463747/domains/arbitercoffee.shop/`
 2. Verify `.htaccess` is correct
 3. Clear browser cache
 
@@ -205,9 +206,9 @@ This is the most common issue after deployment. The vendor directory is not uplo
 **Solution:**
 
 1. Connect to your Hostinger server via SSH
-2. Navigate to the public_html directory:
+2. Navigate to the project directory:
    ```bash
-   cd public_html
+   cd /home/u843463747/domains/arbitercoffee.shop
    ```
 3. Install composer dependencies:
    ```bash
