@@ -105,6 +105,24 @@ php artisan key:generate
 1. Push changes to `main` branch
 2. GitHub Actions automatically builds and deploys
 3. Check Actions tab for deployment status
+4. **IMPORTANT**: After deployment, run these commands on your Hostinger server via SSH:
+
+```bash
+cd public_html
+composer install --no-dev --optimize-autoloader
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+```
+
+Or upload and run the `deploy.sh` script:
+
+```bash
+cd public_html
+chmod +x deploy.sh
+./deploy.sh
+```
 
 ### Manual Deployment (VS Code SFTP)
 
@@ -151,9 +169,12 @@ public_html/
 ├── resources/        # Laravel resources
 ├── routes/           # Laravel routes
 ├── storage/          # Laravel storage
-├── vendor/           # Composer dependencies
+├── vendor/           # Composer dependencies (installed via SSH after deployment)
 ├── .env              # Environment config
 ├── artisan           # Laravel CLI
+├── composer.json     # Composer config
+├── composer.lock     # Composer lock file
+├── deploy.sh         # Deployment script
 └── index.php         # Entry point
 ```
 
@@ -177,10 +198,47 @@ public_html/
 2. Verify `.env` configuration
 3. Run `php artisan config:clear`
 
+### Vendor Directory Missing (Fatal Error: require autoload.php)
+
+This is the most common issue after deployment. The vendor directory is not uploaded automatically due to FTP timeout issues.
+
+**Solution:**
+
+1. Connect to your Hostinger server via SSH
+2. Navigate to the public_html directory:
+   ```bash
+   cd public_html
+   ```
+3. Install composer dependencies:
+   ```bash
+   composer install --no-dev --optimize-autoloader
+   ```
+4. Clear Laravel cache:
+   ```bash
+   php artisan cache:clear
+   php artisan config:clear
+   php artisan route:clear
+   php artisan view:clear
+   ```
+
+**Alternative: Use the deploy.sh script**
+
+1. Upload the `deploy.sh` file to your server
+2. Make it executable:
+   ```bash
+   chmod +x deploy.sh
+   ```
+3. Run it:
+   ```bash
+   ./deploy.sh
+   ```
+
 ## Notes
 
 - `storage/` folder is NOT uploaded by GitHub Actions (excluded)
 - `.env` file is NOT uploaded by GitHub Actions (excluded)
+- `vendor/` folder is NOT uploaded by GitHub Actions (excluded - must be installed via SSH)
 - `frontend/` folder is NOT uploaded (source only)
 - First deployment requires manual upload of Laravel files
 - Subsequent deployments are automatic via GitHub Actions
+- **After each deployment, run `composer install` on the server via SSH**

@@ -74,6 +74,9 @@ jobs:
             **/sync_config.jsonc**
             **/.hintrc**
             **/DEPLOYMENT.md**
+            **/vendor/**
+            **/deploy.sh**
+          timeout: 600000
 
       # === Deploy Public Files ===
       - name: Deploy public files
@@ -83,7 +86,29 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: public/
-          server-dir: ./public/
+          server-dir: ./
           exclude: |
             **/.git*
             **/.git*/**
+
+      # === Post-Deployment Instructions ===
+      - name: Post-deployment instructions
+        run: |
+          echo "=========================================="
+          echo "Deployment completed successfully!"
+          echo "=========================================="
+          echo ""
+          echo "IMPORTANT: You need to run these commands on your Hostinger server via SSH:"
+          echo ""
+          echo "cd public_html"
+          echo "composer install --no-dev --optimize-autoloader"
+          echo "php artisan cache:clear"
+          echo "php artisan config:clear"
+          echo "php artisan route:clear"
+          echo "php artisan view:clear"
+          echo ""
+          echo "Or upload and run the deploy.sh script:"
+          echo "chmod +x deploy.sh"
+          echo "./deploy.sh"
+          echo ""
+          echo "=========================================="
