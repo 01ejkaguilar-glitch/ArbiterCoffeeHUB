@@ -16,8 +16,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
@@ -29,7 +29,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: "8.2"
           extensions: mbstring, xml, pdo_mysql
 
       - name: Install backend dependencies
@@ -42,7 +42,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: build/
-          server-dir: ./build/
+          server-dir: /home/u843463747/public_html/build/
           timeout: 600000
 
       - name: Deploy backend to Hostinger
@@ -52,7 +52,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
-          server-dir: ./
+          server-dir: /home/u843463747/public_html/
           exclude: |
             **/.git*
             **/.github/**
@@ -61,18 +61,19 @@ jobs:
             **/storage/**
             **/.env*
             **/tests/**
-            **/phpunit.xml**
+            **/phpunit.xml
             **/docs/**
             **/scripts/**
             **/build/**
             **/.vscode/**
-            **/.gitignore.backend**
-            **/sync_config.jsonc**
-            **/.hintrc**
-            **/DEPLOYMENT.md**
+            **/.gitignore.backend
+            **/sync_config.jsonc
+            **/.hintrc
+            **/DEPLOYMENT.md
+            **/DEPLOYMENT_ANALYSIS.md
+            **/HOSTINGER_STRUCTURE_VERIFICATION.md
             **/vendor/**
-            **/deploy.sh**
-            **/public/**
+            deploy.sh
           timeout: 600000
 
       - name: Deploy public files to Hostinger
@@ -82,13 +83,25 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: public/
-          server-dir: ./
-          exclude: |
+          server-dir: /home/u843463747/public_html/
+          exclude:
             **/.git*
             **/.git*/**
           timeout: 300000
 
+      - name: Deploy install_composer.php to Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: /home/u843463747/public_html/
+          files: install_composer.php
+          timeout: 60000
+
       - name: Post-deployment instructions
         run: |
           echo "Deployment completed successfully!"
-          echo "Install composer dependencies manually on server."
+          echo "Install composer dependencies by visiting: https://arbitercoffee.shop/install_composer.php"
+          echo "After installation, DELETE the install_composer.php file from the server!"
