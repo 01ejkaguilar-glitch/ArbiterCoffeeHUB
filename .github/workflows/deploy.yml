@@ -40,6 +40,12 @@ jobs:
       - name: Install backend dependencies
         run: composer install --no-dev --optimize-autoloader
 
+      - name: Generate Laravel cache files
+        run: |
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:clear || true
+
       - name: Prepare deployment branch
         run: |
           git config user.name "GitHub Actions"
