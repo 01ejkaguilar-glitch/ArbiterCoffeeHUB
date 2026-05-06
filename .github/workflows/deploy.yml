@@ -45,7 +45,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: build/
-          server-dir: ./public_html/build/
+          server-dir: ./build/
 
       # === Deploy Backend Core Files ===
       - name: Deploy backend core files to Hostinger
@@ -106,6 +106,7 @@ jobs:
             **/*
             !install_composer.php
           timeout: 120000
+          security: private
 
       # === Post-Deployment Instructions ===
       - name: Post-deployment instructions
