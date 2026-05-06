@@ -51,8 +51,8 @@ jobs:
           # Commit changes
           git commit -m "Build: Frontend and backend dependencies $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
 
-          # Force push to deploy branch
-          git push origin deploy --force
+          # Force push to deploy branch with authentication
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/01ejkaguilar-glitch/ArbiterCoffeeHUB.git deploy --force
 
       - name: Deployment instructions
         run: |
