@@ -45,7 +45,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: build/
-          server-dir: ./build/
+          server-dir: ./public_html/build/
 
       # === Deploy Backend Core Files ===
       - name: Deploy backend core files to Hostinger
@@ -87,7 +87,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: public/
-          server-dir: ./public/
+          server-dir: ./public_html/
           exclude: |
             **/.git*
             **/.git*/**
