@@ -1,4 +1,4 @@
-name: Deploy to Hostinger
+name: Build and Prepare for Hostinger Git Deployment
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -35,39 +35,35 @@ jobs:
       - name: Install backend dependencies
         run: composer install --no-dev --optimize-autoloader
 
-      - name: Deploy to Hostinger (Single Step)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./
-          server-dir: ./
-          exclude: |
-            **/.git*
-            **/.github/**
-            **/node_modules/**
-            **/frontend/**
-            **/storage/**
-            **/.env*
-            **/tests/**
-            **/phpunit.xml
-            **/docs/**
-            **/scripts/**
-            **/.vscode/**
-            **/.gitignore.backend
-            **/sync_config.jsonc
-            **/.hintrc
-            **/DEPLOYMENT.md
-            **/DEPLOYMENT_ANALYSIS.md
-            **/HOSTINGER_STRUCTURE_VERIFICATION.md
-            **/vendor/**
-            deploy.sh
-            install_composer.php
-          timeout: 3600000
-
-      - name: Post-deployment instructions
+      - name: Prepare deployment branch
         run: |
-          echo "Deployment completed successfully!"
-          echo "Install composer dependencies by visiting: https://arbitercoffee.shop/install_composer.php"
-          echo "After installation, DELETE the install_composer.php file from the server!"
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          # Create deploy branch from main
+          git checkout -b deploy
+
+          # Add built files
+          git add build/
+          git add vendor/
+          git add composer.lock
+
+          # Commit changes
+          git commit -m "Build: Frontend and backend dependencies $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+
+          # Force push to deploy branch
+          git push origin deploy --force
+
+      - name: Deployment instructions
+        run: |
+          echo "Build completed successfully!"
+          echo "Built files have been pushed to the 'deploy' branch."
+          echo "Hostinger Git Integration will automatically deploy from this branch."
+          echo ""
+          echo "Next steps:"
+          echo "1. Set up Hostinger Git Integration to use the 'deploy' branch"
+          echo "2. Configure deployment path to 'public_html/'"
+          echo "3. Enable automatic deployment on push"
+          echo ""
+          echo "After deployment, visit: https://arbitercoffee.shop/install_composer.php"
+          echo "Remember to DELETE install_composer.php after installation!"
