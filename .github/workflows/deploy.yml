@@ -35,24 +35,14 @@ jobs:
       - name: Install backend dependencies
         run: composer install --no-dev --optimize-autoloader
 
-      - name: Deploy frontend to Hostinger
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: build/
-          server-dir: /public_html/build/
-          timeout: 1800000
-
-      - name: Deploy backend to Hostinger
+      - name: Deploy to Hostinger (Single Step)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
-          server-dir: /public_html/
+          server-dir: ./
           exclude: |
             **/.git*
             **/.github/**
@@ -64,7 +54,6 @@ jobs:
             **/phpunit.xml
             **/docs/**
             **/scripts/**
-            **/build/**
             **/.vscode/**
             **/.gitignore.backend
             **/sync_config.jsonc
@@ -74,22 +63,8 @@ jobs:
             **/HOSTINGER_STRUCTURE_VERIFICATION.md
             **/vendor/**
             deploy.sh
-            **/public/**
             install_composer.php
-          timeout: 1800000
-
-      - name: Deploy public files to Hostinger
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: public/
-          server-dir: /public_html/
-          exclude: |
-            **/.git*
-            **/.git*/**
-          timeout: 900000
+          timeout: 3600000
 
       - name: Post-deployment instructions
         run: |
