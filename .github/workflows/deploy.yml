@@ -45,17 +45,17 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: build/
-          server-dir: ./build/
+          server-dir: ./public_html/build/
 
-      # === Deploy Backend ===
-      - name: Deploy backend to Hostinger
+      # === Deploy Backend Core Files ===
+      - name: Deploy backend core files to Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
-          server-dir: ./
+          server-dir: ./public_html/
           exclude: |
             **/.git*
             **/.github/**
@@ -76,7 +76,36 @@ jobs:
             **/DEPLOYMENT.md**
             **/vendor/**
             **/deploy.sh**
+            **/public/**
           timeout: 600000
+
+      # === Deploy Public Files ===
+      - name: Deploy public files to Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: public/
+          server-dir: ./public_html/public/
+          exclude: |
+            **/.git*
+            **/.git*/**
+          timeout: 300000
+
+      # === Deploy Installation Script ===
+      - name: Deploy installation script to Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: ./public_html/
+          exclude: |
+            **/*
+            !install_composer.php
+          timeout: 120000
 
       # === Post-Deployment Instructions ===
       - name: Post-deployment instructions
@@ -85,17 +114,23 @@ jobs:
           echo "Deployment completed successfully!"
           echo "=========================================="
           echo ""
-          echo "IMPORTANT: You need to run these commands on your Hostinger server via SSH:"
+          echo "IMPORTANT: You need to install composer dependencies manually."
           echo ""
-          echo "cd /home/u843463747/domains/arbitercoffee.shop"
-          echo "composer install --no-dev --optimize-autoloader"
+          echo "EASIEST METHOD - Use the PHP script:"
+          echo "1. Access: https://yourdomain.com/install_composer.php"
+          echo "2. Wait for installation to complete"
+          echo "3. DELETE the install_composer.php file from your server!"
+          echo ""
+          echo "ALTERNATIVE METHODS:"
+          echo "1. Via Hostinger Control Panel -> File Manager -> Terminal:"
+          echo "   composer install --no-dev --optimize-autoloader"
+          echo ""
+          echo "2. Via Hostinger's PHP Composer tool in control panel"
+          echo ""
+          echo "After installation, clear cache:"
           echo "php artisan cache:clear"
           echo "php artisan config:clear"
           echo "php artisan route:clear"
           echo "php artisan view:clear"
-          echo ""
-          echo "Or upload and run the deploy.sh script:"
-          echo "chmod +x deploy.sh"
-          echo "./deploy.sh"
           echo ""
           echo "=========================================="
