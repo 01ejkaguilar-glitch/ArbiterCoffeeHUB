@@ -47,8 +47,68 @@ jobs:
           local-dir: build/
           server-dir: ./build/
 
-      # === Deploy Backend Core Files ===
-      - name: Deploy backend core files to Hostinger
+      # === Deploy Backend Directories ===
+      - name: Deploy app/ directory
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: app/
+          server-dir: ./app/
+          timeout: 300000
+
+      - name: Deploy bootstrap/ directory
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: bootstrap/
+          server-dir: ./bootstrap/
+          timeout: 300000
+
+      - name: Deploy config/ directory
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: config/
+          server-dir: ./config/
+          timeout: 300000
+
+      - name: Deploy database/ directory
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: database/
+          server-dir: ./database/
+          timeout: 300000
+
+      - name: Deploy resources/ directory
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: resources/
+          server-dir: ./resources/
+          timeout: 300000
+
+      - name: Deploy routes/ directory
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: routes/
+          server-dir: ./routes/
+          timeout: 300000
+
+      - name: Deploy root files (artisan, composer files, index.php)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_HOST }}
@@ -57,27 +117,13 @@ jobs:
           local-dir: ./
           server-dir: ./
           exclude: |
-            **/.git*
-            **/.github/**
-            **/node_modules/**
-            **/frontend/**
-            **/.git/**
-            **/storage/**
-            **/.env*
-            **/tests/**
-            **/phpunit.xml
-            **/docs/**
-            **/scripts/**
-            **/build/**
-            **/.vscode/**
-            **/.gitignore.backend**
-            **/sync_config.jsonc**
-            **/.hintrc**
-            **/DEPLOYMENT.md**
-            **/vendor/**
-            **/deploy.sh**
-            **/public/**
-          timeout: 600000
+            **/*
+            !artisan
+            !composer.json
+            !composer.lock
+            !index.php
+            !.htaccess
+          timeout: 120000
 
       # === Deploy Public Files ===
       - name: Deploy public files to Hostinger
