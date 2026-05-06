@@ -48,9 +48,9 @@ jobs:
           # Create deploy branch from main
           git checkout -b deploy || git checkout deploy
 
-          # Add built files
-          git add build/ || echo "No build directory found"
-          git add vendor/ || echo "No vendor directory found"
+          # Force add built files (ignoring .gitignore)
+          git add -f build/ || echo "No build directory found"
+          git add -f vendor/ || echo "No vendor directory found"
           git add composer.lock || echo "No composer.lock found"
 
           # Commit changes
