@@ -47,68 +47,8 @@ jobs:
           local-dir: build/
           server-dir: ./build/
 
-      # === Deploy Backend Directories ===
-      - name: Deploy app/ directory
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: app/
-          server-dir: ./app/
-          timeout: 300000
-
-      - name: Deploy bootstrap/ directory
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: bootstrap/
-          server-dir: ./bootstrap/
-          timeout: 300000
-
-      - name: Deploy config/ directory
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: config/
-          server-dir: ./config/
-          timeout: 300000
-
-      - name: Deploy database/ directory
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: database/
-          server-dir: ./database/
-          timeout: 300000
-
-      - name: Deploy resources/ directory
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: resources/
-          server-dir: ./resources/
-          timeout: 300000
-
-      - name: Deploy routes/ directory
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: routes/
-          server-dir: ./routes/
-          timeout: 300000
-
-      - name: Deploy root files (artisan, composer files, index.php)
+      # === Deploy Backend ===
+      - name: Deploy backend to Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_HOST }}
@@ -117,33 +57,26 @@ jobs:
           local-dir: ./
           server-dir: ./
           exclude: |
-            app/**
-            bootstrap/**
-            build/**
-            config/**
-            database/**
-            frontend/**
-            node_modules/**
-            public/**
-            resources/**
-            routes/**
-            storage/**
-            tests/**
-            vendor/**
-            .git/**
-            .github/**
-            .vscode/**
-            docs/**
-            scripts/**
-            .env*
-            .hintrc
-            .gitignore*
-            sync_config.jsonc
-            phpunit.xml
-            *.md
-            pint.json
-            phpstan.neon
-          timeout: 120000
+            **/.git*
+            **/.github/**
+            **/node_modules/**
+            **/frontend/**
+            **/storage/**
+            **/.env*
+            **/tests/**
+            **/phpunit.xml
+            **/docs/**
+            **/scripts/**
+            **/build/**
+            **/.vscode/**
+            **/.gitignore.backend**
+            **/sync_config.jsonc**
+            **/.hintrc**
+            **/DEPLOYMENT.md**
+            **/vendor/**
+            **/deploy.sh**
+            **/public/**
+          timeout: 600000
 
       # === Deploy Public Files ===
       - name: Deploy public files to Hostinger
@@ -158,21 +91,6 @@ jobs:
             **/.git*
             **/.git*/**
           timeout: 300000
-
-      # === Deploy Installation Script ===
-      - name: Deploy installation script to Hostinger
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./
-          server-dir: ./
-          exclude: |
-            **/*
-            !install_composer.php
-          timeout: 120000
-          security: private
 
       # === Post-Deployment Instructions ===
       - name: Post-deployment instructions
