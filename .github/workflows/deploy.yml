@@ -13,7 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # === Frontend Build ===
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -27,8 +26,7 @@ jobs:
       - name: Build frontend
         run: cd frontend && npm run build
 
-      # === Backend Setup ===
-      name: Setup PHP
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
@@ -37,7 +35,6 @@ jobs:
       - name: Install backend dependencies
         run: composer install --no-dev --optimize-autoloader
 
-      # === Deploy Frontend ===
       - name: Deploy frontend to Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -47,7 +44,6 @@ jobs:
           local-dir: build/
           server-dir: ./build/
 
-      # === Deploy Backend ===
       - name: Deploy backend to Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -78,7 +74,6 @@ jobs:
             **/public/**
           timeout: 600000
 
-      # === Deploy Public Files ===
       - name: Deploy public files to Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -92,30 +87,7 @@ jobs:
             **/.git*/**
           timeout: 300000
 
-      # === Post-Deployment Instructions ===
       - name: Post-deployment instructions
         run: |
-          echo "=========================================="
           echo "Deployment completed successfully!"
-          echo "=========================================="
-          echo ""
-          echo "IMPORTANT: You need to install composer dependencies manually."
-          echo ""
-          echo "EASIEST METHOD - Use the PHP script:"
-          echo "1. Access: https://yourdomain.com/install_composer.php"
-          echo "2. Wait for installation to complete"
-          echo "3. DELETE the install_composer.php file from your server!"
-          echo ""
-          echo "ALTERNATIVE METHODS:"
-          echo "1. Via Hostinger Control Panel -> File Manager -> Terminal:"
-          echo "   composer install --no-dev --optimize-autoloader"
-          echo ""
-          echo "2. Via Hostinger's PHP Composer tool in control panel"
-          echo ""
-          echo "After installation, clear cache:"
-          echo "php artisan cache:clear"
-          echo "php artisan config:clear"
-          echo "php artisan route:clear"
-          echo "php artisan view:clear"
-          echo ""
-          echo "=========================================="
+          echo "Install composer dependencies manually on server."
