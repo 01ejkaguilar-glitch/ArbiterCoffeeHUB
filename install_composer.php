@@ -24,7 +24,52 @@ echo "<hr>";
 function runCommand($command, $description) {
     echo "<h3>$description</h3>";
     echo "<pre>";
-    $output = shell_exec($command . ' 2>&1');
+
+    $output = '';
+    $exitCode = 0;
+
+    if (function_exists('proc_open')) {
+        $descriptors = [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ];
+
+        $process = proc_open($command . ' 2>&1', $descriptors, $pipes, __DIR__);
+
+        if (is_resource($process)) {
+            fclose($pipes[0]);
+            $output = stream_get_contents($pipes[1]);
+            $errorOutput = stream_get_contents($pipes[2]);
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+            $exitCode = proc_close($process);
+            $output .= $errorOutput;
+        } else {
+            $output = 'Unable to start process.';
+            $exitCode = 1;
+        }
+    } elseif (function_exists('exec')) {
+        $lines = [];
+        exec($command . ' 2>&1', $lines, $exitCode);
+        $output = implode(PHP_EOL, $lines);
+    } elseif (function_exists('passthru')) {
+        ob_start();
+        passthru($command . ' 2>&1', $exitCode);
+        $output = (string) ob_get_clean();
+    } else {
+        $output = 'No supported command execution function is available on this server.';
+        $exitCode = 1;
+    }
+
+    if ($output === '') {
+        $output = '[No output returned]';
+    }
+
+    if ($exitCode !== 0) {
+        $output = "[Exit code: {$exitCode}]" . PHP_EOL . $output;
+    }
+
     echo htmlspecialchars($output);
     echo "</pre>";
     echo "<hr>";
@@ -61,8 +106,43 @@ echo "<hr>";
 
 // Check if composer is available
 echo "<h3>Checking Composer availability...</h3>";
-$composerCheck = shell_exec('composer --version 2>&1');
-if (strpos($composerCheck, 'Composer') === false) {
+$composerCheck = '';
+$composerCheckExitCode = 0;
+
+if (function_exists('proc_open')) {
+    $descriptors = [
+        0 => ['pipe', 'r'],
+        1 => ['pipe', 'w'],
+        2 => ['pipe', 'w'],
+    ];
+
+    $process = proc_open('composer --version 2>&1', $descriptors, $pipes, __DIR__);
+
+    if (is_resource($process)) {
+        fclose($pipes[0]);
+        $composerCheck = stream_get_contents($pipes[1]);
+        $composerCheck .= stream_get_contents($pipes[2]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        $composerCheckExitCode = proc_close($process);
+    } else {
+        $composerCheck = 'Unable to start Composer process.';
+        $composerCheckExitCode = 1;
+    }
+} elseif (function_exists('exec')) {
+    $lines = [];
+    exec('composer --version 2>&1', $lines, $composerCheckExitCode);
+    $composerCheck = implode(PHP_EOL, $lines);
+} elseif (function_exists('passthru')) {
+    ob_start();
+    passthru('composer --version 2>&1', $composerCheckExitCode);
+    $composerCheck = (string) ob_get_clean();
+} else {
+    $composerCheck = 'No supported command execution function is available on this server.';
+    $composerCheckExitCode = 1;
+}
+
+if ($composerCheckExitCode !== 0 || strpos($composerCheck, 'Composer') === false) {
     echo "<p style='color: red;'>❌ Composer is not available on this server.</p>";
     echo "<p>You need to install composer dependencies manually via Hostinger's control panel.</p>";
     echo "<p>Look for 'PHP Composer' or 'Composer' tool in your Hostinger control panel.</p>";
