@@ -91,17 +91,6 @@ jobs:
             **/.git*/**
           timeout: 900000
 
-      - name: Deploy install_composer.php to Hostinger
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./
-          server-dir: public_html/
-          files: install_composer.php
-          timeout: 300000
-
       - name: Post-deployment instructions
         run: |
           echo "Deployment completed successfully!"
