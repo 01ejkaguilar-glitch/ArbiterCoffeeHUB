@@ -42,7 +42,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: build/
-          server-dir: /home/u843463747/public_html/build/
+          server-dir: ./public_html/build/
           timeout: 1800000
 
       - name: Deploy backend to Hostinger
@@ -52,7 +52,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
-          server-dir: /home/u843463747/public_html/
+          server-dir: ./public_html/
           exclude: |
             **/.git*
             **/.github/**
@@ -85,7 +85,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: public/
-          server-dir: /home/u843463747/public_html/
+          server-dir: ./public_html/
           exclude: |
             **/.git*
             **/.git*/**
@@ -98,7 +98,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
-          server-dir: /home/u843463747/public_html/
+          server-dir: ./public_html/
           files: install_composer.php
           timeout: 300000
 
