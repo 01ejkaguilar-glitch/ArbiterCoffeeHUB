@@ -48,10 +48,19 @@ jobs:
           # Create deploy branch from main
           git checkout -b deploy || git checkout deploy
 
+          # Move public files to root for Hostinger deployment
+          mv public/index.php ./
+          mv public/.htaccess ./
+          mv public/favicon.ico ./
+          mv public/robots.txt ./
+
           # Force add built files (ignoring .gitignore)
           git add -f build/ || echo "No build directory found"
           git add -f vendor/ || echo "No vendor directory found"
           git add composer.lock || echo "No composer.lock found"
+
+          # Add moved public files
+          git add index.php .htaccess favicon.ico robots.txt || echo "No public files found"
 
           # Commit changes
           git commit -m "Build: Frontend and backend dependencies $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
