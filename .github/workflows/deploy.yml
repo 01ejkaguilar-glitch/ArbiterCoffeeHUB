@@ -43,6 +43,8 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: build/
           server-dir: ./build/
+          timeout: 600000
+          timeout: 600000
 
       - name: Deploy backend to Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
