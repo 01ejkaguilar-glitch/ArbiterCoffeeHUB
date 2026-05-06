@@ -45,7 +45,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: build/
-          server-dir: ./build/
+          server-dir: /home/u843463747/public_html/build/
 
       # === Deploy Backend ===
       - name: Deploy backend to Hostinger
@@ -55,7 +55,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
-          server-dir: ./
+          server-dir: /home/u843463747/public_html/
           exclude: |
             **/.git*
             **/.github/**
@@ -86,7 +86,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: public/
-          server-dir: ./
+          server-dir: /home/u843463747/public_html/
           exclude: |
             **/.git*
             **/.git*/**
