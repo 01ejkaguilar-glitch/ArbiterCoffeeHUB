@@ -41,12 +41,12 @@ jobs:
           git config user.email "actions@github.com"
 
           # Create deploy branch from main
-          git checkout -b deploy
+          git checkout -b deploy || git checkout deploy
 
           # Add built files
-          git add build/
-          git add vendor/
-          git add composer.lock
+          git add build/ || echo "No build directory found"
+          git add vendor/ || echo "No vendor directory found"
+          git add composer.lock || echo "No composer.lock found"
 
           # Commit changes
           git commit -m "Build: Frontend and backend dependencies $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
