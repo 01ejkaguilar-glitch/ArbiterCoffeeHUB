@@ -98,6 +98,9 @@ jobs:
           # Commit changes
           git commit -m "Build: Frontend and backend dependencies $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
 
+          # Delete remote deploy branch first to prevent divergent branches error
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/01ejkaguilar-glitch/ArbiterCoffeeHUB.git --delete deploy || echo "No existing deploy branch to delete"
+
           # Force push to deploy branch using GITHUB_TOKEN
           git push https://${{ secrets.GITHUB_TOKEN }}@github.com/01ejkaguilar-glitch/ArbiterCoffeeHUB.git deploy --force
 
