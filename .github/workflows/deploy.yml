@@ -66,6 +66,9 @@ jobs:
           # Copy React build to public directory for Laravel to serve
           cp -r build/* public/ || echo "No build directory found"
 
+          # Copy React's .htaccess (for SPA routing) to override Laravel's .htaccess
+          cp frontend/public/.htaccess public/.htaccess
+
           # Move public files to root for Hostinger deployment
           # Move both index.php (Laravel API) and index.html (React) to root
           mv public/index.php ./
