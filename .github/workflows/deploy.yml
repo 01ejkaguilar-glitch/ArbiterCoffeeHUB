@@ -40,6 +40,15 @@ jobs:
       - name: Install backend dependencies
         run: composer install --no-dev --optimize-autoloader
 
+      - name: Ensure bootstrap/cache directory exists and is writable
+        run: |
+          mkdir -p bootstrap/cache
+          chmod -R 777 bootstrap/cache
+          # Also ensure the packages.php file is writable if it exists
+          if [ -f bootstrap/cache/packages.php ]; then
+            chmod 666 bootstrap/cache/packages.php
+          fi
+
       - name: Generate Laravel cache files
         run: |
           php artisan config:cache
@@ -62,6 +71,10 @@ jobs:
           mv public/.htaccess ./
           mv public/favicon.ico ./
           mv public/robots.txt ./
+
+          # Ensure bootstrap/cache is included
+          mkdir -p bootstrap/cache
+          chmod -R 775 bootstrap/cache
 
           # Force add built files (ignoring .gitignore)
           git add -f vendor/ || echo "No vendor directory found"
