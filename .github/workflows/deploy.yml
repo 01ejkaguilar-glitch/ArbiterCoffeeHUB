@@ -67,7 +67,7 @@ jobs:
           cp -r build/* public/ || echo "No build directory found"
 
           # Move public files to root for Hostinger deployment
-          mv public/index.php ./
+          # NOTE: Do NOT move index.php - it should stay in public/ for Laravel API
           mv public/.htaccess ./
           mv public/favicon.ico ./
           mv public/robots.txt ./
