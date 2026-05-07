@@ -44,7 +44,12 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git checkout -b deploy || git checkout deploy
+
+          # Delete existing remote deploy branch first to avoid divergence
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/01ejkaguilar-glitch/ArbiterCoffeeHUB.git --delete deploy 2>/dev/null || true
+
+          # Create fresh deploy branch
+          git checkout -b deploy
           cp -r build/* public/ || echo "No build directory found"
           mv public/index.html ./
           mv public/.htaccess ./
@@ -58,7 +63,9 @@ jobs:
           git add -f vendor/ composer.lock bootstrap/cache || true
           git add -f index.html .htaccess favicon.ico robots.txt manifest.json service-worker.js assets public/ app/ bootstrap/ config/ database/ resources/ routes/ storage/ tests/ artisan composer.json || true
           git commit -m "Deploy: Frontend and backend $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/01ejkaguilar-glitch/ArbiterCoffeeHUB.git deploy --force
+
+          # Push fresh deploy branch (no --force needed since we deleted it first)
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/01ejkaguilar-glitch/ArbiterCoffeeHUB.git deploy
 
       - name: Deployment summary
         run: |
