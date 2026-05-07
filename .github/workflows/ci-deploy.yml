@@ -1,42 +1,93 @@
-name: CI Build & Deploy
+name: Deploy to Hostinger
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Setup Node
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci --legacy-peer-deps
 
       - name: Build frontend
-        working-directory: frontend
+        run: cd frontend && npm run build
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, xml, pdo_mysql
+
+      - name: Install backend dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Ensure bootstrap/cache directory exists and is writable
         run: |
-          npm ci --legacy-peer-deps
-          npm run build
+          mkdir -p bootstrap/cache
+          chmod -R 777 bootstrap/cache
+          if [ -f bootstrap/cache/packages.php ]; then
+            chmod 666 bootstrap/cache/packages.php
+          fi
 
-      - name: Upload built frontend to server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          source: "build/*"
-          target: "/var/www/arbiter/frontend_build/"
+      - name: Generate Laravel cache files
+        run: |
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:clear || true
 
-      - name: Run remote deploy script
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          script: |
-            chmod +x /var/www/arbiter/deploy.sh
-            /var/www/arbiter/deploy.sh
+      - name: Prepare deployment branch
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          git checkout -b deploy || git checkout deploy
+
+          cp -r build/* public/ || echo "No build directory found"
+
+          mv public/index.php ./
+          mv public/.htaccess ./
+          mv public/favicon.ico ./
+          mv public/robots.txt ./
+
+          mkdir -p bootstrap/cache
+          chmod -R 775 bootstrap/cache
+
+          git add -f vendor/ composer.lock bootstrap/cache || true
+          git add -f index.php .htaccess favicon.ico robots.txt public/ app/ bootstrap/ config/ database/ resources/ routes/ storage/ tests/ artisan composer.json || true
+
+          git commit -m "Deploy: Frontend and backend $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/01ejkaguilar-glitch/ArbiterCoffeeHUB.git deploy --force
+
+      - name: Deployment summary
+        run: |
+          echo "============================================"
+          echo "  Deployment completed successfully!"
+          echo "============================================"
+          echo ""
+          echo "Built files pushed to 'deploy' branch."
+          echo "Hostinger will automatically deploy from this branch."
+          echo ""
+          echo "IMPORTANT: After Hostinger deployment completes,"
+          echo "visit: https://arbitercoffee.shop/install_composer.php"
+          echo "Then DELETE install_composer.php for security!"
+          echo "============================================"
