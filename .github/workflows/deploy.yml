@@ -68,6 +68,8 @@ jobs:
 
           # Copy React's .htaccess (for SPA routing) to override Laravel's .htaccess
           cp frontend/public/.htaccess public/.htaccess
+          # Add DirectoryIndex for LiteSpeed server
+          echo "DirectoryIndex index.html" | cat - public/.htaccess > temp.htaccess && mv temp.htaccess public/.htaccess
 
           # Move public files to root for Hostinger deployment
           # Move both index.php (Laravel API) and index.html (React) to root
