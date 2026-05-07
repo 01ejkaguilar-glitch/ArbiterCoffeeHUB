@@ -45,13 +45,8 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
-          # Check if deploy branch exists and delete it to avoid divergence
-          if git ls-remote --heads https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/01ejkaguilar-glitch/ArbiterCoffeeHUB.git deploy | grep -q "refs/heads/deploy"; then
-            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/01ejkaguilar-glitch/ArbiterCoffeeHUB.git --delete deploy
-          fi
-
-          # Create fresh deploy branch
-          git checkout -b deploy
+          # Create fresh deploy branch from main
+          git checkout -B deploy main
           cp -r build/* public/ || echo "No build directory found"
           mv public/index.html ./
           mv public/.htaccess ./
