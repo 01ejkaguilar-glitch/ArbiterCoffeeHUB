@@ -54,6 +54,9 @@ jobs:
           # Create deploy branch from main
           git checkout -b deploy || git checkout deploy
 
+          # Copy React build to public directory for Laravel to serve
+          cp -r build/* public/ || echo "No build directory found"
+
           # Move public files to root for Hostinger deployment
           mv public/index.php ./
           mv public/.htaccess ./
@@ -61,7 +64,6 @@ jobs:
           mv public/robots.txt ./
 
           # Force add built files (ignoring .gitignore)
-          git add -f build/ || echo "No build directory found"
           git add -f vendor/ || echo "No vendor directory found"
           git add -f bootstrap/cache/ || echo "No bootstrap/cache directory found"
           git add composer.lock || echo "No composer.lock found"
