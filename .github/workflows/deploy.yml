@@ -1,4 +1,4 @@
-name: Deploy to Hostinger via FTP
+name: Deploy to Hostinger via SFTP
 
 on:
   push:
@@ -88,17 +88,15 @@ jobs:
           mkdir -p public_html/api/storage/framework/sessions
           mkdir -p public_html/api/storage/framework/views
 
-      - name: Deploy to server via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: public_html/
-          timeout: 120
-          security: loose
+      - name: Upload files via SCP
+        run: |
+          # Install sshpass for scp with password
+          apt-get update && apt-get install -y sshpass
 
-      - name: Run composer install via SSH
+          # Upload public_html contents via scp with custom port
+          sshpass -p '${{ secrets.SSH_PASSWORD }}' scp -o StrictHostKeyChecking=no -P ${{ secrets.SSH_PORT }} -r public_html/* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:public_html/
+
+      - name: Setup and run composer on server
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
