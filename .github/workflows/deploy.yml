@@ -88,34 +88,13 @@ jobs:
           mkdir -p public_html/api/storage/framework/sessions
           mkdir -p public_html/api/storage/framework/views
 
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
-          ssh-keyscan -H ${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }} >> ~/.ssh/known_hosts 2>/dev/null || true
-
-      - name: Deploy to server via SSH
-        uses: appleboy/scp-action@v0.1.4
+      - name: Deploy to server via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          host: ${{ secrets.SSH_HOST }}
-          port: ${{ secrets.SSH_PORT }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "public_html/"
-          target: "/home/u843463747/arbitercoffee.shop/public_html"
-          strip_components: 0
-          overwrite: true
-
-      - name: Set permissions via SSH
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          port: ${{ secrets.SSH_PORT }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: public_html/
           script: |
             cd /home/u843463747/arbitercoffee.shop
             chmod -R 755 public_html/api/bootstrap/cache
