@@ -20,6 +20,15 @@ desktop.ini
 # Claude temp files
 tmpclaude-*
 
+# SSH keys (never commit!)
+deploy_key
+deploy_key.pub
+*.pem
+
+# Debug/logs
+GITOutput.txt
+GITWebhooks.txt
+
 # Docs binaries (optional — remove if you want to track them)
 # docs/*.pdf
 # docs/*.docx

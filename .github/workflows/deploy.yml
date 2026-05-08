@@ -1,4 +1,4 @@
-name: Build and Prepare for Hostinger Git Deployment
+name: Deploy to Hostinger via SSH
 
 on:
   push:
@@ -6,17 +6,15 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -40,80 +38,86 @@ jobs:
       - name: Install backend dependencies
         run: composer install --no-dev --optimize-autoloader
 
-      - name: Ensure bootstrap/cache directory exists and is writable
+      - name: Generate Laravel cache files
         run: |
           mkdir -p bootstrap/cache
           chmod -R 777 bootstrap/cache
-          # Also ensure the packages.php file is writable if it exists
-          if [ -f bootstrap/cache/packages.php ]; then
-            chmod 666 bootstrap/cache/packages.php
-          fi
-
-      - name: Generate Laravel cache files
-        run: |
           php artisan config:cache
           php artisan route:cache
           php artisan view:clear || true
 
-      - name: Prepare deployment branch
+      - name: Prepare public_html folder (React + API)
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
+          # Create api directory for Laravel
+          mkdir -p public_html/api
+          mkdir -p public_html/api/storage/logs
+          mkdir -p public_html/api/storage/framework/cache
+          mkdir -p public_html/api/storage/framework/sessions
+          mkdir -p public_html/api/storage/framework/views
+          mkdir -p public_html/api/bootstrap/cache
 
-          # Create fresh deploy branch from main (reset if exists)
-          git checkout -B deploy main
+          # Copy React build to public_html
+          cp -r build/* public_html/
+          rm -rf public_html/api 2>/dev/null || true
 
-          # Copy React build to public directory for Laravel to serve
-          cp -r build/* public/ || echo "No build directory found"
-
-          # Copy React's .htaccess (for SPA routing) to override Laravel's .htaccess
-          cp frontend/public/.htaccess public/.htaccess
-          # Add DirectoryIndex for LiteSpeed server
-          echo "DirectoryIndex index.html" | cat - public/.htaccess > temp.htaccess && mv temp.htaccess public/.htaccess
-
-          # Move public files to root for Hostinger deployment
-          # Move both index.php (Laravel API) and index.html (React) to root
-          mv public/index.php ./
-          mv public/index.html ./
-          mv public/.htaccess ./
-          mv public/favicon.ico ./
-          mv public/robots.txt ./
-          mv public/static ./ 2>/dev/null || true
-          mv public/assets ./ 2>/dev/null || true
-          mv public/manifest.json ./ 2>/dev/null || true
-          mv public/service-worker.js ./ 2>/dev/null || true
-
-          # Ensure bootstrap/cache is included
-          mkdir -p bootstrap/cache
-          chmod -R 775 bootstrap/cache
-
-          # Force add built files (ignoring .gitignore)
-          git add -f vendor/ || echo "No vendor directory found"
-          git add -f bootstrap/cache/ || echo "No bootstrap/cache directory found"
-          git add composer.lock || echo "No composer.lock found"
-
-          # Add moved public files
-          git add index.php .htaccess favicon.ico robots.txt || echo "No public files found"
-
-          # Commit changes
-          git commit -m "Build: Frontend and backend dependencies $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
-
-          # Delete remote deploy branch first to prevent divergent branches error
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/01ejkaguilar-glitch/ArbiterCoffeeHUB.git --delete deploy || echo "No existing deploy branch to delete"
-
-          # Force push to deploy branch using GITHUB_TOKEN
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/01ejkaguilar-glitch/ArbiterCoffeeHUB.git deploy --force
-
-      - name: Deployment instructions
+      - name: Copy Laravel to public_html/api
         run: |
-          echo "Build completed successfully!"
-          echo "Built files have been pushed to the 'deploy' branch."
-          echo "Hostinger Git Integration will automatically deploy from this branch."
-          echo ""
-          echo "Next steps:"
-          echo "1. Set up Hostinger Git Integration to use the 'deploy' branch"
-          echo "2. Configure deployment path to 'public_html/'"
-          echo "3. Enable automatic deployment on push"
-          echo ""
-          echo "After deployment, visit: https://arbitercoffee.shop/install_composer.php"
-          echo "Remember to DELETE install_composer.php after installation!"
+          # Copy Laravel files to api folder
+          cp public/index.php public_html/api/
+          cp -r app public_html/api/
+          cp -r config public_html/api/
+          cp -r routes public_html/api/
+          cp -r vendor public_html/api/
+          cp -r bootstrap public_html/api/
+          cp -r storage public_html/api/
+          cp -r database public_html/api/
+          cp -r resources public_html/api/
+          cp -r lang public_html/api/ 2>/dev/null || true
+          cp artisan public_html/api/
+          cp composer.json public_html/api/
+          cp composer.lock public_html/api/
+          cp .env public_html/api/ 2>/dev/null || cp .env.example public_html/api/.env
+          cp -r public/.htaccess public_html/api/ 2>/dev/null || true
+
+          # Create storage symlink or copy
+          mkdir -p public_html/api/storage
+          mkdir -p public_html/api/storage/logs
+          mkdir -p public_html/api/storage/framework/cache
+          mkdir -p public_html/api/storage/framework/sessions
+          mkdir -p public_html/api/storage/framework/views
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server via SSH
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "public_html/"
+          target: "/home/u843463747/arbitercoffee.shop/public_html"
+          strip_components: 0
+          overwrite: true
+
+      - name: Set permissions via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/u843463747/arbitercoffee.shop
+            chmod -R 755 public_html/api/bootstrap/cache
+            chmod -R 755 public_html/api/storage
+            chmod -R 775 public_html/api/storage/logs
+            chmod -R 775 public_html/api/storage/framework/cache
+            chmod -R 775 public_html/api/storage/framework/sessions
+            chmod -R 775 public_html/api/storage/framework/views
+            echo "Deployment complete!"
