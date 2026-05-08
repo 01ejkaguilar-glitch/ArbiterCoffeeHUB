@@ -1,0 +1,2 @@
+# Ignore vendor folder - already exists on server from GitHub Actions
+vendor/
