@@ -96,7 +96,6 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: public_html/
           timeout: 120
-          retry: 3
 
       - name: Run composer install via SSH
         uses: appleboy/ssh-action@v1.2.0
