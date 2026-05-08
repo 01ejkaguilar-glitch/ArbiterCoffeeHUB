@@ -1,4 +1,4 @@
-name: Deploy to Hostinger via SSH
+name: Deploy to Hostinger via FTP
 
 on:
   push:
@@ -95,12 +95,3 @@ jobs:
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: public_html/
-          script: |
-            cd /home/u843463747/arbitercoffee.shop
-            chmod -R 755 public_html/api/bootstrap/cache
-            chmod -R 755 public_html/api/storage
-            chmod -R 775 public_html/api/storage/logs
-            chmod -R 775 public_html/api/storage/framework/cache
-            chmod -R 775 public_html/api/storage/framework/sessions
-            chmod -R 775 public_html/api/storage/framework/views
-            echo "Deployment complete!"
