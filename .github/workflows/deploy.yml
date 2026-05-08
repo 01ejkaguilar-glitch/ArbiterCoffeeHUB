@@ -48,7 +48,10 @@ jobs:
 
       - name: Prepare public_html folder (React + API)
         run: |
-          # Create api directory for Laravel
+          # Remove old api folder if exists (fresh start)
+          rm -rf public_html/api
+
+          # Create fresh api directory for Laravel
           mkdir -p public_html/api
           mkdir -p public_html/api/storage/logs
           mkdir -p public_html/api/storage/framework/cache
@@ -58,7 +61,6 @@ jobs:
 
           # Copy React build to public_html
           cp -r build/* public_html/
-          rm -rf public_html/api 2>/dev/null || true
 
       - name: Copy Laravel to public_html/api
         run: |
