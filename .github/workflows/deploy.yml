@@ -95,3 +95,18 @@ jobs:
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: public_html/
+          timeout: 120
+          retry: 3
+
+      - name: Run composer install via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            cd public_html/api
+            composer install --no-dev --optimize-autoloader
+            php artisan config:cache
+            php artisan route:cache
