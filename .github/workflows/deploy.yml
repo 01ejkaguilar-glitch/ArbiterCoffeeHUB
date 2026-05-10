@@ -91,7 +91,7 @@ jobs:
       - name: Upload files via SCP
         run: |
           # Install sshpass for scp with password
-          apt-get update && apt-get install -y sshpass
+          sudo apt-get update && sudo apt-get install -y sshpass
 
           # Upload public_html contents via scp with custom port
           sshpass -p '${{ secrets.SSH_PASSWORD }}' scp -o StrictHostKeyChecking=no -P ${{ secrets.SSH_PORT }} -r public_html/* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:public_html/
