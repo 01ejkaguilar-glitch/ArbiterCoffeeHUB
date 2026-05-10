@@ -101,5 +101,7 @@ jobs:
           echo "=== Checking subdirectories ==="
           find public_html -type f 2>&1 | head -20
 
-          # Deploy using scp with sshpass (recursive copy)
-          sshpass -p "${{ secrets.FTP_PASSWORD }}" scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 -P ${{ secrets.FTP_PORT }} -r public_html/* ${{ secrets.FTP_USERNAME }}@${{ secrets.FTP_HOST }}:/public_html/
+          # Debug: Try simple lftp first as alternative
+          echo "=== Trying SFTP with lftp ==="
+          sudo apt-get install -y lftp > /dev/null 2>&1
+          lftp -e "set sftp:connect-timeout 30; set ssl:verify-certificate no; mirror -R public_html/ /public_html/; exit" -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" "sftp://${{ secrets.FTP_HOST }}:${{ secrets.FTP_PORT }}"
