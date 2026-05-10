@@ -60,7 +60,7 @@ jobs:
           mkdir -p public_html/api/storage/framework/sessions
           mkdir -p public_html/api/storage/framework/views
           mkdir -p public_html/api/bootstrap/cache
-          cp -r frontend/build/* public_html/
+          cp -r build/* public_html/
 
       - name: Copy Laravel files
         run: |
