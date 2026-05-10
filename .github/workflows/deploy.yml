@@ -85,18 +85,9 @@ jobs:
           mkdir -p public_html/api/storage/framework/views
 
       - name: Deploy via SFTP
-        uses: wangyucode/sftp-deploy@master
-        with:
-          host: ${{ secrets.FTP_HOST }}
-          port: ${{ secrets.FTP_PORT }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local_dir: public_html
-          remote_dir: /public_html
-          exclude: |
-            **/node_modules/**
-            **/.git/**
-            **/vendor/**
-            **/.env*
-          force-delete: true
-          sftp: true
+        run: |
+          # Install sshpass for password-based transfer
+          apt-get update && apt-get install -y sshpass
+
+          # Deploy using scp with sshpass (recursive copy)
+          sshpass -p "${{ secrets.FTP_PASSWORD }}" scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 -P ${{ secrets.FTP_PORT }} -r public_html/* ${{ secrets.FTP_USERNAME }}@${{ secrets.FTP_HOST }}:/public_html/
