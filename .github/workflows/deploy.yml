@@ -84,24 +84,15 @@ jobs:
           mkdir -p public_html/api/storage/framework/sessions
           mkdir -p public_html/api/storage/framework/views
 
-      - name: Deploy via SFTP
-        run: |
-          # Check if sshpass is already installed
-          if command -v sshpass &> /dev/null; then
-            echo "sshpass already installed"
-          else
-            echo "Installing sshpass..."
-            sudo apt-get update
-            sudo apt-get install -y sshpass
-          fi
-
-          # Debug: show what files exist
-          echo "=== Files to deploy ==="
-          ls -la public_html/
-          echo "=== Checking subdirectories ==="
-          find public_html -type f 2>&1 | head -20
-
-          # Debug: Try simple lftp first as alternative
-          echo "=== Trying SFTP with lftp ==="
-          sudo apt-get install -y lftp > /dev/null 2>&1
-          lftp -e "set sftp:connect-timeout 30; set ssl:verify-certificate no; mirror -R public_html/ /public_html/; exit" -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" "sftp://${{ secrets.FTP_HOST }}:${{ secrets.FTP_PORT }}"
+      - name: Deploy via SCP
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          source: "public_html/*"
+          target: "/public_html"
+          strip_components: 1
+          overwrite: true
+          command_timeout: 10m
