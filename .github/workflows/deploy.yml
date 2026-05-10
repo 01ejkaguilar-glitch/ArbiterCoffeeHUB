@@ -1,4 +1,4 @@
-name: Deploy to Hostinger via SFTP
+name: Deploy to Hostinger via FTP
 
 on:
   push:
@@ -35,41 +35,23 @@ jobs:
           php-version: "8.2"
           extensions: mbstring, xml, pdo_mysql
 
-      - name: Install backend dependencies
-        run: composer install --no-dev --optimize-autoloader
-
-      - name: Generate Laravel cache files
-        run: |
-          mkdir -p bootstrap/cache
-          chmod -R 777 bootstrap/cache
-          php artisan config:cache
-          php artisan route:cache
-          php artisan view:clear || true
-
       - name: Prepare public_html folder (React + API)
         run: |
-          # Remove old api folder if exists (fresh start)
           rm -rf public_html/api
-
-          # Create fresh api directory for Laravel
           mkdir -p public_html/api
           mkdir -p public_html/api/storage/logs
           mkdir -p public_html/api/storage/framework/cache
           mkdir -p public_html/api/storage/framework/sessions
           mkdir -p public_html/api/storage/framework/views
           mkdir -p public_html/api/bootstrap/cache
-
-          # Copy React build to public_html
           cp -r build/* public_html/
 
-      - name: Copy Laravel to public_html/api
+      - name: Copy Laravel to public_html/api (without vendor)
         run: |
-          # Copy Laravel files to api folder
           cp public/index.php public_html/api/
           cp -r app public_html/api/
           cp -r config public_html/api/
           cp -r routes public_html/api/
-          cp -r vendor public_html/api/
           cp -r bootstrap public_html/api/
           cp -r storage public_html/api/
           cp -r database public_html/api/
@@ -80,31 +62,21 @@ jobs:
           cp composer.lock public_html/api/
           cp .env public_html/api/ 2>/dev/null || cp .env.example public_html/api/.env
           cp -r public/.htaccess public_html/api/ 2>/dev/null || true
-
-          # Create storage symlink or copy
           mkdir -p public_html/api/storage
           mkdir -p public_html/api/storage/logs
           mkdir -p public_html/api/storage/framework/cache
           mkdir -p public_html/api/storage/framework/sessions
           mkdir -p public_html/api/storage/framework/views
 
-      - name: Upload files via SCP
-        run: |
-          # Install sshpass for scp with password
-          sudo apt-get update && sudo apt-get install -y sshpass
-
-          # Upload public_html contents via scp with custom port
-          sshpass -p '${{ secrets.SSH_PASSWORD }}' scp -o StrictHostKeyChecking=no -P ${{ secrets.SSH_PORT }} -r public_html/* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:public_html/
-
-      - name: Setup and run composer on server
-        uses: appleboy/ssh-action@v1.2.0
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          host: ${{ secrets.SSH_HOST }}
-          port: ${{ secrets.SSH_PORT }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          script: |
-            cd public_html/api
-            composer install --no-dev --optimize-autoloader
-            php artisan config:cache
-            php artisan route:cache
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: public_html/
+          exclude: |
+            **
+            !api/**
+          force-delete: true
