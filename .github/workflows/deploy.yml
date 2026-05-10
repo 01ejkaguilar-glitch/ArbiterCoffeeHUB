@@ -96,4 +96,5 @@ jobs:
           strip_components: 1
           overwrite: true
           command_timeout: 10m
+          use_insecure_cipher: true
           debug: true
