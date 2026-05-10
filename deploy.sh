@@ -1,31 +1,34 @@
 #!/bin/bash
+set -euo pipefail
 
-# Deployment script for Hostinger
-# This script handles the vendor directory installation
+# Fast deployment script for Hostinger
+# Skips composer install if vendor already exists (pre-built in CI)
 
-echo "Starting deployment script..."
+START_TIME=$(date +%s)
 
-# Check if composer is available
-if ! command -v composer &> /dev/null; then
-    echo "Composer is not installed. Installing composer..."
-    curl -sS https://getcomposer.org/installer | php
-    mv composer.phar /usr/local/bin/composer
+echo "🚀 Starting post-deploy..."
+
+cd /var/www/arbiter/api
+
+# Fast path: vendor exists (CI pre-built)
+if [ -d "vendor" ] && [ -f "vendor/autoload.php" ]; then
+    echo "✅ Vendor already pre-built, skipping install"
+else
+    echo "📦 Installing vendor (first deploy or missing)..."
+    composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
 fi
 
-# Install composer dependencies
-echo "Installing composer dependencies..."
-composer install --no-dev --optimize-autoloader
+# Optimized cache clear (only what's needed)
+echo "🧹 Clearing cache..."
+php artisan config:cache 2>/dev/null || php artisan config:clear
+php artisan route:cache 2>/dev/null || php artisan route:clear
 
-# Set proper permissions
-echo "Setting permissions..."
-chmod -R 755 storage
-chmod -R 755 bootstrap/cache
+# Fast permission fix
+echo "🔐 Fixing permissions..."
+find storage bootstrap/cache -type d -exec chmod 775 {} \; 2>/dev/null || true
+find storage bootstrap/cache -type f -exec chmod 664 {} \; 2>/dev/null || true
 
-# Clear Laravel cache
-echo "Clearing Laravel cache..."
-php artisan cache:clear
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
+# Quick sanity check
+php artisan --version > /dev/null 2>&1 && echo "✅ Laravel OK" || echo "❌ Laravel broken"
 
-echo "Deployment completed successfully!"
+echo "✅ Deploy complete in $(($(date +%s) - $START_TIME))s"
