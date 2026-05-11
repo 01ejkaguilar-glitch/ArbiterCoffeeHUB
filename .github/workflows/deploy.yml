@@ -66,3 +66,24 @@ jobs:
             **/vendor/**
             **/.git/**
             **/.ftp-deploy-sync-state.json
+
+      - name: Setup SSH keys
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+      - name: Run deploy commands via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/u843463747/domains/arbitercoffee.shop/public_html/api
+            composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
+            php artisan config:clear
+            php artisan route:clear
+            find storage bootstrap/cache -type d -exec chmod 775 {} \; 2>/dev/null || true
+            find storage bootstrap/cache -type f -exec chmod 664 {} \; 2>/dev/null || true
