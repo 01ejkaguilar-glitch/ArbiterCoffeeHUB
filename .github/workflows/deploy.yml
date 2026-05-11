@@ -58,7 +58,15 @@ jobs:
         run: |
           echo "Files to upload: $(find public_html -type f | wc -l)"
           echo "Total size: $(du -sh public_html | cut -f1)"
-          echo "Host: $FTP_HOST:$FTP_PORT"
+          echo "=== Connection Debug ==="
+          echo "FTP_HOST set: ${FTP_HOST:+YES}${FTP_HOST:+ (length: ${#FTP_HOST})}"
+          echo "FTP_PORT set: ${FTP_PORT:+YES}${FTP_PORT:+ (length: ${#FTP_PORT})}"
+          echo "FTP_USERNAME set: ${FTP_USERNAME:+YES}${FTP_USERNAME:+ (length: ${#FTP_USERNAME})}"
+          echo "FTP_PASSWORD set: ${FTP_PASSWORD:+YES}${FTP_PASSWORD:+ (length: ${#FTP_PASSWORD})}"
+
+          # Test basic connectivity first
+          echo "=== Testing connectivity to port 21 ==="
+          nc -zv -w 5 "$FTP_HOST" "$FTP_PORT" 2>&1 || echo "Connection test failed"
 
           # Install sshpass (more reliable than lftp for password-based SFTP)
           if ! command -v sshpass &> /dev/null; then
@@ -75,7 +83,8 @@ jobs:
             sudo apt-get update -qq && sudo apt-get install -y -qq ncftp
           fi
 
-          ncftpput -v -R -m -T 300 -u "$FTP_USERNAME" -p "$FTP_PASSWORD" "$FTP_HOST" "$FTP_PORT" "/public_html" public_html
+          # Try ncftp with explicit port (-P for port, -u for user, -p for password)
+          ncftpput -vv -R -m -T 300 -u "$FTP_USERNAME" -p "$FTP_PASSWORD" -P "$FTP_PORT" "$FTP_HOST" "/public_html" public_html
 
           echo "Upload complete!"
         env:
