@@ -56,49 +56,34 @@ jobs:
 
       - name: Deploy via SFTP
         run: |
-          # Verify files exist before upload
-          echo "=== Pre-upload verification ==="
-          echo "Files in public_html: $(find public_html -type f | wc -l)"
+          # Pre-upload verification
+          echo "Files to upload: $(find public_html -type f | wc -l)"
           echo "Total size: $(du -sh public_html | cut -f1)"
 
-          # Only install lftp if not present (skip slow apt-get update)
+          # Install lftp without apt update (faster)
           if ! command -v lftp &> /dev/null; then
-            echo "Installing lftp..."
-            sudo apt-get update -qq && sudo apt-get install -y -qq lftp
-          else
-            echo "lftp already installed"
+            echo "Installing lftp (quick install)..."
+            apt-get install -y -qq lftp 2>/dev/null || true
           fi
 
-          # Upload using lftp with SFTP - parallel transfers for speed
-          echo "=== Connecting to SFTP server ==="
-          echo "Host: ${{ secrets.FTP_HOST }}:${{ secrets.FTP_PORT }}"
+          echo "=== Uploading via SFTP ==="
 
-          # FIRST: List remote directory to understand path structure
-          echo "=== Checking remote directory structure ==="
-          lftp -c "set sftp:connect-timeout 30; open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} sftp://${{ secrets.FTP_HOST }}:${{ secrets.FTP_PORT }}; ls -la /; ls -la public_html/ 2>/dev/null || echo 'public_html not found at /'" 2>&1 || true
-
-          # Run lftp and capture actual exit code
-          set -o pipefail
-          timeout 300 lftp -e "
-            set sftp:connect-timeout 30;
-            set net:timeout 30;
-            set net:max-retries 3;
-            set xfer:log yes;
-            mirror -R --parallel=10 --verbose public_html/ /public_html/;
-            bye;
-          " -u \"${{ secrets.FTP_USERNAME }}\",\"${{ secrets.FTP_PASSWORD }}\" \"sftp://${{ secrets.FTP_HOST }}:${{ secrets.FTP_PORT }}\" 2>&1 | tee lftp_output.txt
+          # Use lftp with simpler mirror command
+          lftp -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" sftp://"${{ secrets.FTP_HOST }}":"${{ secrets.FTP_PORT }}" <<EOF
+            set sftp:connect-timeout 20
+            set net:timeout 20
+            set net:max-retries 2
+            set mirror:parallel 5
+            mirror -R public_html /public_html --verbose
+            bye
+EOF
 
           LFTP_EXIT=$?
-          echo "=== lftp exit code: $LFTP_EXIT ==="
-
-          # POST: List remote to verify upload
-          echo "=== Post-upload remote check ==="
-          lftp -c "set sftp:connect-timeout 30; open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} sftp://${{ secrets.FTP_HOST }}:${{ secrets.FTP_PORT }}; ls -la public_html/ | head -20" 2>&1 || true
+          echo "lftp exit code: $LFTP_EXIT"
 
           if [ $LFTP_EXIT -ne 0 ]; then
-            echo "ERROR: lftp failed with exit code $LFTP_EXIT"
-            cat lftp_output.txt
+            echo "ERROR: Upload failed"
             exit 1
           fi
 
-          echo "Upload completed successfully!"
+          echo "Upload complete!"
