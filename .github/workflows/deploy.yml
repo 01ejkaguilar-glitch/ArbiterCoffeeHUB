@@ -101,14 +101,22 @@ jobs:
             # Test DB connection
             echo "=== Testing DB connection ==="
             php artisan tinker --execute="DB::connection()->getPdo(); echo 'DB OK';"
-            # Show recent Laravel log errors
-            echo "=== Recent Laravel log ==="
-            tail -50 storage/logs/laravel.log 2>/dev/null || echo "No log file"
+            # Show recent Laravel log errors (full)
+            echo "=== Full Laravel log (last 100 lines) ==="
+            tail -100 storage/logs/laravel.log 2>/dev/null || echo "No log file"
+            # Check for PHP errors in standard log location
+            echo "=== PHP error log ==="
+            tail -50 /home/u843463747/domains/arbitercoffee.shop/error_log 2>/dev/null || echo "No PHP error log found"
+            # Test authenticated endpoint with verbose error
+            echo "=== Testing auth:sanctum middleware ==="
+            php artisan tinker --execute="try { \$user = App\\Models\\User::first(); echo 'User count: ' . App\\Models\\User::count() . PHP_EOL; echo 'Sanctum token count: ' . App\\Models\\User::first()?->tokens->count() . PHP_EOL; } catch (Exception \$e) { echo 'ERROR: ' . \$e->getMessage() . PHP_EOL; }"
             # Clear and rebuild caches
             php artisan config:clear
             php artisan cache:clear
             php artisan route:clear
             php artisan view:clear
+            # Force clear everything including compiled
+            php artisan clear-compiled 2>/dev/null || true
             # Set proper permissions
             chmod -R 755 storage bootstrap/cache
             # Verify PHP/Artisan works
