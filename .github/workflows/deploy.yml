@@ -82,9 +82,16 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/u843463747/domains/arbitercoffee.shop/public_html/api
+            pwd
+            ls -la
+            php -v
+            ls -la .env
+            head -5 .env
             composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
+            php artisan --version
             php artisan config:clear
             php artisan route:clear
             php artisan cache:clear
+            php artisan route:list --path=api/v1
             find storage bootstrap/cache -type d -exec chmod 775 {} \; 2>/dev/null || true
             find storage bootstrap/cache -type f -exec chmod 664 {} \; 2>/dev/null || true
