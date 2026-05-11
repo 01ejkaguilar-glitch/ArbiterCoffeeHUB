@@ -24,7 +24,6 @@ const EngagementScoreCard = () => {
       }
     } catch (err) {
       setError('Failed to load engagement score');
-      console.error('Engagement score fetch error:', err);
     } finally {
       setLoading(false);
     }

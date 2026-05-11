@@ -84,8 +84,7 @@ const AdminOrders = () => {
   // Refetch whenever page, perPage, debounced search, or filters change
   useEffect(() => {
     fetchOrders();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, perPage, debouncedSearch, filterStatus, filterType]);
+  }, [page, perPage, debouncedSearch, filterStatus, filterType, fetchOrders]);
 
   const fetchOrders = async (showRefreshIndicator = false) => {
     try {
@@ -121,7 +120,6 @@ const AdminOrders = () => {
         setError('Failed to load orders');
       }
     } catch (err) {
-      console.error('Error fetching orders:', err);
       setError('Failed to load orders. Please try again.');
     } finally {
       setLoading(false);
@@ -161,7 +159,6 @@ const AdminOrders = () => {
         );
       }
     } catch (error) {
-      console.error('Error updating order status:', error);
       setError('Failed to update order status');
     }
   };

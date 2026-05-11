@@ -110,7 +110,7 @@ const AdminAnalytics = () => {
       const params = new URLSearchParams(getDateRange(range));
       const res = await apiService.get(`${API_ENDPOINTS.ADMIN.ANALYTICS.SALES}?${params}`);
       if (res.success) setSalesData(res.data);
-    } catch (e) { console.error('Sales analytics error:', e); }
+    } catch (e) { /* Sales data unavailable */ }
     finally { setLoadingSales(false); }
   }, []);
 
@@ -120,7 +120,7 @@ const AdminAnalytics = () => {
       const params = new URLSearchParams(getDateRange(range));
       const res = await apiService.get(`${API_ENDPOINTS.ADMIN.ANALYTICS.CUSTOMERS}?${params}`);
       if (res.success) setCustData(res.data);
-    } catch (e) { console.error('Customer analytics error:', e); }
+    } catch (e) { /* Customer data unavailable */ }
     finally { setLoadingCust(false); }
   }, []);
 
@@ -130,7 +130,7 @@ const AdminAnalytics = () => {
       const params = new URLSearchParams(getDateRange(range));
       const res = await apiService.get(`${API_ENDPOINTS.ADMIN.ANALYTICS.PERFORMANCE}?${params}`);
       if (res.success) setPerfData(res.data);
-    } catch (e) { console.error('Performance analytics error:', e); }
+    } catch (e) { /* Performance data unavailable */ }
     finally { setLoadingPerf(false); }
   }, []);
 
@@ -139,7 +139,7 @@ const AdminAnalytics = () => {
     try {
       const res = await apiService.get(API_ENDPOINTS.ADMIN.ANALYTICS.CUSTOMER_SEGMENTS);
       if (res.success) setSegmentsData(res.data);
-    } catch (e) { console.error('Customer segments error:', e); }
+    } catch (e) { /* Segments data unavailable */ }
     finally { setLoadingSegments(false); }
   }, []);
 
@@ -149,7 +149,7 @@ const AdminAnalytics = () => {
       const params = new URLSearchParams(getDateRange(range));
       const res = await apiService.get(`${API_ENDPOINTS.ADMIN.ANALYTICS.BARISTA_PERFORMANCE}?${params}`);
       if (res.success) setBaristaData(res.data);
-    } catch (e) { console.error('Barista performance error:', e); }
+    } catch (e) { /* Barista data unavailable */ }
     finally { setLoadingBarista(false); }
   }, []);
 

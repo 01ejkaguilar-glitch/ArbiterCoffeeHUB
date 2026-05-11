@@ -50,8 +50,7 @@ const OrderDetailPage = () => {
 
   useEffect(() => {
     fetchOrder();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, fetchOrder]);
 
   // Auto-refresh for active orders (pending, confirmed, preparing, ready)
   useEffect(() => {
@@ -63,8 +62,7 @@ const OrderDetailPage = () => {
     }, 30000); // Poll every 30 seconds
 
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order?.status, id]);
+  }, [order?.status, id, fetchOrder]);
 
   const fetchOrder = async (isRefresh = false) => {
     try {

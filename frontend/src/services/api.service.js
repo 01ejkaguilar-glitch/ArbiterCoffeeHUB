@@ -6,63 +6,6 @@
 import axios from 'axios';
 import API_BASE_URL from '../config/api';
 
-const NETWORK_ERROR_LOG_TTL_MS = 60000;
-
-const recentNetworkErrorLogs = new Map();
-
-const ABSOLUTE_URL_REGEX = /^https?:\/\//i;
-
-const resolveRequestUrl = (config = {}) => {
-  const rawUrl = config.url || '';
-
-  if (!rawUrl) {
-    return '';
-  }
-
-  if (ABSOLUTE_URL_REGEX.test(rawUrl)) {
-    return rawUrl;
-  }
-
-  return `${config.baseURL || ''}${rawUrl}`;
-};
-
-const isLikelyHttpsTransportIssue = (error, requestUrl) => {
-  const isBrowserOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
-  return Boolean(
-    isBrowserOnline &&
-    error?.message === 'Network Error' &&
-    typeof requestUrl === 'string' &&
-    requestUrl.startsWith('https://')
-  );
-};
-
-const logNetworkIssueOnce = (error) => {
-  const method = error?.config?.method ? error.config.method.toUpperCase() : 'GET';
-  const requestUrl = resolveRequestUrl(error?.config);
-  const key = `${method}:${requestUrl || 'unknown'}`;
-  const now = Date.now();
-  const lastLoggedAt = recentNetworkErrorLogs.get(key) || 0;
-
-  if (now - lastLoggedAt < NETWORK_ERROR_LOG_TTL_MS) {
-    return;
-  }
-
-  recentNetworkErrorLogs.set(key, now);
-
-  if (isLikelyHttpsTransportIssue(error, requestUrl)) {
-    console.error('[API] HTTPS transport failed (possible TLS/certificate, CORS, DNS, or network issue).', {
-      method,
-      url: requestUrl,
-    });
-    return;
-  }
-
-  console.error('[API] No response from server.', {
-    method,
-    url: requestUrl,
-  });
-};
-
 // Create axios instance
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -122,7 +65,7 @@ apiClient.interceptors.response.use(
                 return apiClient(originalRequest);
               }
             } catch (refreshError) {
-              console.error('Token refresh failed:', refreshError);
+              // Token refresh failed - will trigger logout
             }
           }
 
@@ -139,29 +82,23 @@ apiClient.interceptors.response.use(
           break;
         case 403:
           // Forbidden
-          console.error('Access forbidden');
           break;
         case 404:
           // Not found
-          console.error('Resource not found');
           break;
         case 422:
           // Validation error
-          console.error('Validation error:', error.response.data);
           break;
         case 500:
           // Server error
-          console.error('Server error occurred');
           break;
         default:
-          console.error('An error occurred:', error.response.data);
+          // Other errors
       }
     } else if (error.request) {
-      // Request made but no response
-      logNetworkIssueOnce(error);
+      // Request made but no response - network issue
     } else {
       // Error in request setup
-      console.error('Error:', error.message);
     }
     return Promise.reject(error);
   }

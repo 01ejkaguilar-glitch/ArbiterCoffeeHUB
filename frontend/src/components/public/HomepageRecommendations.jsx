@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Row, Col, Button, Spinner, Alert } from 'react-bootstrap';
 import { FaCoffee, FaShoppingCart, FaArrowRight } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -23,10 +23,9 @@ const HomepageRecommendations = () => {
     } else {
       fetchPopularProducts();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, fetchPersonalizedRecommendations, fetchPopularProducts]);
 
-  const fetchPersonalizedRecommendations = async () => {
+  const fetchPersonalizedRecommendations = useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiService.get(API_ENDPOINTS.RECOMMENDATIONS.HOMEPAGE);
@@ -63,11 +62,6 @@ const HomepageRecommendations = () => {
         await fetchPopularProducts();
       }
     } catch (err) {
-      if (isTransportError(err)) {
-        console.warn('Recommendations are temporarily unavailable due to network or SSL issues.');
-      } else {
-        console.error('Personalized recommendations fetch error:', err);
-      }
       if (!isTransportError(err)) {
         await fetchPopularProducts();
       } else {
@@ -76,9 +70,9 @@ const HomepageRecommendations = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchPopularProducts = async () => {
+  const fetchPopularProducts = useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiService.get(API_ENDPOINTS.PRODUCTS.LIST, { limit: 4 });
@@ -94,16 +88,11 @@ const HomepageRecommendations = () => {
         setRecommendations([]);
       }
     } catch (err) {
-      if (isTransportError(err)) {
-        console.warn('Popular products are temporarily unavailable due to network or SSL issues.');
-      } else {
-        console.error('Popular products fetch error:', err);
-      }
       setError('Unable to load recommendations');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   if (loading) {
     return (

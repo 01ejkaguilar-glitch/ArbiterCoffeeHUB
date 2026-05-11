@@ -89,7 +89,7 @@ export default function PosPage() {
         if (res.data.length > 0) setActiveCat(res.data[0].id);
       }
     } catch (err) {
-      console.error('Failed to load POS products:', err);
+      // Products load error
     } finally {
       setLoading(false);
     }
@@ -190,7 +190,6 @@ export default function PosPage() {
         loadProducts();
       }
     } catch (err) {
-      console.error('Order submission failed:', err);
       alert(err?.response?.data?.message || 'Failed to submit order');
     } finally {
       setSubmitting(false);
@@ -212,7 +211,6 @@ export default function PosPage() {
         clearCart();
       }
     } catch (err) {
-      console.error('Hold failed:', err);
       alert(err?.response?.data?.message || 'Failed to hold order');
     } finally {
       setSubmitting(false);
@@ -224,7 +222,7 @@ export default function PosPage() {
     try {
       const res = await apiService.get(API_ENDPOINTS.BARISTA.POS.HELD_ORDERS);
       if (res.success) setHeldOrders(res.data);
-    } catch (err) { console.error(err); }
+    } catch (err) { /* Error */ }
   };
 
   const resumeHeld = async (id) => {
@@ -245,7 +243,7 @@ export default function PosPage() {
         setShowHeld(false);
         loadHeldOrders();
       }
-    } catch (err) { console.error(err); }
+    } catch (err) { /* Error */ }
   };
 
   /* ─── daily summary ─── */
@@ -253,7 +251,7 @@ export default function PosPage() {
     try {
       const res = await apiService.get(API_ENDPOINTS.BARISTA.POS.DAILY_SUMMARY);
       if (res.success) setSummary(res.data);
-    } catch (err) { console.error(err); }
+    } catch (err) { /* Error */ }
   };
 
   /* ─── transactions ─── */
@@ -261,7 +259,7 @@ export default function PosPage() {
     try {
       const res = await apiService.get(API_ENDPOINTS.BARISTA.POS.RECENT_TRANSACTIONS);
       if (res.success) setTransactions(res.data);
-    } catch (err) { console.error(err); }
+    } catch (err) { /* Error */ }
   };
 
   /* ─── void ─── */

@@ -28,12 +28,11 @@ export const AuthProvider = ({ children }) => {
 
     // Listen for online/offline events
     const handleOnline = () => {
-      console.log('User came back online, re-checking authentication...');
       checkAuth();
     };
 
     const handleOffline = () => {
-      console.log('User went offline');
+      // User went offline
     };
 
     window.addEventListener('online', handleOnline);
@@ -43,7 +42,7 @@ export const AuthProvider = ({ children }) => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [checkAuth]);
 
   const login = useCallback(async (email, password, rememberMe = false) => {
     try {
@@ -67,17 +66,20 @@ export const AuthProvider = ({ children }) => {
 
         const storage = rememberMe ? localStorage : sessionStorage;
         // Clear both storages first
-        ['authToken', 'user', 'tokenExpiry'].forEach(k => {
+        ['authToken', 'user', 'tokenExpiry', 'sessionOnly'].forEach(k => {
           localStorage.removeItem(k);
           sessionStorage.removeItem(k);
         });
+        // Store in chosen storage (localStorage or sessionStorage)
         storage.setItem('authToken', token);
         storage.setItem('user', JSON.stringify(normalizedUser));
         storage.setItem('tokenExpiry', expiryDate.toISOString());
-        // Also keep in localStorage so checkAuth can find it
+        storage.setItem('sessionOnly', (!rememberMe).toString());
+        // Also store in localStorage for checkAuth compatibility
         localStorage.setItem('authToken', token);
         localStorage.setItem('user', JSON.stringify(normalizedUser));
         localStorage.setItem('tokenExpiry', expiryDate.toISOString());
+        localStorage.setItem('sessionOnly', (!rememberMe).toString());
 
         setUser(normalizedUser);
         setIsAuthenticated(true);
@@ -86,7 +88,6 @@ export const AuthProvider = ({ children }) => {
 
       return { success: false, message: response.message };
     } catch (error) {
-      console.error('Login error:', error);
       return {
         success: false,
         message: error.response?.data?.message || 'Login failed',
@@ -122,7 +123,6 @@ export const AuthProvider = ({ children }) => {
       
       return { success: false, message: response.message };
     } catch (error) {
-      console.error('Registration error:', error);
       return {
         success: false,
         message: error.response?.data?.message || 'Registration failed',
@@ -134,8 +134,6 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(async () => {
     try {
       await apiService.post(API_ENDPOINTS.AUTH.LOGOUT);
-    } catch (error) {
-      console.error('Logout error:', error);
     } finally {
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
@@ -162,7 +160,6 @@ export const AuthProvider = ({ children }) => {
       }
       return false;
     } catch (error) {
-      console.error('Token refresh failed:', error);
       return false;
     }
   }, []);
@@ -180,7 +177,6 @@ export const AuthProvider = ({ children }) => {
 
         // Refresh if token expires within 2 hours
         if (timeUntilExpiry < 2 * 60 * 60 * 1000) {
-          console.log('Auto-refreshing token...');
           await refreshToken();
         }
       }
@@ -207,14 +203,13 @@ export const AuthProvider = ({ children }) => {
 
       // Check if user is online
       if (!apiService.isOnline()) {
-        console.log('Offline: Using cached user data');
         if (storedUser) {
           try {
             const userData = JSON.parse(storedUser);
             setUser(userData);
             setIsAuthenticated(true);
           } catch (parseError) {
-            console.error('Failed to parse cached user data');
+            // Failed to parse cached user data
           }
         }
         setLoading(false);
@@ -223,7 +218,6 @@ export const AuthProvider = ({ children }) => {
 
       // Check if token is expired locally first
       if (tokenExpiry && new Date(tokenExpiry) < new Date()) {
-        console.log('Token expired locally, attempting refresh...');
         const refreshSuccess = await refreshToken();
         if (!refreshSuccess) {
           logout();
@@ -247,8 +241,6 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Invalid response');
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
-
       // Handle different error types
       if (error.message === 'No internet connection') {
         // Offline - use cached data
@@ -258,7 +250,6 @@ export const AuthProvider = ({ children }) => {
             const userData = JSON.parse(storedUser);
             setUser(userData);
             setIsAuthenticated(true);
-            console.log('Using cached user data (offline mode)');
           } catch (parseError) {
             logout();
           }
@@ -276,7 +267,6 @@ export const AuthProvider = ({ children }) => {
             const userData = JSON.parse(storedUser);
             setUser(userData);
             setIsAuthenticated(true);
-            console.log('Using cached user data due to server error');
           } catch (parseError) {
             logout();
           }

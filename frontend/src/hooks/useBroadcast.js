@@ -48,7 +48,7 @@ export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false)
           connection.unbind('connected',    handleConnected);
           connection.unbind('disconnected', handleDisconnected);
         } catch (err) {
-          console.warn('Error during broadcast cleanup:', err);
+          //'Error during broadcast cleanup:', err);
         }
       };
     } else {
@@ -58,12 +58,11 @@ export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false)
         try {
           if (channelName && broadcastService.getEcho()) broadcastService.unsubscribe(channelName);
         } catch (err) {
-          console.warn('Error during broadcast cleanup:', err);
+          //'Error during broadcast cleanup:', err);
         }
       };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [channelName, isPrivate]);
+  }, [channelName, isPrivate, broadcastService]);
 
   return {
     isConnected,
@@ -79,14 +78,14 @@ export const useOrderUpdates = (userId, onOrderUpdate) => {
 
   const eventHandlers = {
     'order.created': (event) => {
-      console.log('New order created:', event);
+      //'New order created:', event);
       setLastUpdate(new Date());
       if (onOrderUpdate) {
         onOrderUpdate('created', event.order);
       }
     },
     'order.status.updated': (event) => {
-      console.log('Order status updated:', event);
+      //'Order status updated:', event);
       setLastUpdate(new Date());
       if (onOrderUpdate) {
         onOrderUpdate('status_updated', event.order);
@@ -110,7 +109,7 @@ export const useBaristaOrders = (onNewOrder) => {
 
   const eventHandlers = {
     'order.created': (event) => {
-      console.log('New order for barista:', event);
+      //'New order for barista:', event);
       setPendingOrders(prev => [...prev, event.order].slice(-50));
       if (onNewOrder) {
         onNewOrder(event.order);
@@ -132,7 +131,7 @@ export const useBaristaOrders = (onNewOrder) => {
 export const useInventoryAlerts = (onLowStock) => {
   const eventHandlers = {
     'inventory.low-stock': (event) => {
-      console.log('Low stock alert:', event);
+      //'Low stock alert:', event);
       if (onLowStock) {
         onLowStock(event.item);
       }
@@ -152,7 +151,7 @@ export const useKitchenOrders = (onNewOrder) => {
 
   const eventHandlers = {
     'order.created': (event) => {
-      console.log('New food order for kitchen:', event);
+      //'New food order for kitchen:', event);
       setPendingOrders(prev => [...prev, event.order].slice(-50));
       if (onNewOrder) {
         onNewOrder(event.order);
@@ -174,7 +173,7 @@ export const useKitchenOrders = (onNewOrder) => {
 export const useTaskAssignments = (onTaskAssigned) => {
   const eventHandlers = {
     'task.assigned': (event) => {
-      console.log('Task assigned:', event);
+      //'Task assigned:', event);
       if (onTaskAssigned) {
         onTaskAssigned(event);
       }
@@ -192,7 +191,7 @@ export const useTaskAssignments = (onTaskAssigned) => {
 export const useShiftNotifications = (onShiftStarted) => {
   const eventHandlers = {
     'shift.started': (event) => {
-      console.log('Shift started:', event);
+      //'Shift started:', event);
       if (onShiftStarted) {
         onShiftStarted(event);
       }
@@ -210,7 +209,7 @@ export const useShiftNotifications = (onShiftStarted) => {
 export const useNotifications = (userId, onNotification) => {
   const eventHandlers = {
     'notification.received': (event) => {
-      console.log('New notification:', event);
+      //'New notification:', event);
       if (onNotification) {
         onNotification(event.notification);
       }

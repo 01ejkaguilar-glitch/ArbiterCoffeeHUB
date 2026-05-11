@@ -24,7 +24,6 @@ const ProductAffinityCard = () => {
       }
     } catch (err) {
       setError('Failed to load product affinity');
-      console.error('Product affinity fetch error:', err);
     } finally {
       setLoading(false);
     }

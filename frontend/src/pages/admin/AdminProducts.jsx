@@ -54,7 +54,6 @@ const AdminProducts = () => {
         setProducts([]);
       }
     } catch (error) {
-      console.error('Error fetching products:', error);
       setProducts([]);
     } finally {
       setLoading(false);
@@ -72,7 +71,6 @@ const AdminProducts = () => {
         setCategories([]);
       }
     } catch (error) {
-      console.error('Error fetching categories:', error);
       setCategories([]);
     }
   };

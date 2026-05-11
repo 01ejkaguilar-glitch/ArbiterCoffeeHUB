@@ -61,8 +61,8 @@ const CustomerDashboard = () => {
     return map;
   }, [recentOrders]);
 
-  useEffect(() => { fetchDashboard(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchAnalytics(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchDashboard(); }, []);
+  useEffect(() => { fetchAnalytics(); }, []);
 
   const fetchDashboard = async () => {
     try {

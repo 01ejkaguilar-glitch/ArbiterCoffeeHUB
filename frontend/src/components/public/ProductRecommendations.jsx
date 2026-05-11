@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Row, Col, Button, Spinner, Alert } from 'react-bootstrap';
 import { FaLightbulb, FaShoppingCart, FaStar } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -18,10 +18,9 @@ const ProductRecommendations = ({ currentProductId, limit = 3 }) => {
     } else {
       fetchRelatedProducts();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, currentProductId]);
+  }, [user, currentProductId, fetchPersonalizedRecommendations, fetchRelatedProducts]);
 
-  const fetchPersonalizedRecommendations = async () => {
+  const fetchPersonalizedRecommendations = useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiService.get(API_ENDPOINTS.RECOMMENDATIONS.PRODUCTS);
@@ -42,9 +41,9 @@ const ProductRecommendations = ({ currentProductId, limit = 3 }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchRelatedProducts = async () => {
+  const fetchRelatedProducts = useCallback(async () => {
     try {
       setLoading(true);
       // Get all products and filter out current product
@@ -73,7 +72,7 @@ const ProductRecommendations = ({ currentProductId, limit = 3 }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   if (loading) {
     return (

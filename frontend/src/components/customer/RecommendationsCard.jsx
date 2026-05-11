@@ -25,7 +25,6 @@ const RecommendationsCard = () => {
       }
     } catch (err) {
       setError('Failed to load recommendations');
-      console.error('Recommendations fetch error:', err);
     } finally {
       setLoading(false);
     }

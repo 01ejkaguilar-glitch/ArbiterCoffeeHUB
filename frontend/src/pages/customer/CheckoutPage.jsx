@@ -82,8 +82,7 @@ const CheckoutPage = () => {
       return;
     }
     fetchAddresses();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchAddresses]);
 
   /* addresses */
   const fetchAddresses = async () => {
@@ -95,7 +94,7 @@ const CheckoutPage = () => {
         if (def) setSelectedAddressId(def.id);
       }
     } catch (err) {
-      console.error('Error fetching addresses:', err);
+      // Addresses fetch error
     }
   };
 
@@ -484,7 +483,6 @@ const CheckoutPage = () => {
                     await apiService.post(API_ENDPOINTS.ORDERS.CANCEL_REQUEST(createdOrderId));
                     toast.info('Order cancelled');
                   } catch (err) {
-                    console.error('Failed to cancel order:', err);
                     toast.warning('Could not cancel order — please contact support');
                   } finally {
                     setLoading(false);

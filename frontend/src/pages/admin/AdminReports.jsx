@@ -55,7 +55,6 @@ const AdminReports = () => {
         setReportData(response.data);
       }
     } catch (error) {
-      console.error('Error fetching report:', error);
       showAlert('Failed to load report', 'danger');
     } finally {
       setLoading(false);

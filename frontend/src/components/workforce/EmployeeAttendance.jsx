@@ -72,7 +72,7 @@ const EmployeeAttendance = ({ theme = DEFAULT_THEME }) => {
     } finally {
       setLoading(false);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchAttendance]);
 
   useEffect(() => { fetchAttendance(); }, [fetchAttendance]);
 

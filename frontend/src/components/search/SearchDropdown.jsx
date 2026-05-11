@@ -135,8 +135,7 @@ const SearchDropdown = ({
       default:
         break;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [displayedResults, suggestions, selectedIndex, query]);
+  }, [displayedResults, suggestions, selectedIndex, query, clearSearch, handleSearchSubmit]);
 
   // Handle result click
   const handleResultClick = (product) => {

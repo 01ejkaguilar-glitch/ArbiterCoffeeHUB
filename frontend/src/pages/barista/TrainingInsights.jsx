@@ -73,7 +73,7 @@ const TrainingInsights = () => {
     } finally {
       setLoading(false);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchAll]);
 
   useEffect(() => { fetchAll(period); }, [period, fetchAll]);
 

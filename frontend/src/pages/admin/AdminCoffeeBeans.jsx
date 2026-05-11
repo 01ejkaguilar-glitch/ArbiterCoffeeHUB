@@ -37,7 +37,6 @@ const AdminCoffeeBeans = () => {
       const beansData = response.data.data || response.data;
       setBeans(Array.isArray(beansData) ? beansData : []);
     } catch (error) {
-      console.error('Error fetching coffee beans:', error);
       showAlert('Failed to load coffee beans', 'danger');
     } finally {
       setLoading(false);
@@ -145,7 +144,6 @@ const AdminCoffeeBeans = () => {
         fetchCoffeeBeans(true); // Bust cache to get fresh data
       }
     } catch (error) {
-      console.error('Save error:', error);
       const errorMessage = error.response?.data?.message || 
                           error.response?.data?.error || 
                           (error.response?.status === 404 ? 'Coffee bean not found. It may have been deleted.' : 'Failed to save coffee bean');
@@ -162,7 +160,6 @@ const AdminCoffeeBeans = () => {
           fetchCoffeeBeans(true); // Bust cache to get fresh data
         }
       } catch (error) {
-        console.error('Delete error:', error);
         const errorMessage = error.response?.status === 404 
           ? 'Coffee bean not found. It may have already been deleted.' 
           : 'Failed to delete coffee bean';

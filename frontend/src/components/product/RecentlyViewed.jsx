@@ -49,7 +49,7 @@ export const addToRecentlyViewed = (product) => {
     
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   } catch (error) {
-    console.error('Error saving to recently viewed:', error);
+    //'Error saving to recently viewed:', error);
   }
 };
 
@@ -62,7 +62,7 @@ export const getRecentlyViewed = () => {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : [];
   } catch (error) {
-    console.error('Error reading recently viewed:', error);
+    //'Error reading recently viewed:', error);
     return [];
   }
 };
@@ -74,7 +74,7 @@ export const clearRecentlyViewed = () => {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
-    console.error('Error clearing recently viewed:', error);
+    //'Error clearing recently viewed:', error);
   }
 };
 
@@ -91,7 +91,7 @@ export const removeFromRecentlyViewed = (productId) => {
     items = items.filter(item => item.id !== productId);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   } catch (error) {
-    console.error('Error removing from recently viewed:', error);
+    //'Error removing from recently viewed:', error);
   }
 };
 

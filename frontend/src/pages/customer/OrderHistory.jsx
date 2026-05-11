@@ -68,7 +68,6 @@ const OrderHistory = () => {
         setError('Failed to load orders');
       }
     } catch (error) {
-      console.error('Error fetching orders:', error);
       setError('Failed to load orders. Please try again.');
     } finally {
       setLoading(false);
@@ -87,7 +86,7 @@ const OrderHistory = () => {
         setError('Failed to reorder items');
       }
     } catch (error) {
-      console.error('Error reordering:', error);
+      // Reorder error handled
       setError('Failed to reorder items. Please try again.');
     } finally {
       setReordering(null);
@@ -115,7 +114,7 @@ const OrderHistory = () => {
         setError(response.message || 'Failed to request cancellation');
       }
     } catch (error) {
-      console.error('Error requesting cancellation:', error);
+      // Cancellation error handled
       setError(error.response?.data?.message || 'Failed to request cancellation. Please try again.');
     }
   };
@@ -150,7 +149,6 @@ Thank you for your business!
         URL.revokeObjectURL(url);
       }
     } catch (error) {
-      console.error('Error downloading receipt:', error);
       setError('Failed to download receipt');
     }
   };

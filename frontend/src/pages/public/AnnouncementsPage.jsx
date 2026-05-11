@@ -10,8 +10,6 @@ import SEO from '../../components/SEO';
 
 const AnnouncementsPage = () => {
   const [announcements, setAnnouncements] = useState([]);
-  // eslint-disable-next-line no-unused-vars
-  const [loading, setLoading] = useState(true);
   const [initialLoading, setInitialLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,8 +28,7 @@ const AnnouncementsPage = () => {
 
   useEffect(() => {
     fetchAnnouncements();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory, debouncedSearch, currentPage]);
+  }, [selectedCategory, debouncedSearch, currentPage, fetchAnnouncements]);
 
   // Debounce search input
   useEffect(() => {
@@ -45,7 +42,7 @@ const AnnouncementsPage = () => {
 
   const fetchAnnouncements = async () => {
     try {
-      setLoading(true);
+      setInitialLoading(true);
       const params = {
         page: currentPage,
         per_page: 9
@@ -68,7 +65,6 @@ const AnnouncementsPage = () => {
     } catch (error) {
       console.error('Error fetching announcements:', error);
     } finally {
-      setLoading(false);
       setInitialLoading(false);
     }
   };

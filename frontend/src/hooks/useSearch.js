@@ -78,7 +78,7 @@ const useSearch = ({
         setPopularSearches(JSON.parse(popular));
       }
     } catch (err) {
-      console.error('Failed to load search history:', err);
+      // error:'Failed to load search history:', err);
     }
   }, [enableHistory]);
 
@@ -98,7 +98,7 @@ const useSearch = ({
       try {
         localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
       } catch (err) {
-        console.error('Failed to save search history:', err);
+        // error:'Failed to save search history:', err);
       }
       
       return updated;
@@ -126,7 +126,7 @@ const useSearch = ({
       try {
         localStorage.setItem(POPULAR_SEARCHES_KEY, JSON.stringify(updated));
       } catch (err) {
-        console.error('Failed to save popular searches:', err);
+        // error:'Failed to save popular searches:', err);
       }
       
       return updated;
@@ -139,7 +139,7 @@ const useSearch = ({
     try {
       localStorage.removeItem(SEARCH_HISTORY_KEY);
     } catch (err) {
-      console.error('Failed to clear search history:', err);
+      // error:'Failed to clear search history:', err);
     }
   }, []);
 
@@ -150,7 +150,7 @@ const useSearch = ({
       try {
         localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
       } catch (err) {
-        console.error('Failed to update search history:', err);
+        // error:'Failed to update search history:', err);
       }
       return updated;
     });
@@ -230,7 +230,7 @@ const useSearch = ({
         
         setResults(searchResults);
       } catch (err) {
-        console.error('Search error:', err);
+        // error:'Search error:', err);
         setError(err.message || 'Search failed');
         setResults([]);
       } finally {

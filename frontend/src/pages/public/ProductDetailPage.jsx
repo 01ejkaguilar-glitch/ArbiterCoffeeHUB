@@ -53,7 +53,7 @@ const ProductDetailPage = () => {
             setIsFavorite(isFav);
           }
         } catch (error) {
-          console.error('Error checking favorites:', error);
+          // Favorites check error
         }
       }
     };
@@ -100,7 +100,6 @@ const ProductDetailPage = () => {
         toast.error(result.message || 'Failed to add to cart');
       }
     } catch (err) {
-      console.error('Add to cart error:', err);
       toast.error('Something went wrong. Please try again.');
     }
   };

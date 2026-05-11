@@ -46,8 +46,7 @@ const ProductsPage = () => {
     if (searchQuery && searchQuery !== searchTerm) {
       setSearchTerm(searchQuery);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, searchTerm, setSearchTerm]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -59,8 +58,7 @@ const ProductsPage = () => {
       }
     }, 300);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm]);
+  }, [searchTerm, searchParams, setSearchParams]);
 
   useEffect(() => {
     if (user) fetchFavorites();
@@ -73,7 +71,7 @@ const ProductsPage = () => {
         setFavorites(new Set(response.data.map(fav => fav.product.id)));
       }
     } catch (error) {
-      console.error('Error fetching favorites:', error);
+      // Favorites fetch error
     }
   };
 
@@ -116,7 +114,7 @@ const ProductsPage = () => {
         });
       }
     } catch (error) {
-      console.error('Error toggling favorite:', error);
+      // Favorite toggle error
     }
   };
 

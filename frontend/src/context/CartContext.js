@@ -30,13 +30,12 @@ export const CartProvider = ({ children }) => {
     } else {
       loadLocalCart();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
+  }, [isAuthenticated, mergeGuestCartThenFetch, loadLocalCart]);
 
   /**
    * On login, merge any guest cart items into the server cart, then fetch.
    */
-  const mergeGuestCartThenFetch = async () => {
+  const mergeGuestCartThenFetch = useCallback(async () => {
     try {
       const localCartRaw = localStorage.getItem('guestCart');
       if (localCartRaw) {
@@ -52,18 +51,16 @@ export const CartProvider = ({ children }) => {
               });
             } catch (err) {
               // Item may no longer be available — skip silently
-              console.warn('Could not merge guest cart item:', item.product_id, err);
             }
           }
         }
         localStorage.removeItem('guestCart');
       }
     } catch (err) {
-      console.error('Error merging guest cart:', err);
       localStorage.removeItem('guestCart');
     }
     await fetchCart();
-  };
+  }, []);
 
   // Memoize cartCount from cart to avoid separate state
   const cartCount = useMemo(() => {
@@ -83,7 +80,7 @@ export const CartProvider = ({ children }) => {
         setCart(response.data);
       }
     } catch (error) {
-      console.error('Error fetching cart:', error);
+      // Error fetching cart - handled gracefully
     } finally {
       setLoading(false);
     }
@@ -147,7 +144,6 @@ export const CartProvider = ({ children }) => {
         return { success: true, message: 'Product added to cart' };
       }
     } catch (error) {
-      console.error('Error adding to cart:', error);
       return {
         success: false,
         message: error.response?.data?.message || 'Failed to add product to cart',
@@ -190,7 +186,6 @@ export const CartProvider = ({ children }) => {
         }
       }
     } catch (error) {
-      console.error('Error updating cart item:', error);
       return { success: false };
     } finally {
       setLoading(false);
@@ -225,7 +220,6 @@ export const CartProvider = ({ children }) => {
         return { success: true };
       }
     } catch (error) {
-      console.error('Error removing from cart:', error);
       return { success: false };
     } finally {
       setLoading(false);
@@ -244,7 +238,6 @@ export const CartProvider = ({ children }) => {
       localStorage.removeItem('guestCart');
       return { success: true };
     } catch (error) {
-      console.error('Error clearing cart:', error);
       return { success: false };
     } finally {
       setLoading(false);

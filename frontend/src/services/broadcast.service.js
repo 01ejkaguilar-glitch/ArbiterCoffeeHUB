@@ -65,11 +65,9 @@ class BroadcastService {
         authEndpoint: `${new URL(API_BASE_URL).origin}/broadcasting/auth`,
       });
 
-      console.log('Broadcast service initialised with Laravel Reverb (WebSocket)');
       this.connected = true;
       return this.echo;
     } catch (error) {
-      console.error('Failed to initialise Reverb Echo, falling back to polling:', error);
       this.startPollingFallback();
       return null;
     }
@@ -81,7 +79,7 @@ class BroadcastService {
   startPollingFallback() {
     if (this.pollingInterval) return; // Already polling
 
-    console.log('Starting polling fallback for real-time updates');
+    // Polling fallback active
     this.connected = true; // Mark as connected since polling is active
 
     // Poll for updates every 30 seconds
@@ -106,7 +104,7 @@ class BroadcastService {
           }
         }
       } catch (error) {
-        console.log('Polling failed:', error);
+        //'Polling failed:', error);
       }
     }, 60000); // Poll every 60 seconds
   }
@@ -139,7 +137,7 @@ class BroadcastService {
    */
   subscribe(channelName, eventHandlers = {}) {
     if (!this.echo) {
-      console.warn('Echo not initialized, cannot subscribe to channel:', channelName);
+      // warn:'Echo not initialized, cannot subscribe to channel:', channelName);
       return null;
     }
 
@@ -152,10 +150,10 @@ class BroadcastService {
         channel.listen(event, eventHandlers[event]);
       });
 
-      console.log('Subscribed to channel:', channelName);
+      //'Subscribed to channel:', channelName);
       return channel;
     } catch (error) {
-      console.error('Failed to subscribe to channel:', channelName, error);
+      // error:'Failed to subscribe to channel:', channelName, error);
       return null;
     }
   }
@@ -165,7 +163,7 @@ class BroadcastService {
    */
   subscribePrivate(channelName, eventHandlers = {}) {
     if (!this.echo) {
-      console.warn('Echo not initialized, cannot subscribe to private channel:', channelName);
+      // warn:'Echo not initialized, cannot subscribe to private channel:', channelName);
       return null;
     }
 
@@ -178,10 +176,10 @@ class BroadcastService {
         channel.listen(event, eventHandlers[event]);
       });
 
-      console.log('Subscribed to private channel:', channelName);
+      //'Subscribed to private channel:', channelName);
       return channel;
     } catch (error) {
-      console.error('Failed to subscribe to private channel:', channelName, error);
+      // error:'Failed to subscribe to private channel:', channelName, error);
       return null;
     }
   }
@@ -200,7 +198,7 @@ class BroadcastService {
         this.channels.delete(channelName);
       }
     } catch (error) {
-      console.warn('Error unsubscribing from channel:', channelName, error);
+      // warn:'Error unsubscribing from channel:', channelName, error);
       // Force remove from channels map even if leaving failed
       this.channels.delete(channelName);
     }

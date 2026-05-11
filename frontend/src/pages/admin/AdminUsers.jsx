@@ -88,7 +88,7 @@ const AdminUsers = () => {
         setMeta({ total: p.total ?? 0, last_page: p.last_page ?? 1, current_page: p.current_page ?? 1, from: p.from ?? 0, to: p.to ?? 0 });
       }
     } catch (err) {
-      console.error('fetchUsers:', err);
+      // Users fetch error
     } finally {
       setLoading(false);
     }

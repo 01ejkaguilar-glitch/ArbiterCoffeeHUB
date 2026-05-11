@@ -84,7 +84,7 @@ const EmployeeMyShifts = ({ theme = DEFAULT_THEME }) => {
     } finally {
       setLoading(false);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchShifts]);
 
   useEffect(() => { fetchShifts(viewMonth, viewYear); }, [fetchShifts, viewMonth, viewYear]);
 

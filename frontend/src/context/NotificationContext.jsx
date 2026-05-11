@@ -184,7 +184,7 @@ export function NotificationCenterProvider({ children }) {
       const prefs = localStorage.getItem(PREFERENCES_KEY);
       if (prefs) dispatch({ type: ACTIONS.SET_PREFERENCES, payload: JSON.parse(prefs) });
     } catch (err) {
-      console.error('Failed to load notifications:', err);
+      // Failed to load from storage
     }
   }, []);
 
@@ -211,9 +211,6 @@ export function NotificationCenterProvider({ children }) {
         dispatch({ type: ACTIONS.SET_NOTIFICATIONS, payload: response.data });
       }
     } catch (err) {
-      if (err?.response?.status !== 401 && err?.response?.status !== 404) {
-        console.error('Failed to fetch notifications:', err);
-      }
       dispatch({ type: ACTIONS.SET_ERROR, payload: err.message });
     }
   }, []);
@@ -307,7 +304,7 @@ export function NotificationCenterProvider({ children }) {
             }
           }
         } catch (pushErr) {
-          console.warn('Push subscription setup failed (non-blocking):', pushErr);
+          // Push subscription setup failed - non-blocking
         }
       }
 
@@ -386,7 +383,9 @@ function showBrowserNotification(notification) {
       bn.close();
     };
     setTimeout(() => bn.close(), 5000);
-  } catch (err) { console.error('Browser notification failed:', err); }
+  } catch (err) {
+    // Browser notification failed - non-blocking
+  }
 }
 
 export default NotificationCenterContext;

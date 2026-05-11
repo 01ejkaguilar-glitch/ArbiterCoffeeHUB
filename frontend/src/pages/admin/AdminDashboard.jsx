@@ -56,7 +56,7 @@ const AdminDashboard = () => {
           setAnalyticsData(analyticsResponse.data);
         }
       } catch (analyticsError) {
-        console.warn('Failed to fetch analytics data:', analyticsError);
+        // Analytics data unavailable
       }
 
       // Fetch workforce data
@@ -71,14 +71,12 @@ const AdminDashboard = () => {
           attendanceSummary: attendanceSummaryResponse.success ? attendanceSummaryResponse.data : null
         });
       } catch (workforceError) {
-        console.warn('Failed to fetch workforce data:', workforceError);
-        // Don't fail the whole dashboard if workforce data fails
+        // Workforce data unavailable - non-critical
         setWorkforceData(null);
       }
 
     } catch (err) {
       setError(err.message || 'Failed to fetch dashboard data');
-      console.error('Dashboard fetch error:', err);
     } finally {
       setLoading(false);
     }
