@@ -86,8 +86,13 @@ jobs:
 
       - name: Deploy via FTPS
         run: |
-          # Install lftp for FTPS
-          sudo apt-get update && sudo apt-get install -y lftp
+          # Only install lftp if not present (skip slow apt-get update)
+          if ! command -v lftp &> /dev/null; then
+            echo "Installing lftp..."
+            sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          else
+            echo "lftp already installed"
+          fi
 
           # Upload using lftp with FTPS
           lftp -e "set ftp:ssl-allow true; set ftp:ssl-force true; set ssl:verify-certificate no; mirror -R public_html/ /public_html/; exit" -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" "ftps://${{ secrets.FTP_HOST }}:${{ secrets.FTP_PORT }}"
