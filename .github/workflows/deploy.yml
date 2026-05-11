@@ -84,17 +84,10 @@ jobs:
           mkdir -p public_html/api/storage/framework/sessions
           mkdir -p public_html/api/storage/framework/views
 
-      - name: Deploy via SCP
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
-          source: "public_html/*"
-          target: "/public_html"
-          strip_components: 1
-          overwrite: true
-          command_timeout: 10m
-          use_insecure_cipher: true
-          debug: true
+      - name: Deploy via FTPS
+        run: |
+          # Install lftp for FTPS
+          sudo apt-get update && sudo apt-get install -y lftp
+
+          # Upload using lftp with FTPS
+          lftp -e "set ftp:ssl-allow true; set ftp:ssl-force true; set ssl:verify-certificate no; mirror -R public_html/ /public_html/; exit" -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" "ftps://${{ secrets.FTP_HOST }}:${{ secrets.FTP_PORT }}"
