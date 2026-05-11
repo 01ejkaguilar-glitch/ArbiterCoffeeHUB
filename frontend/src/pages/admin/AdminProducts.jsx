@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Alert } from 'react-bootstrap';
 import { FaPlus, FaBoxOpen, FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaLayerGroup } from 'react-icons/fa';
 import apiService from '../../services/api.service';
-import { API_ENDPOINTS } from '../../config/api';
+import { API_ENDPOINTS, BACKEND_BASE_URL } from '../../config/api';
 import ProductFormModal from './components/ProductFormModal';
 import ProductTable from './components/ProductTable';
 import BatchActionModal from './components/BatchActionModal';
@@ -27,6 +27,8 @@ const AdminProducts = () => {
     is_available: true,
     image: null
   });
+  const [existingImage, setExistingImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [categories, setCategories] = useState([]);
   const [alert, setAlert] = useState({ show: false, message: '', type: '' });
 
@@ -87,6 +89,9 @@ const AdminProducts = () => {
         is_available: product.is_available,
         image: null
       });
+      // Set existing image for preview
+      setExistingImage(product.image_url || null);
+      setImagePreview(product.image_url ? `${BACKEND_BASE_URL}${product.image_url}` : null);
     } else {
       setEditingProduct(null);
       setFormData({
@@ -98,6 +103,8 @@ const AdminProducts = () => {
         is_available: true,
         image: null
       });
+      setExistingImage(null);
+      setImagePreview(null);
     }
     setShowModal(true);
   };
@@ -105,16 +112,37 @@ const AdminProducts = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingProduct(null);
+    setExistingImage(null);
+    setImagePreview(null);
+  };
+
+  const handleRemoveImage = () => {
+    setFormData({
+      ...formData,
+      image: null
+    });
+    setImagePreview(existingImage ? `${BACKEND_BASE_URL}${existingImage}` : null);
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
 
     if (type === 'file') {
+      const file = files[0] || null;
       setFormData({
         ...formData,
-        [name]: files[0] || null
+        [name]: file
       });
+      // Set image preview
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setImagePreview(existingImage ? `${BACKEND_BASE_URL}${existingImage}` : null);
+      }
     } else {
       setFormData({
         ...formData,
@@ -454,7 +482,9 @@ const AdminProducts = () => {
         onHide={handleCloseModal}
         editingProduct={editingProduct}
         formData={formData}
-        onFormChange={handleChange}
+        handleChange={handleChange}
+        handleRemoveImage={handleRemoveImage}
+        imagePreview={imagePreview}
         categories={categories}
         onSubmit={handleSubmit}
       />

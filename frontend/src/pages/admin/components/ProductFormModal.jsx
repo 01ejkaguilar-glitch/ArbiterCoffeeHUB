@@ -1,7 +1,8 @@
 import React from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
+import { FaImage } from 'react-icons/fa';
 
-const ProductFormModal = ({ show, onHide, formData = {}, handleChange, handleSubmit, editingProduct, categories = [] }) => {
+const ProductFormModal = ({ show, onHide, formData = {}, handleChange, handleRemoveImage, handleSubmit, editingProduct, categories = [], imagePreview }) => {
   return (
     <Modal show={show} onHide={onHide} centered size="lg">
       <Form onSubmit={handleSubmit}>
@@ -9,6 +10,38 @@ const ProductFormModal = ({ show, onHide, formData = {}, handleChange, handleSub
           <Modal.Title>{editingProduct ? 'Edit Product' : 'Add Product'}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="d-grid gap-3">
+          <Form.Group>
+            <Form.Label>Product Image</Form.Label>
+            <div className="product-image-upload">
+              <div className="image-upload-placeholder">
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Product preview" className="image-preview" />
+                ) : (
+                  <>
+                    <FaImage size={32} className="upload-icon" />
+                    <span className="upload-text">Click to upload product image</span>
+                    <span className="upload-hint">Recommended: 800x800px, JPG or PNG</span>
+                  </>
+                )}
+              </div>
+              <Form.Control
+                type="file"
+                accept="image/*"
+                name="image"
+                onChange={handleChange}
+                className="image-input"
+              />
+              {imagePreview && formData.image && (
+                <button
+                  type="button"
+                  className="image-remove-btn"
+                  onClick={handleRemoveImage}
+                >
+                  Remove Image
+                </button>
+              )}
+            </div>
+          </Form.Group>
           <Form.Group>
             <Form.Label>Name</Form.Label>
             <Form.Control name="name" value={formData.name || ''} onChange={handleChange} required />
