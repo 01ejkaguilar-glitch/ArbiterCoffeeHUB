@@ -7,6 +7,47 @@ import axios from 'axios';
 import API_BASE_URL from '../config/api';
 
 const NETWORK_ERROR_LOG_TTL_MS = 60000;
+const CSRF_TOKEN_COOKIE = 'XSRF-TOKEN';
+
+// Initialize CSRF token by calling sanctum/csrf-cookie
+let csrfTokenPromise = null;
+
+const initializeCSRFToken = async () => {
+  if (csrfTokenPromise) {
+    return csrfTokenPromise;
+  }
+
+  csrfTokenPromise = (async () => {
+    try {
+      // Make request to get CSRF cookie
+      // withCredentials is required for cross-domain cookies
+      await axios.get(`${API_BASE_URL}/sanctum/csrf-cookie`, {
+        withCredentials: true,
+      });
+      // Axios should automatically read the Set-Cookie header and store the cookie
+      // We'll extract it manually if needed
+      return true;
+    } catch (error) {
+      console.error('Failed to initialize CSRF token:', error);
+      return false;
+    }
+  })();
+
+  return csrfTokenPromise;
+};
+
+// Get CSRF token from cookie
+const getCSRFToken = () => {
+  const cookies = document.cookie.split(';');
+  for (let cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === CSRF_TOKEN_COOKIE) {
+      return decodeURIComponent(value);
+    }
+  }
+  return null;
+};
+
 const recentNetworkErrorLogs = new Map();
 
 const ABSOLUTE_URL_REGEX = /^https?:\/\//i;
@@ -73,13 +114,26 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
-// Request interceptor - Add auth token to requests
+// Request interceptor - Add auth token and CSRF token to requests
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
+    // Add Bearer token if available
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Add CSRF token for stateful requests
+    // Skip for GET requests (read-only) and sanctum/csrf-cookie endpoint
+    if (config.method !== 'get' && !config.url.includes('/sanctum/csrf-cookie')) {
+      // Ensure CSRF token is initialized first
+      await initializeCSRFToken();
+      const csrfToken = getCSRFToken();
+      if (csrfToken) {
+        config.headers['X-XSRF-TOKEN'] = csrfToken;
+      }
+    }
+
     return config;
   },
   (error) => {
@@ -171,6 +225,9 @@ const isOnline = () => navigator.onLine;
 const apiService = {
   // Check if user is online (exposed for external use)
   isOnline,
+
+  // Initialize CSRF token (call on app startup)
+  initializeCSRFToken,
 
   // GET request
   get: async (url, params = {}, bustCache = false) => {

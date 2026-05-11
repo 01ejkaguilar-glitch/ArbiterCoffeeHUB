@@ -24,6 +24,8 @@ export const AuthProvider = ({ children }) => {
 
   // Check if user is logged in on mount
   useEffect(() => {
+    // Initialize CSRF token for SPA authentication
+    apiService.initializeCSRFToken();
     checkAuth();
 
     // Listen for online/offline events
