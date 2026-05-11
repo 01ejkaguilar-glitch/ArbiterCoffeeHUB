@@ -124,10 +124,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/notifications/vapid-key', [NotificationController::class, 'getVapidKey']);
         Route::get('/team-members', [PublicController::class, 'getTeamMembers']);
         Route::get('/company-timeline', [PublicController::class, 'getCompanyTimeline']);
-        Route::get('/admin/company-timeline', [PublicController::class, 'getCompanyTimeline'])->middleware('auth:sanctum')->middleware('role:admin|super-admin');
-        Route::put('/admin/company-timeline', [PublicController::class, 'updateCompanyTimeline'])->middleware('auth:sanctum')->middleware('role:admin|super-admin');
-        Route::get('/admin/team-members', [PublicController::class, 'getTeamMembers'])->middleware('auth:sanctum')->middleware('role:admin|super-admin');
-        Route::put('/admin/team-members', [PublicController::class, 'updateTeamMembers'])->middleware('auth:sanctum')->middleware('role:admin|super-admin');
 
         // Announcements (public - only published)
         Route::get('/announcements', [AnnouncementController::class, 'index']);
