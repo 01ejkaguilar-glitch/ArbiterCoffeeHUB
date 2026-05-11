@@ -53,6 +53,7 @@ jobs:
           cp -r app config routes bootstrap storage database resources public_html/api/
           cp -r public/.htaccess lang public_html/api/ 2>/dev/null || true
           mkdir -p public_html/api/storage/{logs,framework/{cache,sessions,views}}
+          mkdir -p public_html/api/bootstrap/cache
 
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
@@ -87,7 +88,7 @@ jobs:
             php -v
             ls -la .env
             head -5 .env
-            composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
+            # Skip composer install - vendor already exists on server
             php artisan --version
             php artisan config:clear
             php artisan route:clear
