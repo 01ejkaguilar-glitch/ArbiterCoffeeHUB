@@ -46,6 +46,8 @@ jobs:
           rm -rf public_html/api
           mkdir -p public_html/api/{storage/{logs,framework/{cache,sessions,views},bootstrap/cache},api}
           cp -r build/* public_html/
+          # Ensure .htaccess exists for React SPA routing
+          if [ ! -f public_html/.htaccess ]; then cp build/.htaccess public_html/.htaccess; fi
 
       - name: Copy Laravel files
         run: |
@@ -82,17 +84,8 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/u843463747/domains/arbitercoffee.shop/public_html/api
-            pwd
-            ls -la
-            php -v
-            ls -la .env
-            head -5 .env
-            # Skip composer install - vendor already exists on server
-            php artisan --version
-            php artisan config:clear
-            php artisan route:clear
-            php artisan cache:clear
-            php artisan route:list --path=api/v1
-            find storage bootstrap/cache -type d -exec chmod 775 {} \; 2>/dev/null || true
-            find storage bootstrap/cache -type f -exec chmod 664 {} \; 2>/dev/null || true
+            cd /home/u843463747/domains/arbitercoffee.shop/public_html
+            # Verify React .htaccess exists
+            ls -la .htaccess
+            # Check React routes work
+            curl -s -o /dev/null -w "%{http_code}" https://arbitercoffee.shop/
