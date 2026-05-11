@@ -16,8 +16,10 @@ return [
     */
 
     'stateful' => explode(',', implode(',', array_filter([
-        env('SANCTUM_STATEFUL_DOMAINS', 'localhost,127.0.0.1,127.0.0.1:3000,localhost:3000'),
+        env('SANCTUM_STATEFUL_DOMAINS', 'arbitercoffee.shop,api.arbitercoffee.shop,localhost,127.0.0.1,127.0.0.1:3000,localhost:3000'),
         Sanctum::currentApplicationUrlWithPort(),
+        'arbitercoffee.shop',
+        'api.arbitercoffee.shop',
         'localhost',
         '127.0.0.1',
         '127.0.0.1:3000',
