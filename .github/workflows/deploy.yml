@@ -85,5 +85,6 @@ jobs:
             composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
             php artisan config:clear
             php artisan route:clear
+            php artisan cache:clear
             find storage bootstrap/cache -type d -exec chmod 775 {} \; 2>/dev/null || true
             find storage bootstrap/cache -type f -exec chmod 664 {} \; 2>/dev/null || true
