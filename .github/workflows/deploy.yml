@@ -54,11 +54,6 @@ jobs:
           cp -r public/.htaccess lang public_html/api/ 2>/dev/null || true
           mkdir -p public_html/api/storage/{logs,framework/{cache,sessions,views}}
 
-      - name: Install Composer dependencies
-        run: |
-          cd public_html/api
-          composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
-
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
@@ -67,3 +62,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
           local-dir: ./public_html/
+          exclude: |
+            **/vendor/**
+            **/.git/**
+            **/.ftp-deploy-sync-state.json
