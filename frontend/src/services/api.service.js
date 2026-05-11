@@ -20,12 +20,13 @@ const initializeCSRFToken = async () => {
   csrfTokenPromise = (async () => {
     try {
       // Make request to get CSRF cookie
-      // withCredentials is required for cross-domain cookies
-      await axios.get(`${API_BASE_URL}/sanctum/csrf-cookie`, {
+      // Sanctum CSRF endpoint is at root level, not under /api/v1
+      // Extract base URL without the /api/v1 suffix
+      const baseUrl = API_BASE_URL.replace(/\/api(\/v\d+)?$/, '');
+      await axios.get(`${baseUrl}/sanctum/csrf-cookie`, {
         withCredentials: true,
       });
       // Axios should automatically read the Set-Cookie header and store the cookie
-      // We'll extract it manually if needed
       return true;
     } catch (error) {
       console.error('Failed to initialize CSRF token:', error);
