@@ -65,13 +65,17 @@ jobs:
             sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
           fi
 
-          echo "=== Uploading via SFTP ==="
+          echo "=== Uploading via FTP ==="
 
           # Create batch file using printf (no heredoc in YAML)
-          printf 'mkdir -p /public_html\ncd /public_html\nput -r public_html\nbye\n' > /tmp/sftp_batch.txt
+          printf 'mkdir /public_html\ncd /public_html\nmput public_html/*\nbye\n' > /tmp/ftp_batch.txt
 
-          # Use sftp with batch file (standard sftp scripting)
-          sshpass -p "$FTP_PASSWORD" sftp -o StrictHostKeyChecking=no -o ConnectTimeout=60 -b /tmp/sftp_batch.txt -P "$FTP_PORT" "$FTP_USERNAME@$FTP_HOST"
+          # Use ncftp for reliable FTP upload (works with port 21)
+          if ! command -v ncftpput &> /dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq ncftp
+          fi
+
+          ncftpput -v -R -m -T 300 -u "$FTP_USERNAME" -p "$FTP_PASSWORD" "$FTP_HOST" "$FTP_PORT" "/public_html" public_html
 
           echo "Upload complete!"
         env:
