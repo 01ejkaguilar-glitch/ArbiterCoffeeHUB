@@ -58,16 +58,24 @@ jobs:
         run: |
           echo "Files to upload: $(find public_html -type f | wc -l)"
           echo "Total size: $(du -sh public_html | cut -f1)"
+          echo "Host: $FTP_HOST:$FTP_PORT"
 
-          # Install lftp if needed (use sudo for GitHub Actions)
-          if ! command -v lftp &> /dev/null; then
-            sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          # Install sshpass (more reliable than lftp for password-based SFTP)
+          if ! command -v sshpass &> /dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
           fi
 
           echo "=== Uploading via SFTP ==="
 
-          # Upload using lftp with correct syntax
-          lftp -e "set net:timeout 15; set net:max-retries 2; mirror -R --parallel=3 public_html /public_html; bye" -u "$FTP_USERNAME" "$FTP_PASSWORD" "sftp://$FTP_HOST:$FTP_PORT" && echo "Upload complete!" || { echo "Upload failed"; exit 1; }
+          # Use sshpass + sftp for more reliable upload
+          sshpass -p "$FTP_PASSWORD" sftp -o StrictHostKeyChecking=no -o ConnectTimeout=30 -P "$FTP_PORT" "$FTP_USERNAME@$FTP_HOST" <<EOF
+            mkdir -p /public_html
+            cd /public_html
+            mirror -R --parallel=3 public_html /public_html
+            bye
+EOF
+
+          echo "Upload complete!"
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_PORT: ${{ secrets.FTP_PORT }}
