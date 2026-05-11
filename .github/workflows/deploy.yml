@@ -59,9 +59,9 @@ jobs:
           echo "Files to upload: $(find public_html -type f | wc -l)"
           echo "Total size: $(du -sh public_html | cut -f1)"
 
-          # Install lftp if needed
+          # Install lftp if needed (use sudo for GitHub Actions)
           if ! command -v lftp &> /dev/null; then
-            apt-get install -y -qq lftp 2>/dev/null || true
+            sudo apt-get update -qq && sudo apt-get install -y -qq lftp
           fi
 
           echo "=== Uploading via SFTP ==="
