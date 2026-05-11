@@ -56,34 +56,20 @@ jobs:
 
       - name: Deploy via SFTP
         run: |
-          # Pre-upload verification
           echo "Files to upload: $(find public_html -type f | wc -l)"
           echo "Total size: $(du -sh public_html | cut -f1)"
 
-          # Install lftp without apt update (faster)
+          # Install lftp if needed
           if ! command -v lftp &> /dev/null; then
-            echo "Installing lftp (quick install)..."
             apt-get install -y -qq lftp 2>/dev/null || true
           fi
 
           echo "=== Uploading via SFTP ==="
 
-          # Use lftp with simpler mirror command
-          lftp -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" sftp://"${{ secrets.FTP_HOST }}":"${{ secrets.FTP_PORT }}" <<EOF
-            set sftp:connect-timeout 20
-            set net:timeout 20
-            set net:max-retries 2
-            set mirror:parallel 5
-            mirror -R public_html /public_html --verbose
-            bye
-EOF
-
-          LFTP_EXIT=$?
-          echo "lftp exit code: $LFTP_EXIT"
-
-          if [ $LFTP_EXIT -ne 0 ]; then
-            echo "ERROR: Upload failed"
-            exit 1
-          fi
-
-          echo "Upload complete!"
+          # Upload using lftp with inline commands
+          lftp -c "set sftp:connect-timeout 20; set net:timeout 20; set mirror:parallel 5; open -u $FTP_USERNAME,$FTP_PASSWORD sftp://$FTP_HOST:$FTP_PORT; mirror -R public_html /public_html --verbose" && echo "Upload complete!" || { echo "Upload failed"; exit 1; }
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
