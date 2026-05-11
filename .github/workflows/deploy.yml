@@ -85,8 +85,25 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/u843463747/domains/arbitercoffee.shop/public_html/api
-            # Install composer dependencies
-            composer install --no-dev --optimize-autoloader
+            # Check vendor status
+            echo "=== Checking vendor directory ==="
+            ls -la vendor/ | head -10
+            # Install composer dependencies if needed
+            if [ ! -d "vendor/laravel/sanctum" ]; then
+              echo "=== Running composer install ==="
+              composer install --no-dev --optimize-autoloader --prefer-dist
+            else
+              echo "=== Vendor already exists ==="
+            fi
+            # Check if .env exists
+            echo "=== Checking .env ==="
+            ls -la .env
+            # Test DB connection
+            echo "=== Testing DB connection ==="
+            php artisan tinker --execute="DB::connection()->getPdo(); echo 'DB OK';"
+            # Show recent Laravel log errors
+            echo "=== Recent Laravel log ==="
+            tail -50 storage/logs/laravel.log 2>/dev/null || echo "No log file"
             # Clear and rebuild caches
             php artisan config:clear
             php artisan cache:clear
@@ -94,5 +111,5 @@ jobs:
             php artisan view:clear
             # Set proper permissions
             chmod -R 755 storage bootstrap/cache
-            # Verify installation
+            # Verify PHP/Artisan works
             php artisan --version
