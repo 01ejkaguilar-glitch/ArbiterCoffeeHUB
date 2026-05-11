@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   FaPlay, FaStop, FaCheckCircle,
   FaHistory, FaTimes, FaExclamationCircle,
@@ -59,7 +59,7 @@ const EmployeeAttendance = ({ theme = DEFAULT_THEME }) => {
     return () => clearInterval(timerRef.current);
   }, []);
 
-  const fetchAttendance = useCallback(async () => {
+  const fetchAttendance = async () => {
     try {
       setLoading(true);
       const res = await apiService.get(API_ENDPOINTS.WORKFORCE.MY_ATTENDANCE);
@@ -72,9 +72,9 @@ const EmployeeAttendance = ({ theme = DEFAULT_THEME }) => {
     } finally {
       setLoading(false);
     }
-  }, [fetchAttendance]);
+  };
 
-  useEffect(() => { fetchAttendance(); }, [fetchAttendance]);
+  useEffect(() => { fetchAttendance(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClockIn = async () => {
     setActing(true);

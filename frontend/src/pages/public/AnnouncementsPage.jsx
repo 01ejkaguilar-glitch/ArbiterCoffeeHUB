@@ -28,7 +28,8 @@ const AnnouncementsPage = () => {
 
   useEffect(() => {
     fetchAnnouncements();
-  }, [selectedCategory, debouncedSearch, currentPage, fetchAnnouncements]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, debouncedSearch, currentPage]);
 
   // Debounce search input
   useEffect(() => {

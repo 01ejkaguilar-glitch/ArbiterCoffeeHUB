@@ -96,6 +96,26 @@ const SearchDropdown = ({
   const displayedResults = results.slice(0, maxResults);
   const hasMoreResults = results.length > maxResults;
 
+  // Handle result click - must be defined before handleKeyDown
+  const handleResultClick = (product) => {
+    handleSubmit(query);
+    if (onResultClick) {
+      onResultClick(product);
+    } else {
+      navigate(`/products/${product.id}`);
+    }
+    clearSearch();
+  };
+
+  // Handle search submission - must be defined before handleKeyDown
+  const handleSearchSubmit = () => {
+    if (query.trim()) {
+      handleSubmit(query);
+      navigate(`/products?search=${encodeURIComponent(query.trim())}`);
+      clearSearch();
+    }
+  };
+
   // Handle keyboard navigation
   const handleKeyDown = useCallback((e) => {
     const totalItems = displayedResults.length + 
@@ -135,27 +155,7 @@ const SearchDropdown = ({
       default:
         break;
     }
-  }, [displayedResults, suggestions, selectedIndex, query, clearSearch, handleSearchSubmit]);
-
-  // Handle result click
-  const handleResultClick = (product) => {
-    handleSubmit(query);
-    if (onResultClick) {
-      onResultClick(product);
-    } else {
-      navigate(`/products/${product.id}`);
-    }
-    clearSearch();
-  };
-
-  // Handle search submission
-  const handleSearchSubmit = () => {
-    if (query.trim()) {
-      handleSubmit(query);
-      navigate(`/products?search=${encodeURIComponent(query.trim())}`);
-      clearSearch();
-    }
-  };
+  }, [displayedResults, suggestions, selectedIndex, query, clearSearch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle suggestion click
   const handleSuggestionClick = (suggestionQuery) => {

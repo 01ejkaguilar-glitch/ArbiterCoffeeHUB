@@ -82,7 +82,8 @@ const CheckoutPage = () => {
       return;
     }
     fetchAddresses();
-  }, [isAuthenticated, fetchAddresses]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   /* addresses */
   const fetchAddresses = async () => {

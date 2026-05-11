@@ -84,7 +84,8 @@ const AdminOrders = () => {
   // Refetch whenever page, perPage, debounced search, or filters change
   useEffect(() => {
     fetchOrders();
-  }, [page, perPage, debouncedSearch, filterStatus, filterType, fetchOrders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, perPage, debouncedSearch, filterStatus, filterType]);
 
   const fetchOrders = async (showRefreshIndicator = false) => {
     try {

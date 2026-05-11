@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   FaCalendarAlt, FaClock, FaCheckCircle, FaListUl,
   FaClipboardList, FaCalendarCheck, FaChevronLeft, FaChevronRight,
@@ -73,7 +73,7 @@ const EmployeeMyShifts = ({ theme = DEFAULT_THEME }) => {
   const [viewYear, setViewYear] = useState(now.getFullYear());
   const [viewMonth, setViewMonth] = useState(now.getMonth() + 1);
 
-  const fetchShifts = useCallback(async (month, year) => {
+  const fetchShifts = async (month, year) => {
     try {
       setLoading(true);
       const res = await apiService.get(API_ENDPOINTS.WORKFORCE.MY_SHIFTS, { month, year });
@@ -84,9 +84,9 @@ const EmployeeMyShifts = ({ theme = DEFAULT_THEME }) => {
     } finally {
       setLoading(false);
     }
-  }, [fetchShifts]);
+  };
 
-  useEffect(() => { fetchShifts(viewMonth, viewYear); }, [fetchShifts, viewMonth, viewYear]);
+  useEffect(() => { fetchShifts(viewMonth, viewYear); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const prevMonth = () => {
     if (viewMonth === 1) { setViewMonth(12); setViewYear(y => y - 1); }

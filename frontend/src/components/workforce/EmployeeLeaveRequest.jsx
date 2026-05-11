@@ -196,7 +196,7 @@ const EmployeeLeaveRequest = ({ theme = DEFAULT_THEME }) => {
   const [cancelling, setCancelling] = useState(false);
   const { toast, showToast, clearToast } = useToast();
 
-  const fetchRequests = useCallback(async () => {
+  const fetchRequests = async () => {
     try {
       setLoading(true);
       const res = await apiService.get(API_ENDPOINTS.WORKFORCE.LEAVE_REQUESTS);
@@ -208,9 +208,9 @@ const EmployeeLeaveRequest = ({ theme = DEFAULT_THEME }) => {
     } finally {
       setLoading(false);
     }
-  }, [fetchRequests]);
+  };
 
-  useEffect(() => { fetchRequests(); }, [fetchRequests]);
+  useEffect(() => { fetchRequests(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = useCallback(async (form) => {
     setSubmitting(true);
@@ -229,7 +229,7 @@ const EmployeeLeaveRequest = ({ theme = DEFAULT_THEME }) => {
     } finally {
       setSubmitting(false);
     }
-  }, [fetchRequests, showToast]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCancel = useCallback(async (id) => {
     setCancelling(true);
@@ -243,7 +243,7 @@ const EmployeeLeaveRequest = ({ theme = DEFAULT_THEME }) => {
     } finally {
       setCancelling(false);
     }
-  }, [fetchRequests, showToast]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const stats = useMemo(() => ({
     total:    requests.length,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   FaChartLine, FaClock, FaStar, FaCheckCircle,
   FaExclamationTriangle, FaTrophy, FaCalendarAlt,
@@ -46,7 +46,7 @@ const TrainingInsights = () => {
   const [period, setPeriod] = useState('today');
 
   /* ── Fetch all three data sources in parallel ─────────────── */
-  const fetchAll = useCallback(async (p) => {
+  const fetchAll = async (p) => {
     setLoading(true);
     setError(null);
     try {
@@ -73,9 +73,9 @@ const TrainingInsights = () => {
     } finally {
       setLoading(false);
     }
-  }, [fetchAll]);
+  };
 
-  useEffect(() => { fetchAll(period); }, [period, fetchAll]);
+  useEffect(() => { fetchAll(period); }, [period]);
 
   /* ── Derived ─────────────────────────────────────────────── */
   const completionRate = useMemo(() => {

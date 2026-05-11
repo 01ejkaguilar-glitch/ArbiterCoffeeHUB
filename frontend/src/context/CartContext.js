@@ -30,12 +30,13 @@ export const CartProvider = ({ children }) => {
     } else {
       loadLocalCart();
     }
-  }, [isAuthenticated, mergeGuestCartThenFetch, loadLocalCart]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   /**
    * On login, merge any guest cart items into the server cart, then fetch.
    */
-  const mergeGuestCartThenFetch = useCallback(async () => {
+  const mergeGuestCartThenFetch = async () => {
     try {
       const localCartRaw = localStorage.getItem('guestCart');
       if (localCartRaw) {
@@ -60,7 +61,7 @@ export const CartProvider = ({ children }) => {
       localStorage.removeItem('guestCart');
     }
     await fetchCart();
-  }, []);
+  };
 
   // Memoize cartCount from cart to avoid separate state
   const cartCount = useMemo(() => {

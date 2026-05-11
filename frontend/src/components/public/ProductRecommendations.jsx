@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Button, Spinner, Alert } from 'react-bootstrap';
 import { FaLightbulb, FaShoppingCart, FaStar } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -18,47 +18,43 @@ const ProductRecommendations = ({ currentProductId, limit = 3 }) => {
     } else {
       fetchRelatedProducts();
     }
-  }, [user, currentProductId, fetchPersonalizedRecommendations, fetchRelatedProducts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, currentProductId]);
 
-  const fetchPersonalizedRecommendations = useCallback(async () => {
+  const fetchPersonalizedRecommendations = async () => {
     try {
       setLoading(true);
       const response = await apiService.get(API_ENDPOINTS.RECOMMENDATIONS.PRODUCTS);
       if (response.success) {
-        // Filter out the current product and limit results
         const filteredRecommendations = (response.data || [])
           .filter(rec => rec.product.id !== currentProductId)
           .slice(0, limit);
         setRecommendations(filteredRecommendations);
       } else {
-        // Fallback to related products
         await fetchRelatedProducts();
       }
     } catch (err) {
       console.error('Personalized recommendations fetch error:', err);
-      // Fallback to related products
       await fetchRelatedProducts();
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  const fetchRelatedProducts = useCallback(async () => {
+  const fetchRelatedProducts = async () => {
     try {
       setLoading(true);
-      // Get all products and filter out current product
       const response = await apiService.get(API_ENDPOINTS.PRODUCTS.LIST, { limit: 10 });
       if (response.success && response.data) {
         const productsData = response.data.data || response.data;
         const productsArray = Array.isArray(productsData) ? productsData : [];
 
-        // Filter out current product and take a few random ones
         const relatedProducts = productsArray
           .filter(product => product.id !== currentProductId)
           .slice(0, limit)
           .map(product => ({
             product: product,
-            score: 40, // Default score for related products
+            score: 40,
             reason: 'You might also like this'
           }));
 
@@ -72,7 +68,7 @@ const ProductRecommendations = ({ currentProductId, limit = 3 }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   if (loading) {
     return (
@@ -93,70 +89,55 @@ const ProductRecommendations = ({ currentProductId, limit = 3 }) => {
     );
   }
 
-  if (recommendations.length === 0) {
-    return null;
-  }
-
   return (
-    <div className="mt-5">
-      <h4 className="mb-3">
-        {user ? (
-          <>
-            <FaLightbulb className="text-warning me-2" />
-            You Might Also Like
-          </>
-        ) : (
-          <>
-            <FaStar className="text-warning me-2" />
-            Similar Products
-          </>
-        )}
-      </h4>
-
-      <Row className="g-3">
-        {recommendations.map((recommendation, index) => (
-          <Col key={recommendation.product.id || index} md={4}>
-            <Card className="border-0 shadow-sm h-100">
-              <Card.Img
-                variant="top"
-                src={recommendation.product.image_url ? 
-                  `${BACKEND_BASE_URL}${recommendation.product.image_url}` : 
-                  '/assets/images/product-placeholder.png'}
-                alt={recommendation.product.name}
-                className="product-image"
-                width="300"
-                height="250"
-                style={{ height: '150px', objectFit: 'cover' }}
-                loading="lazy"
-                decoding="async"
-                onError={(e) => { e.target.src = '/assets/images/product-placeholder.png'; }}
-              />
-              <Card.Body className="d-flex flex-column p-3">
-                <Card.Title className="h6 mb-1">{recommendation.product.name}</Card.Title>
-                <Card.Text className="text-muted small mb-2 flex-grow-1">
-                  {recommendation.product.description
-                    ? recommendation.product.description.length > 60
-                      ? recommendation.product.description.substring(0, 60) + '…'
-                      : recommendation.product.description
-                    : ''}
-                </Card.Text>
-                <div className="d-flex justify-content-between align-items-center mt-auto">
-                  <span className="fw-bold text-primary">₱{parseFloat(recommendation.product.price).toFixed(2)}</span>
-                  <Button
-                    as={Link}
-                    to={`/products/${recommendation.product.id}`}
-                    variant="outline-primary"
-                    size="sm"
-                  >
-                    <FaShoppingCart size={12} />
-                  </Button>
+    <Row className="g-3">
+      {recommendations.map((rec, index) => (
+        <Col key={rec.product.id || index} xs={12} md={4}>
+          <Card className="h-100 border-0 shadow-sm">
+            <Link to={`/products/${rec.product.id}`}>
+              <div style={{ height: '140px', overflow: 'hidden' }}>
+                {rec.product.image_url ? (
+                  <img
+                    src={`${BACKEND_BASE_URL}${rec.product.image_url}`}
+                    alt={rec.product.name}
+                    className="w-100 h-100"
+                    style={{ objectFit: 'cover' }}
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="d-flex align-items-center justify-content-center h-100 bg-light">
+                    <FaLightbulb size={24} className="text-muted" />
+                  </div>
+                )}
+              </div>
+            </Link>
+            <Card.Body className="p-3">
+              <small className="text-muted">{rec.reason}</small>
+              <h6 className="mb-2">{rec.product.name}</h6>
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  <span className="fw-bold text-primary">₱{rec.product.price}</span>
+                  {rec.product.rating && (
+                    <div className="d-flex align-items-center mt-1">
+                      <FaStar className="text-warning me-1" size={12} />
+                      <small className="text-muted">{rec.product.rating}</small>
+                    </div>
+                  )}
                 </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-      </Row>
-    </div>
+                <Button
+                  as={Link}
+                  to={`/products/${rec.product.id}`}
+                  variant="outline-primary"
+                  size="sm"
+                >
+                  <FaShoppingCart size={14} />
+                </Button>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      ))}
+    </Row>
   );
 };
 

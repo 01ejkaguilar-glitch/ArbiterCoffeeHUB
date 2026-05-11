@@ -161,7 +161,7 @@ const EmployeeMyTasks = ({ theme = DEFAULT_THEME }) => {
   const [selected, setSelected]   = useState(null);
   const { toast, showToast, clearToast } = useToast();
 
-  const fetchTasks = useCallback(async () => {
+  const fetchTasks = async () => {
     try {
       setLoading(true);
       const res = await apiService.get(API_ENDPOINTS.WORKFORCE.MY_TASKS);
@@ -172,9 +172,9 @@ const EmployeeMyTasks = ({ theme = DEFAULT_THEME }) => {
     } finally {
       setLoading(false);
     }
-  }, [fetchTasks]);
+  };
 
-  useEffect(() => { fetchTasks(); }, [fetchTasks]);
+  useEffect(() => { fetchTasks(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateStatus = useCallback(async (taskId, newStatus) => {
     try {

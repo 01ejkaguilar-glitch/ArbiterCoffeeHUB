@@ -27,17 +27,17 @@ export const ToastProvider = ({ children }) => {
   const addToast = useCallback((message, type = 'info', duration = 5000) => {
     const id = Date.now() + Math.random();
     const toast = { id, message, type, duration };
-    
+
     setToasts((prev) => [...prev, toast]);
 
     if (duration > 0) {
       setTimeout(() => {
-        removeToast(id);
+        setToasts((prev) => prev.filter((t) => t.id !== id));
       }, duration);
     }
 
     return id;
-  }, [removeToast]);
+  }, []);
 
   const removeToast = useCallback((id) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));

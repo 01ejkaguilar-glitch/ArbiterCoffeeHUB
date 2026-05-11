@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Row, Col, Button, Spinner, Alert } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Card, Row, Col, Button, Spinner } from 'react-bootstrap';
 import { FaCoffee, FaShoppingCart, FaArrowRight } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -23,9 +23,10 @@ const HomepageRecommendations = () => {
     } else {
       fetchPopularProducts();
     }
-  }, [user, fetchPersonalizedRecommendations, fetchPopularProducts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
-  const fetchPersonalizedRecommendations = useCallback(async () => {
+  const fetchPersonalizedRecommendations = async () => {
     try {
       setLoading(true);
       const response = await apiService.get(API_ENDPOINTS.RECOMMENDATIONS.HOMEPAGE);
@@ -44,46 +45,47 @@ const HomepageRecommendations = () => {
         }
 
         if (recommended_coffee_beans && Array.isArray(recommended_coffee_beans)) {
-          recommended_coffee_beans.slice(0, 2).forEach(bean => {
+          recommended_coffee_beans.forEach(bean => {
             allRecommendations.push({
-              product: {
-                ...bean,
-                price: bean.price_per_kg,
-                is_coffee_bean: true
-              },
+              product: bean,
               score: is_authenticated ? 75 : 55,
-              reason: bean.reason || (is_authenticated ? 'Perfect bean match' : 'Featured selection')
+              reason: bean.reason || 'Premium coffee beans'
             });
           });
         }
 
-        setRecommendations(allRecommendations);
+        setRecommendations(allRecommendations.slice(0, 4));
       } else {
         await fetchPopularProducts();
       }
     } catch (err) {
       if (!isTransportError(err)) {
-        await fetchPopularProducts();
-      } else {
         setError('Unable to load recommendations');
       }
+      await fetchPopularProducts();
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  const fetchPopularProducts = useCallback(async () => {
+  const fetchPopularProducts = async () => {
     try {
       setLoading(true);
-      const response = await apiService.get(API_ENDPOINTS.PRODUCTS.LIST, { limit: 4 });
+      const response = await apiService.get(API_ENDPOINTS.PRODUCTS.LIST, { per_page: 8 });
       if (response.success && response.data) {
         const productsData = response.data.data || response.data;
         const productsArray = Array.isArray(productsData) ? productsData : [];
-        setRecommendations(productsArray.slice(0, 4).map(product => ({
-          product: product,
-          score: 50,
-          reason: 'Popular choice among our customers'
-        })));
+
+        const popular = productsArray
+          .sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0))
+          .slice(0, 4)
+          .map(product => ({
+            product,
+            score: 50,
+            reason: 'Best seller'
+          }));
+
+        setRecommendations(popular);
       } else {
         setRecommendations([]);
       }
@@ -92,27 +94,20 @@ const HomepageRecommendations = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   if (loading) {
     return (
       <div className="text-center py-4">
-        <Spinner animation="border" role="status" style={{ color: 'var(--color-dark-green)' }}>
+        <Spinner animation="border" size="sm" role="status">
           <span className="visually-hidden">Loading recommendations...</span>
         </Spinner>
-        <p style={{ color: 'var(--color-text-muted)', marginTop: 'var(--spacing-3)' }}>
-          Finding the perfect coffee for you...
-        </p>
       </div>
     );
   }
 
   if (error) {
-    return (
-      <Alert variant="warning" className="text-center">
-        <small>Unable to load personalized recommendations right now.</small>
-      </Alert>
-    );
+    return null;
   }
 
   if (recommendations.length === 0) {
@@ -120,70 +115,52 @@ const HomepageRecommendations = () => {
   }
 
   return (
-    <>
-      <Row className="g-4">
-        {recommendations.slice(0, 4).map((recommendation, index) => (
-          <Col key={recommendation.product.id || index} sm={6} lg={3}>
-            <Card className="product-card h-100 recommendation-card">
-              <div className="recommendation-img-wrap">
-                <Card.Img
-                  variant="top"
-                  src={recommendation.product.image_url
-                    ? `${BACKEND_BASE_URL}${recommendation.product.image_url}`
-                    : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjI1MCIgdmlld0JveD0iMCAwIDMwMCAyNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjUwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTI1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjM1ZW0iIGZpbGw9IiM5OTkiIGZvbnQtc2l6ZT0iMTYiPkNvZmZlZTwvdGV4dD4KPHN2Zz4='}
-                  alt={`${recommendation.product.name}${recommendation.product.description ? ` - ${recommendation.product.description.substring(0, 80)}` : ''}`}
-                    width="300"
-                    height="250"
-                  className="product-image"
-                  loading="lazy"
-                    decoding="async"
-                />
-              </div>
-              <Card.Body className="d-flex flex-column">
-                <Card.Title className="recommendation-title">{recommendation.product.name}</Card.Title>
-                <Card.Text className="recommendation-desc flex-grow-1">
-                  {recommendation.product.description?.substring(0, 80)}
-                  {recommendation.product.description?.length > 80 ? '...' : ''}
-                </Card.Text>
-                {recommendation.reason && (
-                  <div className="recommendation-reason">
-                    <FaCoffee className="me-1" />
-                    {recommendation.reason}
+    <Row className="g-3">
+      {recommendations.map((rec, index) => (
+        <Col key={rec.product.id || index} xs={6} md={3}>
+          <Card className="h-100 border-0 shadow-sm">
+            <Link to={`/products/${rec.product.id}`}>
+              <div className="card-image-container" style={{ height: '120px', overflow: 'hidden' }}>
+                {rec.product.image_url ? (
+                  <img
+                    src={`${BACKEND_BASE_URL}${rec.product.image_url}`}
+                    alt={rec.product.name}
+                    className="card-image"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="d-flex align-items-center justify-content-center h-100 bg-light">
+                    <FaCoffee size={32} className="text-muted" />
                   </div>
                 )}
-                <div className="d-flex justify-content-between align-items-center mt-auto pt-3"
-                  style={{ borderTop: '1px solid var(--color-border-default)' }}>
-                  <span className="recommendation-price">
-                    {recommendation.product.is_coffee_bean
-                      ? `₱${parseFloat(recommendation.product.price_per_kg || 0).toFixed(2)}/kg`
-                      : `₱${parseFloat(recommendation.product.price || 0).toFixed(2)}`
-                    }
-                  </span>
-                  <Button
-                    as={Link}
-                    to={recommendation.product.is_coffee_bean
-                      ? '/coffee-beans'
-                      : `/products/${recommendation.product.id}`
-                    }
-                    variant="primary"
-                    size="sm"
-                    className="recommendation-btn"
-                  >
-                    <FaShoppingCart size={12} className="me-1" /> View
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-      </Row>
-
-      <div className="text-center mt-5">
-        <Button as={Link} to="/products" variant="outline-primary" size="lg" className="px-4">
-          View All Products <FaArrowRight className="ms-2" />
-        </Button>
-      </div>
-    </>
+              </div>
+            </Link>
+            <Card.Body className="p-2">
+              <small className="text-muted">{rec.reason}</small>
+              <h6 className="mb-1" style={{ fontSize: '0.9rem' }}>{rec.product.name}</h6>
+              <div className="d-flex justify-content-between align-items-center">
+                <span className="fw-bold text-primary">₱{rec.product.price}</span>
+                <Button
+                  as={Link}
+                  to={`/products/${rec.product.id}`}
+                  variant="outline-primary"
+                  size="sm"
+                  className="py-0 px-2"
+                >
+                  <FaShoppingCart size={12} />
+                </Button>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      ))}
+      <Col xs={12} className="text-center mt-2">
+        <Link to="/products" className="btn btn-outline-primary btn-sm">
+          View All Products <FaArrowRight className="ms-1" />
+        </Link>
+      </Col>
+    </Row>
   );
 };
 
