@@ -84,8 +84,15 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/u843463747/domains/arbitercoffee.shop/public_html
-            # Verify React .htaccess exists
-            ls -la .htaccess
-            # Check React routes work
-            curl -s -o /dev/null -w "%{http_code}" https://arbitercoffee.shop/
+            cd /home/u843463747/domains/arbitercoffee.shop/public_html/api
+            # Install composer dependencies
+            composer install --no-dev --optimize-autoloader
+            # Clear and rebuild caches
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan route:clear
+            php artisan view:clear
+            # Set proper permissions
+            chmod -R 755 storage bootstrap/cache
+            # Verify installation
+            php artisan --version
