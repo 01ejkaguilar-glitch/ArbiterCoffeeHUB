@@ -41,50 +41,20 @@ jobs:
           php-version: "8.2"
           extensions: mbstring, xml, pdo_mysql
 
-      - name: Cache composer
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.composer/cache/files
-            vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-
       - name: Prepare public_html
         run: |
           rm -rf public_html/api
-          mkdir -p public_html/api
-          mkdir -p public_html/api/storage/logs
-          mkdir -p public_html/api/storage/framework/cache
-          mkdir -p public_html/api/storage/framework/sessions
-          mkdir -p public_html/api/storage/framework/views
-          mkdir -p public_html/api/bootstrap/cache
+          mkdir -p public_html/api/{storage/{logs,framework/{cache,sessions,views},bootstrap/cache},api}
           cp -r build/* public_html/
 
       - name: Copy Laravel files
         run: |
-          cp public/index.php public_html/api/
-          cp -r app public_html/api/
-          cp -r config public_html/api/
-          cp -r routes public_html/api/
-          cp -r bootstrap public_html/api/
-          cp -r storage public_html/api/
-          cp -r database public_html/api/
-          cp -r resources public_html/api/
-          cp -r lang public_html/api/ 2>/dev/null || true
-          cp artisan public_html/api/
-          cp composer.json public_html/api/
-          cp composer.lock public_html/api/
-          cp .env public_html/api/ 2>/dev/null || cp .env.example public_html/api/.env
-          cp -r public/.htaccess public_html/api/ 2>/dev/null || true
-          mkdir -p public_html/api/storage
-          mkdir -p public_html/api/storage/logs
-          mkdir -p public_html/api/storage/framework/cache
-          mkdir -p public_html/api/storage/framework/sessions
-          mkdir -p public_html/api/storage/framework/views
+          cp public/index.php artisan composer.json composer.lock .env public_html/api/ 2>/dev/null || cp public/index.php artisan composer.json composer.lock .env.example public_html/api/
+          cp -r app config routes bootstrap storage database resources public_html/api/
+          cp -r public/.htaccess lang public_html/api/ 2>/dev/null || true
+          mkdir -p public_html/api/storage/{logs,framework/{cache,sessions,views}}
 
-      - name: Deploy via FTPS
+      - name: Deploy via SFTP
         run: |
           # Only install lftp if not present (skip slow apt-get update)
           if ! command -v lftp &> /dev/null; then
@@ -94,12 +64,12 @@ jobs:
             echo "lftp already installed"
           fi
 
-          # Upload using lftp with FTPS
-          # Debug: show connection attempt
+          # Upload using lftp with SFTP - parallel transfers for speed
           echo "=== Connecting to SFTP server ==="
-          echo "Host: ${{ secrets.FTP_HOST }}"
-          echo "Port: ${{ secrets.FTP_PORT }}"
-          echo "User: ${{ secrets.FTP_USERNAME }}"
-
-          # Upload using SFTP (same as VS Code uses)
-          timeout 300 lftp -d -e "set sftp:connect-timeout 30; set net:timeout 30; mirror -R public_html/ /public_html/ --verbose; exit" -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" "sftp://${{ secrets.FTP_HOST }}:${{ secrets.FTP_PORT }}" 2>&1 || echo "lftp exit code: $?"
+          timeout 300 lftp -e "
+            set sftp:connect-timeout 30;
+            set net:timeout 30;
+            set net:max-retries 3;
+            mirror -R --parallel=10 --verbose public_html/ /public_html/;
+            exit
+          " -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" "sftp://${{ secrets.FTP_HOST }}:${{ secrets.FTP_PORT }}" 2>&1 || echo "lftp exit code: $?"
