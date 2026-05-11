@@ -67,13 +67,8 @@ jobs:
 
           echo "=== Uploading via SFTP ==="
 
-          # Use sshpass + sftp for more reliable upload
-          sshpass -p "$FTP_PASSWORD" sftp -o StrictHostKeyChecking=no -o ConnectTimeout=30 -P "$FTP_PORT" "$FTP_USERNAME@$FTP_HOST" <<EOF
-            mkdir -p /public_html
-            cd /public_html
-            mirror -R --parallel=3 public_html /public_html
-            bye
-EOF
+          # Use scp for reliable recursive upload
+          sshpass -p "$FTP_PASSWORD" scp -o StrictHostKeyChecking=no -o ConnectTimeout=30 -P "$FTP_PORT" -r public_html "$FTP_USERNAME@$FTP_HOST:/public_html/"
 
           echo "Upload complete!"
         env:
