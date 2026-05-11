@@ -96,10 +96,10 @@ jobs:
 
           # Upload using lftp with FTPS
           # Debug: show connection attempt
-          echo "=== Connecting to FTPS server ==="
+          echo "=== Connecting to SFTP server ==="
           echo "Host: ${{ secrets.FTP_HOST }}"
           echo "Port: ${{ secrets.FTP_PORT }}"
           echo "User: ${{ secrets.FTP_USERNAME }}"
 
-          # Upload with timeout and debug
-          timeout 300 lftp -d -e "set ftp:ssl-allow true; set ftp:ssl-force true; set ssl:verify-certificate no; set net:timeout 30; mirror -R public_html/ /public_html/ --verbose; exit" -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" "ftps://${{ secrets.FTP_HOST }}:${{ secrets.FTP_PORT }}" 2>&1 || echo "lftp exit code: $?"
+          # Upload using SFTP (same as VS Code uses)
+          timeout 300 lftp -d -e "set sftp:connect-timeout 30; set net:timeout 30; mirror -R public_html/ /public_html/ --verbose; exit" -u "${{ secrets.FTP_USERNAME }}","${{ secrets.FTP_PASSWORD }}" "sftp://${{ secrets.FTP_HOST }}:${{ secrets.FTP_PORT }}" 2>&1 || echo "lftp exit code: $?"
