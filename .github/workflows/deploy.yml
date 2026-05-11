@@ -66,8 +66,8 @@ jobs:
 
           echo "=== Uploading via SFTP ==="
 
-          # Upload using lftp with inline commands
-          lftp -c "set sftp:connect-timeout 20; set net:timeout 20; set mirror:parallel 5; open -u $FTP_USERNAME,$FTP_PASSWORD sftp://$FTP_HOST:$FTP_PORT; mirror -R public_html /public_html --verbose" && echo "Upload complete!" || { echo "Upload failed"; exit 1; }
+          # Upload using lftp with correct syntax
+          lftp -e "set net:timeout 15; set net:max-retries 2; mirror -R --parallel=3 public_html /public_html; bye" -u "$FTP_USERNAME" "$FTP_PASSWORD" "sftp://$FTP_HOST:$FTP_PORT" && echo "Upload complete!" || { echo "Upload failed"; exit 1; }
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_PORT: ${{ secrets.FTP_PORT }}
