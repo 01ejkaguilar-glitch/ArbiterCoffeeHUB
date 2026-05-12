@@ -103,4 +103,66 @@ class AuthenticationTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    /**
+     * Test user can refresh token
+     */
+    public function test_user_can_refresh_token(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('test-token')->plainTextToken;
+
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+        ])->postJson('/api/v1/auth/refresh-token');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    'token',
+                    'expires_in',
+                ],
+                'message',
+            ]);
+
+        // Verify the new token is different from the old one
+        $newToken = $response->json('data.token');
+        $this->assertNotEquals($token, $newToken);
+    }
+
+    /**
+     * Test user can refresh expired token
+     */
+    public function test_user_can_refresh_expired_token(): void
+    {
+        $user = User::factory()->create();
+
+        // Create a token that expired 1 day ago
+        $token = $user->createToken('test-token', ['*'], now()->subDay())->plainTextToken;
+
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+        ])->postJson('/api/v1/auth/refresh-token');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    'token',
+                    'expires_in',
+                ],
+                'message',
+            ]);
+
+        // Verify the new token is different from the old one
+        $newToken = $response->json('data.token');
+        $this->assertNotEquals($token, $newToken);
+
+        // Verify the new token is valid
+        $this->assertDatabaseHas('personal_access_tokens', [
+            'tokenable_id' => $user->id,
+            'token' => hash('sha256', $newToken),
+        ]);
+    }
 }

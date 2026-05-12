@@ -163,16 +163,30 @@ class AuthController extends BaseController
     {
         $user = $request->user();
 
-        // Delete current token
-        $user->currentAccessToken()->delete();
+        if (!$user) {
+            return $this->sendError('Unable to authenticate user', 401);
+        }
 
-        // Create new token with 7-day expiration
-        $token = $user->createToken('auth_token', ['*'], now()->addDays(7))->plainTextToken;
+        try {
+            // Delete current token
+            $user->currentAccessToken()->delete();
 
-        return $this->sendResponse([
-            'token' => $token,
-            'expires_in' => '7 days'
-        ], 'Token refreshed successfully');
+            // Create new token with 7-day expiration
+            $token = $user->createToken('auth_token', ['*'], now()->addDays(7))->plainTextToken;
+
+            return $this->sendResponse([
+                'token' => $token,
+                'expires_in' => '7 days'
+            ], 'Token refreshed successfully');
+        } catch (\Exception $e) {
+            Log::error('Token refresh failed', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return $this->sendError('Failed to refresh token', 500);
+        }
     }
 
     /**

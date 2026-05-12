@@ -83,8 +83,11 @@ Route::prefix('v1')->group(function () {
         Route::middleware('auth:sanctum')->group(function () {
             Route::post('/logout', [AuthController::class, 'logout']);
             Route::get('/user', [AuthController::class, 'user']);
-            Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
         });
+
+        // Refresh token route - uses custom middleware that allows expired tokens
+        Route::post('/refresh-token', [AuthController::class, 'refreshToken'])
+            ->middleware('auth.token-refresh');
 
         // Test-only debug endpoint to inspect headers during PHPUnit runs
         if (app()->environment('testing')) {

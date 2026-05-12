@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'cache.response' => \App\Http\Middleware\CacheResponse::class,
             'throttle.user' => \App\Http\Middleware\ThrottleByUser::class,
+            'auth.token-refresh' => \App\Http\Middleware\TokenRefreshMiddleware::class,
         ]);
 
         // Register Prerender middleware for web routes
