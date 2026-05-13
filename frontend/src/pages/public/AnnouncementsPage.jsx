@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Container, Row, Col, Button, Form, Badge, Pagination } from 'react-bootstrap';
 import { FaFacebookF, FaInstagram, FaSearch, FaCalendar } from 'react-icons/fa';
 import { FaTiktok } from 'react-icons/fa6';
@@ -26,22 +26,7 @@ const AnnouncementsPage = () => {
     { value: 'update', label: 'Updates' }
   ];
 
-  useEffect(() => {
-    fetchAnnouncements();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory, debouncedSearch, currentPage]);
-
-  // Debounce search input
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-      setCurrentPage(1);
-    }, 400);
-    return () => clearTimeout(debounceRef.current);
-  }, [searchTerm]);
-
-  const fetchAnnouncements = async () => {
+  const fetchAnnouncements = useCallback(async () => {
     try {
       setInitialLoading(true);
       const params = {
@@ -68,7 +53,21 @@ const AnnouncementsPage = () => {
     } finally {
       setInitialLoading(false);
     }
-  };
+  }, [currentPage, selectedCategory, debouncedSearch, searchTerm]);
+
+  useEffect(() => {
+    fetchAnnouncements();
+  }, [fetchAnnouncements]);
+
+  // Debounce search input
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
+    }, 400);
+    return () => clearTimeout(debounceRef.current);
+  }, [searchTerm]);
 
   const handleSearch = (e) => {
     e.preventDefault();

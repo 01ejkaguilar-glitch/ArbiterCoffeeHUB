@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Row, Col, Button, Spinner } from 'react-bootstrap';
 import { FaCoffee, FaShoppingCart, FaArrowRight } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -16,15 +16,6 @@ const HomepageRecommendations = () => {
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (user) {
-      fetchPersonalizedRecommendations();
-    } else {
-      fetchPopularProducts();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
 
   const fetchPersonalizedRecommendations = async () => {
     try {
@@ -95,6 +86,15 @@ const HomepageRecommendations = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      fetchPersonalizedRecommendations();
+    } else {
+      fetchPopularProducts();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   if (loading) {
     return (

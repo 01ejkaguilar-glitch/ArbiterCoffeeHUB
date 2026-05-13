@@ -51,7 +51,18 @@
       "Bash(git checkout *)",
       "Bash(Select-Object -Last 40)",
       "WebFetch(domain:www.hostinger.com)",
-      "WebFetch(domain:api.arbitercoffee.shop)"
+      "WebFetch(domain:api.arbitercoffee.shop)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\01ker\\\\ArbiterCoffeeHUB\\\\frontend\\\\src\\\\pages\" -Recurse -Directory)",
+      "Bash(Select-Object FullName)",
+      "Bash(pip install *)",
+      "Bash(unzip -l \"Requirement-Deliverable-Continues-update.docx\")",
+      "Bash(7z l *)",
+      "Bash(unzip -p \"Requirement-Deliverable-Continues-update.docx\" word/document.xml)",
+      "Bash(npm run *)",
+      "Bash(vendor/bin/phpunit *)",
+      "Bash(git restore *)",
+      "Bash(npx eslint *)"
     ]
-  }
+  },
+  "prefersReducedMotion": false
 }

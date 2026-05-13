@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Form, Button, Modal, Spinner } from 'react-bootstrap';
 import {
   FaUtensils, FaShoppingBag, FaTruck, FaClock, FaMapMarkerAlt,
@@ -71,6 +71,20 @@ const CheckoutPage = () => {
   const itemCount = cart?.items?.reduce((s, i) => s + i.quantity, 0) || 0;
   const canOrder = (orderType !== 'delivery' || !!selectedAddressId) && itemCount > 0;
 
+  /* addresses */
+  const fetchAddresses = useCallback(async () => {
+    try {
+      const response = await apiService.get(API_ENDPOINTS.CUSTOMER.ADDRESSES);
+      if (response.success) {
+        setAddresses(response.data);
+        const def = response.data.find((a) => a.is_default);
+        if (def) setSelectedAddressId(def.id);
+      }
+    } catch (err) {
+      // Addresses fetch error
+    }
+  }, []);
+
   /* boot */
   useEffect(() => {
     if (!isAuthenticated) {
@@ -82,22 +96,7 @@ const CheckoutPage = () => {
       return;
     }
     fetchAddresses();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
-
-  /* addresses */
-  const fetchAddresses = async () => {
-    try {
-      const response = await apiService.get(API_ENDPOINTS.CUSTOMER.ADDRESSES);
-      if (response.success) {
-        setAddresses(response.data);
-        const def = response.data.find((a) => a.is_default);
-        if (def) setSelectedAddressId(def.id);
-      }
-    } catch (err) {
-      // Addresses fetch error
-    }
-  };
+  }, [isAuthenticated, cart, navigate, fetchAddresses]);
 
   const handleAddAddress = async (form) => {
     try {

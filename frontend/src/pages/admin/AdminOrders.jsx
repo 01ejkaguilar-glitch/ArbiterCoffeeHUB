@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Modal, Alert } from 'react-bootstrap';
 import {
   FaEye, FaRedo, FaWifi, FaBell,
@@ -81,13 +81,7 @@ const AdminOrders = () => {
     return () => clearTimeout(t);
   }, [search]);
 
-  // Refetch whenever page, perPage, debounced search, or filters change
-  useEffect(() => {
-    fetchOrders();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, perPage, debouncedSearch, filterStatus, filterType]);
-
-  const fetchOrders = async (showRefreshIndicator = false) => {
+  const fetchOrders = useCallback(async (showRefreshIndicator = false) => {
     try {
       if (showRefreshIndicator) setRefreshing(true);
       else setLoading(true);
@@ -126,7 +120,12 @@ const AdminOrders = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [page, perPage, debouncedSearch, filterStatus, filterType]);
+
+  // Refetch whenever page, perPage, debounced search, or filters change
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const handleViewOrder = (order) => {
     setSelectedOrder(order);

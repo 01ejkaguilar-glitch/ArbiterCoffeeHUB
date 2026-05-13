@@ -74,7 +74,10 @@ const EmployeeAttendance = ({ theme = DEFAULT_THEME }) => {
     }
   };
 
-  useEffect(() => { fetchAttendance(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    fetchAttendance();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleClockIn = async () => {
     setActing(true);

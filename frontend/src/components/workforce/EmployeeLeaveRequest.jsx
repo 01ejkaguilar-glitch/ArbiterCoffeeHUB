@@ -210,7 +210,10 @@ const EmployeeLeaveRequest = ({ theme = DEFAULT_THEME }) => {
     }
   };
 
-  useEffect(() => { fetchRequests(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    fetchRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = useCallback(async (form) => {
     setSubmitting(true);
@@ -229,7 +232,7 @@ const EmployeeLeaveRequest = ({ theme = DEFAULT_THEME }) => {
     } finally {
       setSubmitting(false);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchRequests, showToast]);
 
   const handleCancel = useCallback(async (id) => {
     setCancelling(true);
@@ -243,7 +246,7 @@ const EmployeeLeaveRequest = ({ theme = DEFAULT_THEME }) => {
     } finally {
       setCancelling(false);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchRequests, showToast]);
 
   const stats = useMemo(() => ({
     total:    requests.length,

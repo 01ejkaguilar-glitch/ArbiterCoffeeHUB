@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Container, Row, Col, Button, Spinner } from 'react-bootstrap';
 import {
@@ -48,10 +48,22 @@ const OrderDetailPage = () => {
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
+  const fetchOrder = useCallback(async (isRefresh = false) => {
+    try {
+      isRefresh ? setRefreshing(true) : setLoading(true);
+      setError(null);
+      const res = await apiService.get(API_ENDPOINTS.ORDERS.DETAIL(id));
+      if (res.success) setOrder(res.data);
+      else setError('Failed to load order details');
+    } catch (e) {
+      console.error('Error fetching order:', e);
+      setError('Failed to load order details. Please try again.');
+    } finally { setLoading(false); setRefreshing(false); }
+  }, [id]);
+
   useEffect(() => {
     fetchOrder();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [fetchOrder]);
 
   // Auto-refresh for active orders (pending, confirmed, preparing, ready)
   useEffect(() => {
@@ -63,21 +75,7 @@ const OrderDetailPage = () => {
     }, 30000); // Poll every 30 seconds
 
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order?.status, id]);
-
-  const fetchOrder = async (isRefresh = false) => {
-    try {
-      isRefresh ? setRefreshing(true) : setLoading(true);
-      setError(null);
-      const res = await apiService.get(API_ENDPOINTS.ORDERS.DETAIL(id));
-      if (res.success) setOrder(res.data);
-      else setError('Failed to load order details');
-    } catch (e) {
-      console.error('Error fetching order:', e);
-      setError('Failed to load order details. Please try again.');
-    } finally { setLoading(false); setRefreshing(false); }
-  };
+  }, [order?.status, fetchOrder]);
 
   const handleCancelOrder = async () => {
     if (!window.confirm('Are you sure you want to cancel this order?')) return;

@@ -174,7 +174,10 @@ const EmployeeMyTasks = ({ theme = DEFAULT_THEME }) => {
     }
   };
 
-  useEffect(() => { fetchTasks(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    fetchTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateStatus = useCallback(async (taskId, newStatus) => {
     try {

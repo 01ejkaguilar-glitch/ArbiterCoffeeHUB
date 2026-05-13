@@ -25,43 +25,46 @@ export const CartProvider = ({ children }) => {
 
   // Load cart from localStorage for guests, or fetch from API for authenticated users
   useEffect(() => {
+    const loadLocalCart = () => {
+      const localCart = localStorage.getItem('guestCart');
+      if (localCart) {
+        setCart(JSON.parse(localCart));
+      } else {
+        setCart({ items: [], subtotal: 0 });
+      }
+    };
+
+    const mergeGuestCartThenFetch = async () => {
+      try {
+        const localCartRaw = localStorage.getItem('guestCart');
+        if (localCartRaw) {
+          const guestCart = JSON.parse(localCartRaw);
+          if (guestCart.items && guestCart.items.length > 0) {
+            // Add each guest item to the server cart in parallel
+            await Promise.allSettled(
+              guestCart.items.map(item =>
+                apiService.post(API_ENDPOINTS.CART.ADD_ITEM, {
+                  product_id: item.product_id,
+                  quantity: item.quantity,
+                  special_instructions: item.special_instructions || '',
+                })
+              )
+            );
+          }
+          localStorage.removeItem('guestCart');
+        }
+      } catch (err) {
+        localStorage.removeItem('guestCart');
+      }
+      await fetchCart();
+    };
+
     if (isAuthenticated) {
       mergeGuestCartThenFetch();
     } else {
       loadLocalCart();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
-
-  /**
-   * On login, merge any guest cart items into the server cart, then fetch.
-   */
-  const mergeGuestCartThenFetch = async () => {
-    try {
-      const localCartRaw = localStorage.getItem('guestCart');
-      if (localCartRaw) {
-        const guestCart = JSON.parse(localCartRaw);
-        if (guestCart.items && guestCart.items.length > 0) {
-          // Add each guest item to the server cart
-          for (const item of guestCart.items) {
-            try {
-              await apiService.post(API_ENDPOINTS.CART.ADD_ITEM, {
-                product_id: item.product_id,
-                quantity: item.quantity,
-                special_instructions: item.special_instructions || '',
-              });
-            } catch (err) {
-              // Item may no longer be available — skip silently
-            }
-          }
-        }
-        localStorage.removeItem('guestCart');
-      }
-    } catch (err) {
-      localStorage.removeItem('guestCart');
-    }
-    await fetchCart();
-  };
+  }, [isAuthenticated, fetchCart]);
 
   // Memoize cartCount from cart to avoid separate state
   const cartCount = useMemo(() => {
@@ -86,15 +89,6 @@ export const CartProvider = ({ children }) => {
       setLoading(false);
     }
   }, [isAuthenticated]);
-
-  const loadLocalCart = () => {
-    const localCart = localStorage.getItem('guestCart');
-    if (localCart) {
-      setCart(JSON.parse(localCart));
-    } else {
-      setCart({ items: [], subtotal: 0 });
-    }
-  };
 
   const saveLocalCart = (cartData) => {
     localStorage.setItem('guestCart', JSON.stringify(cartData));

@@ -62,7 +62,6 @@ export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false)
         }
       };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channelName, isPrivate]);
 
   return {

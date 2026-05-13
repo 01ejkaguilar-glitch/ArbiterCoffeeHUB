@@ -86,7 +86,10 @@ const EmployeeMyShifts = ({ theme = DEFAULT_THEME }) => {
     }
   };
 
-  useEffect(() => { fetchShifts(viewMonth, viewYear); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    fetchShifts(viewMonth, viewYear);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMonth, viewYear]);
 
   const prevMonth = () => {
     if (viewMonth === 1) { setViewMonth(12); setViewYear(y => y - 1); }

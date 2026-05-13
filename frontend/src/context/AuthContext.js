@@ -22,116 +22,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Check if user is logged in on mount
-  useEffect(() => {
-    checkAuth();
-
-    // Listen for online/offline events
-    const handleOnline = () => {
-      checkAuth();
-    };
-
-    const handleOffline = () => {
-      // User went offline
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const login = useCallback(async (email, password, rememberMe = false) => {
-    try {
-      const response = await apiService.post(API_ENDPOINTS.AUTH.LOGIN, {
-        email,
-        password,
-      });
-
-      if (response.success) {
-        const { token, user } = response.data;
-
-        // Normalize roles to an array (same as register/checkAuth)
-        const normalizedUser = {
-          ...user,
-          roles: Array.isArray(user.roles) ? user.roles : (user.roles ? Object.values(user.roles) : [])
-        };
-
-        // Calculate token expiry based on rememberMe
-        const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + (rememberMe ? 30 : 7));
-
-        const storage = rememberMe ? localStorage : sessionStorage;
-        // Clear both storages first
-        ['authToken', 'user', 'tokenExpiry', 'sessionOnly'].forEach(k => {
-          localStorage.removeItem(k);
-          sessionStorage.removeItem(k);
-        });
-        // Store in chosen storage (localStorage or sessionStorage)
-        storage.setItem('authToken', token);
-        storage.setItem('user', JSON.stringify(normalizedUser));
-        storage.setItem('tokenExpiry', expiryDate.toISOString());
-        storage.setItem('sessionOnly', (!rememberMe).toString());
-        // Also store in localStorage for checkAuth compatibility
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('user', JSON.stringify(normalizedUser));
-        localStorage.setItem('tokenExpiry', expiryDate.toISOString());
-        localStorage.setItem('sessionOnly', (!rememberMe).toString());
-
-        setUser(normalizedUser);
-        setIsAuthenticated(true);
-        return { success: true, user: normalizedUser };
-      }
-
-      return { success: false, message: response.message };
-    } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Login failed',
-      };
-    }
-  }, []);
-
-  const register = useCallback(async (userData) => {
-    try {
-      const response = await apiService.post(API_ENDPOINTS.AUTH.REGISTER, userData);
-      
-      if (response.success) {
-        const { token, user } = response.data;
-
-        // Calculate token expiry (expires_in is "7 days")
-        const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + 7); // Add 7 days
-
-        // Ensure roles is an array
-        const normalizedUser = {
-          ...user,
-          roles: Array.isArray(user.roles) ? user.roles : (user.roles ? Object.values(user.roles) : [])
-        };
-
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('user', JSON.stringify(normalizedUser));
-        localStorage.setItem('tokenExpiry', expiryDate.toISOString());
-
-        setUser(normalizedUser);
-        setIsAuthenticated(true);
-        return { success: true, user: normalizedUser };
-      }
-      
-      return { success: false, message: response.message };
-    } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Registration failed',
-        errors: error.response?.data?.errors || {},
-      };
-    }
-  }, []);
-
   const logout = useCallback(async () => {
     try {
       await apiService.post(API_ENDPOINTS.AUTH.LOGOUT);
@@ -163,32 +53,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return false;
     }
-  }, []);
-
-  // Periodic token refresh (every 6 hours when user is active)
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const refreshInterval = setInterval(async () => {
-      const tokenExpiry = localStorage.getItem('tokenExpiry');
-      if (tokenExpiry) {
-        const expiryDate = new Date(tokenExpiry);
-        const now = new Date();
-        const timeUntilExpiry = expiryDate - now;
-
-        // Refresh if token expires within 2 hours
-        if (timeUntilExpiry < 2 * 60 * 60 * 1000) {
-          await refreshToken();
-        }
-      }
-    }, 6 * 60 * 60 * 1000); // Check every 6 hours
-
-    return () => clearInterval(refreshInterval);
-  }, [isAuthenticated, refreshToken]);
-
-  const updateUser = useCallback((updatedUser) => {
-    setUser(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
   }, []);
 
   const checkAuth = useCallback(async () => {
@@ -279,6 +143,141 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   }, [logout, refreshToken]);
+
+  // Check if user is logged in on mount
+  useEffect(() => {
+    checkAuth();
+
+    // Listen for online/offline events
+    const handleOnline = () => {
+      checkAuth();
+    };
+
+    const handleOffline = () => {
+      // User went offline
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [checkAuth]);
+
+  const login = useCallback(async (email, password, rememberMe = false) => {
+    try {
+      const response = await apiService.post(API_ENDPOINTS.AUTH.LOGIN, {
+        email,
+        password,
+      });
+
+      if (response.success) {
+        const { token, user } = response.data;
+
+        // Normalize roles to an array (same as register/checkAuth)
+        const normalizedUser = {
+          ...user,
+          roles: Array.isArray(user.roles) ? user.roles : (user.roles ? Object.values(user.roles) : [])
+        };
+
+        // Calculate token expiry based on rememberMe
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + (rememberMe ? 30 : 7));
+
+        const storage = rememberMe ? localStorage : sessionStorage;
+        // Clear both storages first
+        ['authToken', 'user', 'tokenExpiry', 'sessionOnly'].forEach(k => {
+          localStorage.removeItem(k);
+          sessionStorage.removeItem(k);
+        });
+        // Store in chosen storage (localStorage or sessionStorage)
+        storage.setItem('authToken', token);
+        storage.setItem('user', JSON.stringify(normalizedUser));
+        storage.setItem('tokenExpiry', expiryDate.toISOString());
+        storage.setItem('sessionOnly', (!rememberMe).toString());
+        // Also store in localStorage for checkAuth compatibility
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('user', JSON.stringify(normalizedUser));
+        localStorage.setItem('tokenExpiry', expiryDate.toISOString());
+        localStorage.setItem('sessionOnly', (!rememberMe).toString());
+
+        setUser(normalizedUser);
+        setIsAuthenticated(true);
+        return { success: true, user: normalizedUser };
+      }
+
+      return { success: false, message: response.message };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Login failed',
+      };
+    }
+  }, []);
+
+  const register = useCallback(async (userData) => {
+    try {
+      const response = await apiService.post(API_ENDPOINTS.AUTH.REGISTER, userData);
+      
+      if (response.success) {
+        const { token, user } = response.data;
+
+        // Calculate token expiry (expires_in is "7 days")
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 7); // Add 7 days
+
+        // Ensure roles is an array
+        const normalizedUser = {
+          ...user,
+          roles: Array.isArray(user.roles) ? user.roles : (user.roles ? Object.values(user.roles) : [])
+        };
+
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('user', JSON.stringify(normalizedUser));
+        localStorage.setItem('tokenExpiry', expiryDate.toISOString());
+
+        setUser(normalizedUser);
+        setIsAuthenticated(true);
+        return { success: true, user: normalizedUser };
+      }
+      
+      return { success: false, message: response.message };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Registration failed',
+        errors: error.response?.data?.errors || {},
+      };
+    }
+  }, []);
+
+  // Periodic token refresh (every 6 hours when user is active)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const refreshInterval = setInterval(async () => {
+      const tokenExpiry = localStorage.getItem('tokenExpiry');
+      if (tokenExpiry) {
+        const expiryDate = new Date(tokenExpiry);
+        const now = new Date();
+        const timeUntilExpiry = expiryDate - now;
+
+        // Refresh if token expires within 2 hours
+        if (timeUntilExpiry < 2 * 60 * 60 * 1000) {
+          await refreshToken();
+        }
+      }
+    }, 6 * 60 * 60 * 1000); // Check every 6 hours
+
+    return () => clearInterval(refreshInterval);
+  }, [isAuthenticated, refreshToken]);
+
+  const updateUser = useCallback((updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  }, []);
 
   const value = useMemo(() => ({
     user,
