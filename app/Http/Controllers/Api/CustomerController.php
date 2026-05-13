@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 
 class CustomerController extends BaseController
 {
@@ -587,14 +586,6 @@ class CustomerController extends BaseController
                 'email' => 'deactivated_' . time() . '_' . $user->email,
                 'deleted_at' => now(),
             ]);
-
-            // Log the deactivation reason if provided
-            if ($request->has('reason')) {
-                Log::info('Account deactivated', [
-                    'user_id' => $user->id,
-                    'reason' => $request->input('reason'),
-                ]);
-            }
 
             // Revoke all tokens for this user (Sanctum)
             $user->tokens()->delete();

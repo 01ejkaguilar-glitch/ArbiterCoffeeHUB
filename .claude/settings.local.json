@@ -61,7 +61,13 @@
       "Bash(npm run *)",
       "Bash(vendor/bin/phpunit *)",
       "Bash(git restore *)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(./vendor/bin/phpunit)",
+      "Bash(npm test *)",
+      "Bash(./vendor/bin/phpunit --testdox)",
+      "Bash(./vendor/bin/phpunit --list-tests)",
+      "Bash(./vendor/bin/phpunit --filter \"test_that_true_is_true\")",
+      "Bash(./vendor/bin/phpunit --filter \"test_product_has_fillable_attributes\")"
     ]
   },
   "prefersReducedMotion": false
