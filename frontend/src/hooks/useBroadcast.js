@@ -62,7 +62,7 @@ export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false)
         }
       };
     }
-  }, [channelName, isPrivate]);
+  }, [channelName, isPrivate, eventHandlers]);
 
   return {
     isConnected,

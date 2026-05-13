@@ -23,6 +23,22 @@ export const CartProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const { isAuthenticated } = useAuth();
 
+  const fetchCart = useCallback(async () => {
+    if (!isAuthenticated) return;
+
+    try {
+      setLoading(true);
+      const response = await apiService.get(API_ENDPOINTS.CART.GET);
+      if (response.success) {
+        setCart(response.data);
+      }
+    } catch (error) {
+      // Error fetching cart - handled gracefully
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
+
   // Load cart from localStorage for guests, or fetch from API for authenticated users
   useEffect(() => {
     const loadLocalCart = () => {
@@ -73,22 +89,6 @@ export const CartProvider = ({ children }) => {
     }
     return 0;
   }, [cart]);
-
-  const fetchCart = useCallback(async () => {
-    if (!isAuthenticated) return;
-    
-    try {
-      setLoading(true);
-      const response = await apiService.get(API_ENDPOINTS.CART.GET);
-      if (response.success) {
-        setCart(response.data);
-      }
-    } catch (error) {
-      // Error fetching cart - handled gracefully
-    } finally {
-      setLoading(false);
-    }
-  }, [isAuthenticated]);
 
   const saveLocalCart = (cartData) => {
     localStorage.setItem('guestCart', JSON.stringify(cartData));

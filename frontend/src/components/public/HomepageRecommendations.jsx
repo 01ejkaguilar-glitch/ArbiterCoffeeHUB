@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Button, Spinner } from 'react-bootstrap';
 import { FaCoffee, FaShoppingCart, FaArrowRight } from 'react-icons/fa';
 import { Link } from 'react-router-dom';

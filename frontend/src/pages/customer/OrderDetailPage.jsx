@@ -75,7 +75,7 @@ const OrderDetailPage = () => {
     }, 30000); // Poll every 30 seconds
 
     return () => clearInterval(interval);
-  }, [order?.status, fetchOrder]);
+  }, [order, fetchOrder]);
 
   const handleCancelOrder = async () => {
     if (!window.confirm('Are you sure you want to cancel this order?')) return;

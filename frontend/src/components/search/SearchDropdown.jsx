@@ -97,7 +97,7 @@ const SearchDropdown = ({
   const hasMoreResults = results.length > maxResults;
 
   // Handle result click - must be defined before handleKeyDown
-  const handleResultClick = (product) => {
+  const handleResultClick = useCallback((product) => {
     handleSubmit(query);
     if (onResultClick) {
       onResultClick(product);
@@ -105,16 +105,16 @@ const SearchDropdown = ({
       navigate(`/products/${product.id}`);
     }
     clearSearch();
-  };
+  }, [query, handleSubmit, onResultClick, navigate, clearSearch]);
 
   // Handle search submission - must be defined before handleKeyDown
-  const handleSearchSubmit = () => {
+  const handleSearchSubmit = useCallback(() => {
     if (query.trim()) {
       handleSubmit(query);
       navigate(`/products?search=${encodeURIComponent(query.trim())}`);
       clearSearch();
     }
-  };
+  }, [query, handleSubmit, navigate, clearSearch]);
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback((e) => {

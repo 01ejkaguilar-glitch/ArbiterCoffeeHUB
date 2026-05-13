@@ -196,7 +196,7 @@ const EmployeeLeaveRequest = ({ theme = DEFAULT_THEME }) => {
   const [cancelling, setCancelling] = useState(false);
   const { toast, showToast, clearToast } = useToast();
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     try {
       setLoading(true);
       const res = await apiService.get(API_ENDPOINTS.WORKFORCE.LEAVE_REQUESTS);
@@ -208,12 +208,11 @@ const EmployeeLeaveRequest = ({ theme = DEFAULT_THEME }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     fetchRequests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchRequests]);
 
   const handleSubmit = useCallback(async (form) => {
     setSubmitting(true);
