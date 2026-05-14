@@ -1,4 +1,3 @@
-import BottomNavigation from '../../components/mobile/BottomNavigation';
 import PullToRefresh from '../../components/mobile/PullToRefresh';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, Spinner, Form } from 'react-bootstrap';
@@ -681,7 +680,6 @@ const CustomerProfile = () => {
         </div>
       </Modal>
       </PullToRefresh>
-      <BottomNavigation />
     </main>
   );
 };

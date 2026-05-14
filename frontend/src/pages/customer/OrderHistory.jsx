@@ -1,4 +1,3 @@
-import BottomNavigation from '../../components/mobile/BottomNavigation';
 import PullToRefresh from '../../components/mobile/PullToRefresh';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Container, Row, Col, Card, Badge, Button, Table, Spinner, Alert, Form, InputGroup, Dropdown, Pagination } from 'react-bootstrap';
@@ -579,7 +578,6 @@ Thank you for your business!
       </Row>
     </Container>
   </PullToRefresh>
-      <BottomNavigation />
     </main>
   );
 };

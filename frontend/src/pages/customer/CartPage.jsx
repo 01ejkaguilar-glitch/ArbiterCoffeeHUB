@@ -2,7 +2,6 @@ import React from 'react';
 import { Row, Col, Card, Button, Table } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import PageShell from '../../components/layout/PageShell';
-import BottomNavigation from '../../components/mobile/BottomNavigation';
 import PullToRefresh from '../../components/mobile/PullToRefresh';
 import { FaTrash } from 'react-icons/fa';
 import { useCart } from '../../context/CartContext';
@@ -130,7 +129,6 @@ const CartPage = () => {
           </Col>
         </Row>
       </PullToRefresh>
-      <BottomNavigation />
     </PageShell>
   );
 }

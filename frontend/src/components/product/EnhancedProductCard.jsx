@@ -3,7 +3,7 @@ import { Card, Badge, Button } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import { FaShoppingCart, FaHeart, FaRegHeart, FaEye, FaCheckCircle, FaTimesCircle, FaStar } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { BACKEND_BASE_URL } from '../../config/api';
+import { resolveMediaUrl } from '../../config/api';
 import './EnhancedProductCard.css';
 
 /**
@@ -31,9 +31,7 @@ const EnhancedProductCard = ({
 
   if (!product) return null;
 
-  const productImage = product.image_url 
-    ? `${BACKEND_BASE_URL}${product.image_url}` 
-    : null;
+  const productImage = resolveMediaUrl(product.image_url);
 
   const isInStock = product.stock_quantity > 0;
   const isLowStock = product.stock_quantity > 0 && product.stock_quantity <= 5;

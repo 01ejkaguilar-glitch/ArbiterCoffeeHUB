@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Alert } from 'react-bootstrap';
 import { FaPlus, FaBoxOpen, FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaLayerGroup } from 'react-icons/fa';
 import apiService from '../../services/api.service';
-import { API_ENDPOINTS, BACKEND_BASE_URL } from '../../config/api';
+import { API_ENDPOINTS, resolveMediaUrl } from '../../config/api';
 import ProductFormModal from './components/ProductFormModal';
 import ProductTable from './components/ProductTable';
 import BatchActionModal from './components/BatchActionModal';
@@ -91,7 +91,7 @@ const AdminProducts = () => {
       });
       // Set existing image for preview
       setExistingImage(product.image_url || null);
-      setImagePreview(product.image_url ? `${BACKEND_BASE_URL}${product.image_url}` : null);
+      setImagePreview(resolveMediaUrl(product.image_url));
     } else {
       setEditingProduct(null);
       setFormData({
@@ -121,7 +121,7 @@ const AdminProducts = () => {
       ...formData,
       image: null
     });
-    setImagePreview(existingImage ? `${BACKEND_BASE_URL}${existingImage}` : null);
+    setImagePreview(existingImage ? resolveMediaUrl(existingImage) : null);
   };
 
   const handleChange = (e) => {
@@ -141,7 +141,7 @@ const AdminProducts = () => {
         };
         reader.readAsDataURL(file);
       } else {
-        setImagePreview(existingImage ? `${BACKEND_BASE_URL}${existingImage}` : null);
+        setImagePreview(existingImage ? resolveMediaUrl(existingImage) : null);
       }
     } else {
       setFormData({
@@ -470,10 +470,10 @@ const AdminProducts = () => {
         products={filteredProducts}
         categories={categories}
         selectedProducts={selectedProducts}
-        onToggleSelection={toggleProductSelection}
-        onToggleSelectAll={toggleSelectAll}
-        onEdit={handleShowModal}
-        onDelete={handleDelete}
+        toggleProductSelection={toggleProductSelection}
+        toggleSelectAll={toggleSelectAll}
+        handleShowModal={handleShowModal}
+        handleDelete={handleDelete}
       />
 
       {/* Form Modal */}

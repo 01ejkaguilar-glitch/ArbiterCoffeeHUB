@@ -2,12 +2,11 @@ import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
 import { FaShoppingCart, FaMinus, FaPlus, FaHeart, FaRegHeart, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
-import { BACKEND_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import { API_ENDPOINTS, resolveMediaUrl } from '../../config/api';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import LoadingFallback from '../../components/common/LoadingFallback';
 import { useProduct } from '../../hooks/useProducts';
-import BottomNavigation from '../../components/mobile/BottomNavigation';
 import SwipeableGallery from '../../components/mobile/SwipeableGallery';
 import SEO from '../../components/SEO';
 import { ProductSchema, BreadcrumbSchema } from '../../components/StructuredData';
@@ -143,9 +142,7 @@ const ProductDetailPage = () => {
     );
   }
 
-  const productImage = product.image_url
-    ? `${BACKEND_BASE_URL}${product.image_url}`
-    : '/assets/images/product-placeholder.png';
+  const productImage = resolveMediaUrl(product.image_url) || '/assets/images/product-placeholder.png';
 
   const isInStock = product.stock_quantity > 0;
 
@@ -297,7 +294,6 @@ const ProductDetailPage = () => {
 
 
       </Container>
-      <BottomNavigation />
     </main>
   );
 };

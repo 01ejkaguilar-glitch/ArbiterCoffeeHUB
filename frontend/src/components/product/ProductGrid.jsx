@@ -2,7 +2,7 @@ import React from 'react';
 import { Row, Col, Card, Button, Badge } from 'react-bootstrap';
 import { FaPlus, FaHeart, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { BACKEND_BASE_URL } from '../../config/api';
+import { resolveMediaUrl } from '../../config/api';
 import { ProductCardSkeleton, SkeletonGroup } from '../animations/LoadingSkeleton';
 import { FadeInOnScroll } from '../animations/AnimationWrappers';
 import EnhancedProductCard from './EnhancedProductCard';
@@ -94,7 +94,7 @@ function ProductGrid({
                 </div>
                 <Card.Img
                   variant="top"
-                  src={product.image_url ? `${BACKEND_BASE_URL}${product.image_url}` : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjI1MCIgdmlld0JveD0iMCAwIDMwMCAyNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjUwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTI1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjM1ZW0iIGZpbGw9IiM5OTkiIGZvbnQtc2l6ZT0iMTYiPkNvZmZlZTwvdGV4dD4KPHN2Zz4='}
+                  src={resolveMediaUrl(product.image_url) || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjI1MCIgdmlld0JveD0iMCAwIDMwMCAyNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMjUwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTI1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjM1ZW0iIGZpbGw9IiM5OTkiIGZvbnQtc2l6ZT0iMTYiPkNvZmZlZTwvdGV4dD4KPHN2Zz4='}
                   alt={`${product.name}${product.category?.name ? ` - ${product.category.name}` : ''}`}
                   loading="lazy"
                   className="product-image img-h-200"

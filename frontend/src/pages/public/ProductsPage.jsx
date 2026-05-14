@@ -7,7 +7,6 @@ import { API_ENDPOINTS } from '../../config/api';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { useProducts } from '../../hooks/useProducts';
-import BottomNavigation from '../../components/mobile/BottomNavigation';
 import PullToRefresh from '../../components/mobile/PullToRefresh';
 import { useCategories } from '../../hooks/useCategories';
 import SEO from '../../components/SEO';
@@ -302,7 +301,6 @@ const ProductsPage = () => {
         </section>
       </Container>
     </PullToRefresh>
-      <BottomNavigation />
     </main>
   );
 };

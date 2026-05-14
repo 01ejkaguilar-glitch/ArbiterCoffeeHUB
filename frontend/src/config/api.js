@@ -62,8 +62,20 @@ const API_BASE_URL = resolveApiBaseUrl();
 
 const BACKEND_BASE_URL = resolveBackendBaseUrl();
 
+const resolveMediaUrl = (path) => {
+  if (!path) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(path) || path.startsWith('data:') || path.startsWith('blob:')) {
+    return path;
+  }
+
+  return `${BACKEND_BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+};
+
 export default API_BASE_URL;
-export { BACKEND_BASE_URL };
+export { BACKEND_BASE_URL, resolveMediaUrl };
 
 export const API_ENDPOINTS = {
   // Authentication
