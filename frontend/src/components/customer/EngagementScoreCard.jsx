@@ -67,7 +67,6 @@ const EngagementScoreCard = () => {
   }
 
   const score = engagementData?.cei_score || 0;
-  const percentile = engagementData?.percentile || 50; // Default to 50th percentile if not provided
   const tier = engagementData?.engagement_level || 'Bronze';
 
   return (
@@ -93,7 +92,7 @@ const EngagementScoreCard = () => {
         <div className="d-flex justify-content-between align-items-center mb-2">
           <small className="text-muted">
             <FaUsers className="me-1" />
-            Top {100 - percentile}%
+            Based on the last 90 days
           </small>
           <Badge bg={tier === 'Gold' ? 'warning' : tier === 'Silver' ? 'secondary' : 'bronze'} className="fs-6">
             {tier}

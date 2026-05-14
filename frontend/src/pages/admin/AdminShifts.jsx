@@ -10,6 +10,10 @@ import './AdminWorkforce.css';
 
 const DAYS   = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const fmtTime = t => t ? t.slice(0, 5) : '—';
+const normalizeShift = (shift, fallbackDate = '') => ({
+  ...shift,
+  shift_date: shift.shift_date || shift.date || fallbackDate || '',
+});
 const getWeekStart = (d = new Date()) => {
   const day = new Date(d);
   day.setDate(day.getDate() - day.getDay());
@@ -51,7 +55,8 @@ const AdminShifts = () => {
     try {
       const res = await apiService.get(API_ENDPOINTS.WORKFORCE.SHIFTS);
       if (res.success) {
-        const d = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        const raw = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        const d = Array.isArray(raw) ? raw.map(shift => normalizeShift(shift)) : [];
         setShifts(d);
         const today = new Date().toISOString().slice(0, 10);
         setStats({
@@ -69,7 +74,15 @@ const AdminShifts = () => {
     try {
       const params = `?week_start=${currentWeek.toISOString().slice(0, 10)}`;
       const res = await apiService.get(`${API_ENDPOINTS.WORKFORCE.WEEKLY_SCHEDULE}${params}`);
-      if (res.success) setWeeklyData(Array.isArray(res.data) ? res.data : (res.data?.data || []));
+      if (res.success) {
+        const raw = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        const flattened = Array.isArray(raw)
+          ? raw.map(shift => normalizeShift(shift))
+          : Object.entries(raw || {}).flatMap(([date, items]) =>
+              (Array.isArray(items) ? items : []).map(shift => normalizeShift(shift, date))
+            );
+        setWeeklyData(flattened);
+      }
     } catch { /* non-fatal */ }
   }, [currentWeek]);
 
@@ -82,7 +95,7 @@ const AdminShifts = () => {
   const openAdd = () => { setSelected(null); setFormData(blankForm()); setShowModal(true); };
   const openEdit = (sh) => {
     setSelected(sh);
-    setFormData({ employee_id: sh.employee_id || '', shift_date: sh.shift_date || '',
+    setFormData({ employee_id: sh.employee_id || '', shift_date: sh.shift_date || sh.date || '',
       start_time: sh.start_time?.slice(0, 5) || '08:00', end_time: sh.end_time?.slice(0, 5) || '16:00',
       notes: sh.notes || '' });
     setShowModal(true);
@@ -92,9 +105,16 @@ const AdminShifts = () => {
     e.preventDefault();
     setSaving(true);
     try {
+      const payload = {
+        employee_id: formData.employee_id,
+        date: formData.shift_date,
+        start_time: formData.start_time,
+        end_time: formData.end_time,
+        notes: formData.notes,
+      };
       const res = selected
-        ? await apiService.put(API_ENDPOINTS.WORKFORCE.SHIFT_DETAIL(selected.id), formData)
-        : await apiService.post(API_ENDPOINTS.WORKFORCE.SHIFTS, formData);
+        ? await apiService.put(API_ENDPOINTS.WORKFORCE.SHIFT_DETAIL(selected.id), payload)
+        : await apiService.post(API_ENDPOINTS.WORKFORCE.SHIFTS, payload);
       if (res.success) { setShowModal(false); fetchShifts(); if (view === 'week') fetchWeekly(); }
       else setError(res.message || 'Save failed.');
     } catch { setError('Failed to save shift.'); }
@@ -228,7 +248,7 @@ const AdminShifts = () => {
                   <tr>
                     {weekDays.map((d, i) => {
                       const iso = d.toISOString().slice(0, 10);
-                      const dayShifts = (weeklyData.length ? weeklyData : shifts).filter(s => s.shift_date === iso);
+                      const dayShifts = (weeklyData.length ? weeklyData : shifts).filter(s => (s.shift_date || s.date) === iso);
                       return (
                         <td key={i} style={{ verticalAlign: 'top', minWidth: 120, padding: '.5rem' }}>
                           {dayShifts.length === 0 ? (

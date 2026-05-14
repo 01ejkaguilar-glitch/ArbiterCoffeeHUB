@@ -10,6 +10,12 @@ import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
+const normalizeCartItem = (item) => ({
+  ...item,
+  special_instructions: item.special_instructions || item.customizations?.special_instructions || '',
+  customizations: item.customizations || (item.special_instructions ? { special_instructions: item.special_instructions } : null),
+});
+
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
@@ -30,7 +36,11 @@ export const CartProvider = ({ children }) => {
       setLoading(true);
       const response = await apiService.get(API_ENDPOINTS.CART.GET);
       if (response.success) {
-        setCart(response.data);
+        const normalized = response.data ? {
+          ...response.data,
+          items: Array.isArray(response.data.items) ? response.data.items.map(normalizeCartItem) : [],
+        } : response.data;
+        setCart(normalized);
       }
     } catch (error) {
       // Error fetching cart - handled gracefully
@@ -62,7 +72,7 @@ export const CartProvider = ({ children }) => {
                 apiService.post(API_ENDPOINTS.CART.ADD_ITEM, {
                   product_id: item.product_id,
                   quantity: item.quantity,
-                  special_instructions: item.special_instructions || '',
+                  customizations: item.special_instructions ? { special_instructions: item.special_instructions } : undefined,
                 })
               )
             );
@@ -103,11 +113,14 @@ export const CartProvider = ({ children }) => {
         const response = await apiService.post(API_ENDPOINTS.CART.ADD_ITEM, {
           product_id: product.id,
           quantity,
-          special_instructions: specialInstructions,
+          customizations: specialInstructions ? { special_instructions: specialInstructions } : undefined,
         });
 
         if (response.success) {
-          setCart(response.data);
+          setCart(response.data ? {
+            ...response.data,
+            items: Array.isArray(response.data.items) ? response.data.items.map(normalizeCartItem) : [],
+          } : response.data);
           return { success: true, message: 'Product added to cart' };
         }
       } else {
@@ -124,7 +137,8 @@ export const CartProvider = ({ children }) => {
             product,
             quantity,
             unit_price: product.price,
-            special_instructions: specialInstructions,
+              special_instructions: specialInstructions,
+              customizations: specialInstructions ? { special_instructions: specialInstructions } : null,
           });
         }
 
@@ -158,7 +172,10 @@ export const CartProvider = ({ children }) => {
         });
 
         if (response.success) {
-          setCart(response.data);
+          setCart(response.data ? {
+            ...response.data,
+            items: Array.isArray(response.data.items) ? response.data.items.map(normalizeCartItem) : [],
+          } : response.data);
           return { success: true };
         }
       } else {
@@ -195,7 +212,10 @@ export const CartProvider = ({ children }) => {
         const response = await apiService.delete(API_ENDPOINTS.CART.REMOVE_ITEM(itemId));
 
         if (response.success) {
-          setCart(response.data);
+          setCart(response.data ? {
+            ...response.data,
+            items: Array.isArray(response.data.items) ? response.data.items.map(normalizeCartItem) : [],
+          } : response.data);
           return { success: true };
         }
       } else {

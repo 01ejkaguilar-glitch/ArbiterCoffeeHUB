@@ -135,6 +135,8 @@ class ShiftController extends BaseController
     {
         try {
             $request->validate([
+                'employee_id' => 'sometimes|exists:employees,id',
+                'date' => 'sometimes|date',
                 'start_time' => 'date_format:H:i',
                 'end_time' => 'date_format:H:i|after:start_time',
                 'position' => 'nullable|string|max:100',
@@ -144,15 +146,39 @@ class ShiftController extends BaseController
 
             $shift = Shift::findOrFail($id);
 
-            if ($request->has('start_time') || $request->has('end_time')) {
-                $startTime = $request->input('start_time') ?? $shift->start_time->format('H:i');
-                $endTime = $request->input('end_time') ?? $shift->end_time->format('H:i');
+            $targetEmployeeId = $request->input('employee_id', $shift->employee_id);
+            $targetDate = Carbon::parse($request->input('date', $shift->date->toDateString()));
+            $targetStartTime = $request->input('start_time', $shift->start_time->format('H:i'));
+            $targetEndTime = $request->input('end_time', $shift->end_time->format('H:i'));
 
-                $shift->start_time = Carbon::parse($shift->date . ' ' . $startTime);
-                $shift->end_time = Carbon::parse($shift->date . ' ' . $endTime);
+            // Check for overlapping shifts when any scheduling field changes
+            $overlap = Shift::where('employee_id', $targetEmployeeId)
+                ->where('date', $targetDate->toDateString())
+                ->where('status', '!=', 'cancelled')
+                ->where('id', '!=', $shift->id)
+                ->where(function($query) use ($targetDate, $targetStartTime, $targetEndTime) {
+                    $startDateTime = Carbon::parse($targetDate->toDateString() . ' ' . $targetStartTime);
+                    $endDateTime = Carbon::parse($targetDate->toDateString() . ' ' . $targetEndTime);
+
+                    $query->whereBetween('start_time', [$startDateTime, $endDateTime])
+                        ->orWhereBetween('end_time', [$startDateTime, $endDateTime])
+                        ->orWhere(function($q) use ($startDateTime, $endDateTime) {
+                            $q->where('start_time', '<=', $startDateTime)
+                              ->where('end_time', '>=', $endDateTime);
+                        });
+                })
+                ->exists();
+
+            if ($overlap) {
+                return $this->sendError('Shift overlaps with existing shift for this employee', 400);
             }
 
-            $shift->update($request->only(['position', 'status', 'notes']));
+            $shift->employee_id = $targetEmployeeId;
+            $shift->date = $targetDate->toDateString();
+            $shift->start_time = Carbon::parse($targetDate->toDateString() . ' ' . $targetStartTime);
+            $shift->end_time = Carbon::parse($targetDate->toDateString() . ' ' . $targetEndTime);
+            $shift->fill($request->only(['position', 'status', 'notes']));
+            $shift->save();
 
             // Broadcast ShiftStarted event when status changes to 'confirmed'
             if ($request->has('status') && $request->input('status') === 'confirmed') {

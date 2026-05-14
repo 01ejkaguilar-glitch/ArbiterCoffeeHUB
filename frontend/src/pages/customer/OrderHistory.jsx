@@ -80,8 +80,12 @@ const OrderHistory = () => {
     try {
       const response = await apiService.post(API_ENDPOINTS.ORDERS.REORDER(orderId));
       if (response.success) {
-        toast.success('Order items added to cart successfully!');
-        navigate('/cart');
+        toast.success('Order reordered successfully!');
+        if (response.data?.id) {
+          navigate(`/orders/${response.data.id}`);
+        } else {
+          navigate('/orders');
+        }
       } else {
         setError('Failed to reorder items');
       }

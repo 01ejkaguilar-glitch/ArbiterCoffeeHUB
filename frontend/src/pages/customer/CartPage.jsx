@@ -16,6 +16,8 @@ const CartPage = () => {
     removeFromCart(itemId);
   };
 
+  const getItemNote = (item) => item.special_instructions || item.customizations?.special_instructions || '';
+
   // Handler to reload cart
   const reloadCart = () => {
     window.location.reload(); // Replace with better logic if available
@@ -54,9 +56,9 @@ const CartPage = () => {
                             />
                             <div>
                               <h6 className="mb-0">{item.product?.name}</h6>
-                              {item.special_instructions && (
+                              {getItemNote(item) && (
                                 <small className="text-muted">
-                                  Note: {item.special_instructions}
+                                  Note: {getItemNote(item)}
                                 </small>
                               )}
                             </div>

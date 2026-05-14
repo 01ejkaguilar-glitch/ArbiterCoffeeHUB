@@ -11,6 +11,20 @@ const isTransportError = (error) => {
   return error.code === 'ERR_NETWORK' || !error.response;
 };
 
+const normalizeRecommendation = (item, fallbackType = 'product') => {
+  const source = item?.product || item?.bean || item || {};
+  const id = source.id || source.product_id || source.bean_id || null;
+
+  return {
+    id,
+    title: source.name || source.title || 'Recommended item',
+    imageUrl: source.image_url || '',
+    price: source.price ?? null,
+    reason: item?.reason || (Array.isArray(item?.reasons) ? item.reasons.join(', ') : ''),
+    type: item?.product ? 'product' : item?.bean ? 'bean' : fallbackType,
+  };
+};
+
 const HomepageRecommendations = () => {
   const { user } = useAuth();
   const [recommendations, setRecommendations] = useState([]);
@@ -28,9 +42,9 @@ const HomepageRecommendations = () => {
         if (recommended_products && Array.isArray(recommended_products)) {
           recommended_products.forEach(product => {
             allRecommendations.push({
-              product: product,
-              score: is_authenticated ? 80 : 60,
-              reason: product.reason || (is_authenticated ? 'Recommended for you' : 'Popular choice')
+              ...normalizeRecommendation(product, 'product'),
+              score: product?.score ?? (is_authenticated ? 80 : 60),
+              reason: product?.reason || (is_authenticated ? 'Recommended for you' : 'Popular choice'),
             });
           });
         }
@@ -38,9 +52,9 @@ const HomepageRecommendations = () => {
         if (recommended_coffee_beans && Array.isArray(recommended_coffee_beans)) {
           recommended_coffee_beans.forEach(bean => {
             allRecommendations.push({
-              product: bean,
-              score: is_authenticated ? 75 : 55,
-              reason: bean.reason || 'Premium coffee beans'
+              ...normalizeRecommendation(bean, 'bean'),
+              score: bean?.score ?? (is_authenticated ? 75 : 55),
+              reason: bean?.reason || (Array.isArray(bean?.reasons) && bean.reasons.length > 0 ? bean.reasons.join(', ') : 'Premium coffee beans'),
             });
           });
         }
@@ -71,7 +85,7 @@ const HomepageRecommendations = () => {
           .sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0))
           .slice(0, 4)
           .map(product => ({
-            product,
+            ...normalizeRecommendation(product, 'product'),
             score: 50,
             reason: 'Best seller'
           }));
@@ -117,14 +131,14 @@ const HomepageRecommendations = () => {
   return (
     <Row className="g-3">
       {recommendations.map((rec, index) => (
-        <Col key={rec.product.id || index} xs={6} md={3}>
+        <Col key={rec.id || index} xs={6} md={3}>
           <Card className="h-100 border-0 shadow-sm">
-            <Link to={`/products/${rec.product.id}`}>
+            <Link to={rec.type === 'product' && rec.id ? `/products/${rec.id}` : '/products'}>
               <div className="card-image-container" style={{ height: '120px', overflow: 'hidden' }}>
-                {rec.product.image_url ? (
+                {rec.imageUrl ? (
                   <img
-                    src={`${BACKEND_BASE_URL}${rec.product.image_url}`}
-                    alt={rec.product.name}
+                    src={`${BACKEND_BASE_URL}${rec.imageUrl}`}
+                    alt={rec.title}
                     className="card-image"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     loading="lazy"
@@ -138,12 +152,12 @@ const HomepageRecommendations = () => {
             </Link>
             <Card.Body className="p-2">
               <small className="text-muted">{rec.reason}</small>
-              <h6 className="mb-1" style={{ fontSize: '0.9rem' }}>{rec.product.name}</h6>
+              <h6 className="mb-1" style={{ fontSize: '0.9rem' }}>{rec.title}</h6>
               <div className="d-flex justify-content-between align-items-center">
-                <span className="fw-bold text-primary">₱{rec.product.price}</span>
+                <span className="fw-bold text-primary">{rec.price != null ? `₱${Number(rec.price).toFixed(2)}` : ''}</span>
                 <Button
                   as={Link}
-                  to={`/products/${rec.product.id}`}
+                  to={rec.type === 'product' && rec.id ? `/products/${rec.id}` : '/products'}
                   variant="outline-primary"
                   size="sm"
                   className="py-0 px-2"

@@ -89,7 +89,7 @@ const ProductAffinityCard = () => {
             <div className="d-flex flex-wrap gap-1">
               {favoriteCategories.slice(0, 4).map((category, index) => (
                 <Badge key={index} bg="outline-primary" className="fs-6">
-                  {category.name}
+                  {category.name || category.category || category.category_name || 'Category'}
                 </Badge>
               ))}
             </div>
