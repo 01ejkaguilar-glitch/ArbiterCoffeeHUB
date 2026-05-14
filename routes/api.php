@@ -314,11 +314,13 @@ Route::prefix('v1')->group(function () {
             Route::delete('/admin/coffee-beans/{id}', [CoffeeBeanController::class, 'destroy']);
 
             // Settings — Company Timeline (individual CRUD)
+            Route::get('/admin/company-timeline', [PublicController::class, 'getCompanyTimeline']);
             Route::post('/admin/company-timeline', [PublicController::class, 'createTimelineEntry']);
             Route::put('/admin/company-timeline/{id}', [PublicController::class, 'updateTimelineEntry']);
             Route::delete('/admin/company-timeline/{id}', [PublicController::class, 'deleteTimelineEntry']);
 
             // Settings — Team Members (individual CRUD)
+            Route::get('/admin/team-members', [PublicController::class, 'getTeamMembers']);
             Route::post('/admin/team-members', [PublicController::class, 'createTeamMember']);
             Route::put('/admin/team-members/{id}', [PublicController::class, 'updateTeamMember']);
             Route::delete('/admin/team-members/{id}', [PublicController::class, 'deleteTeamMember']);
