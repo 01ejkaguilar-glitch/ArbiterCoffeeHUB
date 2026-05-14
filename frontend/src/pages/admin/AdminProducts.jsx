@@ -486,7 +486,7 @@ const AdminProducts = () => {
         handleRemoveImage={handleRemoveImage}
         imagePreview={imagePreview}
         categories={categories}
-        onSubmit={handleSubmit}
+        handleSubmit={handleSubmit}
       />
 
       {/* Batch Modal */}
