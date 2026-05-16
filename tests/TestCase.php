@@ -13,7 +13,7 @@ abstract class TestCase extends BaseTestCase
     use InteractsWithTestCaseLifecycle;
     use TestHelpers;
 
-    protected const REQUIRED_TEST_TABLES = ['migrations', 'users', 'roles', 'permissions'];
+    protected const REQUIRED_BOOTSTRAP_TABLES = ['migrations', 'users', 'roles', 'permissions'];
 
     protected static array $verifiedSchemaConnections = [];
 
@@ -64,15 +64,17 @@ abstract class TestCase extends BaseTestCase
         try {
             $schemaKey = spl_object_id($connection->getPdo());
         } catch (\PDOException) {
-            $schemaKey = $connection->getName();
+            $schemaKey = sprintf('%s:pending-pdo', $connection->getName());
         }
 
         if (isset(static::$verifiedSchemaConnections[$schemaKey])) {
             return;
         }
 
-        foreach (static::REQUIRED_TEST_TABLES as $table) {
-            if (!Schema::hasTable($table)) {
+        $existingTables = array_flip(Schema::getTableListing());
+
+        foreach (static::REQUIRED_BOOTSTRAP_TABLES as $table) {
+            if (!isset($existingTables[$table])) {
                 Artisan::call('migrate', ['--force' => true]);
                 break;
             }
