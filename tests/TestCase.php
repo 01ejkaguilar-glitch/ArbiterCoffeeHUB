@@ -13,6 +13,8 @@ abstract class TestCase extends BaseTestCase
     use InteractsWithTestCaseLifecycle;
     use TestHelpers;
 
+    protected const REQUIRED_TEST_TABLES = ['migrations', 'users', 'roles', 'permissions'];
+
     protected static array $verifiedSchemaConnections = [];
 
     /**
@@ -57,15 +59,19 @@ abstract class TestCase extends BaseTestCase
 
     protected function ensureTestSchemaIsReady(): void
     {
-        $schemaKey = spl_object_id(DB::connection()->getPdo());
+        $connection = DB::connection();
+
+        try {
+            $schemaKey = spl_object_id($connection->getPdo());
+        } catch (\Throwable) {
+            $schemaKey = $connection->getName();
+        }
 
         if (isset(static::$verifiedSchemaConnections[$schemaKey])) {
             return;
         }
 
-        $requiredTables = ['migrations', 'users', 'roles', 'permissions'];
-
-        foreach ($requiredTables as $table) {
+        foreach (static::REQUIRED_TEST_TABLES as $table) {
             if (!Schema::hasTable($table)) {
                 Artisan::call('migrate', ['--force' => true]);
                 break;
