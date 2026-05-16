@@ -4,11 +4,18 @@ namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithTestCaseLifecycle;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 abstract class TestCase extends BaseTestCase
 {
     use InteractsWithTestCaseLifecycle;
     use TestHelpers;
+
+    protected const REQUIRED_BOOTSTRAP_TABLES = ['migrations', 'users', 'roles', 'permissions'];
+
+    protected static array $verifiedSchemaConnections = [];
 
     /**
      * Setup the test environment.
@@ -17,9 +24,10 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-
         // Ensure default auth guard during tests uses Sanctum to match route middleware
         config(['auth.defaults.guard' => 'sanctum']);
+
+        $this->ensureTestSchemaIsReady();
 
         // Reset cached roles and permissions for Spatie Permission
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
@@ -47,5 +55,31 @@ abstract class TestCase extends BaseTestCase
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    protected function ensureTestSchemaIsReady(): void
+    {
+        $connection = DB::connection();
+
+        try {
+            $schemaKey = spl_object_id($connection->getPdo());
+        } catch (\PDOException) {
+            $schemaKey = sprintf('%s:pending-pdo', $connection->getName());
+        }
+
+        if (isset(static::$verifiedSchemaConnections[$schemaKey])) {
+            return;
+        }
+
+        $existingTables = array_flip(Schema::getTableListing());
+
+        foreach (static::REQUIRED_BOOTSTRAP_TABLES as $table) {
+            if (!isset($existingTables[$table])) {
+                Artisan::call('migrate', ['--force' => true]);
+                break;
+            }
+        }
+
+        static::$verifiedSchemaConnections[$schemaKey] = true;
     }
 }
