@@ -67,7 +67,11 @@
       "Bash(./vendor/bin/phpunit --testdox)",
       "Bash(./vendor/bin/phpunit --list-tests)",
       "Bash(./vendor/bin/phpunit --filter \"test_that_true_is_true\")",
-      "Bash(./vendor/bin/phpunit --filter \"test_product_has_fillable_attributes\")"
+      "Bash(./vendor/bin/phpunit --filter \"test_product_has_fillable_attributes\")",
+      "Skill(superpowers:systematic-debugging)",
+      "Skill(superpowers:using-superpowers)",
+      "Bash(mysql *)",
+      "Bash(clear *)"
     ]
   },
   "prefersReducedMotion": false
