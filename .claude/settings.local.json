@@ -74,7 +74,8 @@
       "PowerShell(winget install *)",
       "Bash(gh auth *)",
       "PowerShell(gh auth *)",
-      "Bash(git status *)"
+      "Bash(git status *)",
+      "Bash(exit 0)"
     ]
   },
   "prefersReducedMotion": false
