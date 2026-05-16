@@ -5,12 +5,15 @@ namespace Tests;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithTestCaseLifecycle;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 abstract class TestCase extends BaseTestCase
 {
     use InteractsWithTestCaseLifecycle;
     use TestHelpers;
+
+    protected static array $verifiedSchemaConnections = [];
 
     /**
      * Setup the test environment.
@@ -54,8 +57,21 @@ abstract class TestCase extends BaseTestCase
 
     protected function ensureTestSchemaIsReady(): void
     {
-        if (!Schema::hasTable('roles') || !Schema::hasTable('permissions')) {
-            Artisan::call('migrate', ['--force' => true]);
+        $schemaKey = spl_object_id(DB::connection()->getPdo());
+
+        if (isset(static::$verifiedSchemaConnections[$schemaKey])) {
+            return;
         }
+
+        $requiredTables = ['migrations', 'users', 'roles', 'permissions'];
+
+        foreach ($requiredTables as $table) {
+            if (!Schema::hasTable($table)) {
+                Artisan::call('migrate', ['--force' => true]);
+                break;
+            }
+        }
+
+        static::$verifiedSchemaConnections[$schemaKey] = true;
     }
 }
