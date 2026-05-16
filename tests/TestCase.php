@@ -63,7 +63,7 @@ abstract class TestCase extends BaseTestCase
 
         try {
             $schemaKey = spl_object_id($connection->getPdo());
-        } catch (\Throwable) {
+        } catch (\PDOException) {
             $schemaKey = $connection->getName();
         }
 
