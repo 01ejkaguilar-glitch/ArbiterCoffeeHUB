@@ -4,6 +4,8 @@ namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithTestCaseLifecycle;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -17,9 +19,10 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-
         // Ensure default auth guard during tests uses Sanctum to match route middleware
         config(['auth.defaults.guard' => 'sanctum']);
+
+        $this->ensureTestSchemaIsReady();
 
         // Reset cached roles and permissions for Spatie Permission
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
@@ -46,6 +49,13 @@ abstract class TestCase extends BaseTestCase
             return true;
         } catch (\Exception $e) {
             return false;
+        }
+    }
+
+    protected function ensureTestSchemaIsReady(): void
+    {
+        if (!Schema::hasTable('roles') || !Schema::hasTable('permissions')) {
+            Artisan::call('migrate', ['--force' => true]);
         }
     }
 }
