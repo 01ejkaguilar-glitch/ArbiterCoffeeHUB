@@ -83,6 +83,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          shell: bash
           script: |
             cd /home/u843463747/domains/arbitercoffee.shop/public_html/api
             # Check vendor status
