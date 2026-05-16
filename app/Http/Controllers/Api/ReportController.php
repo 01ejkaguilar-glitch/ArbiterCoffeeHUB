@@ -11,6 +11,8 @@ use App\Models\OrderItem;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\GetReportRequest;
+use App\Http\Requests\GetAttendanceRequest;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -19,28 +21,24 @@ class ReportController extends BaseController
     /**
      * Get Attendance Report
      */
-    public function getAttendanceReport(Request $request)
+    public function getAttendanceReport(GetAttendanceRequest $request)
     {
         try {
-            $request->validate([
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date|after_or_equal:start_date',
-                'employee_id' => 'nullable|exists:employees,id'
-            ]);
+            $data = $request->validated();
 
             $query = Attendance::with(['employee.user']);
 
             // Date range filter
-            if ($request->filled('start_date')) {
-                $query->whereDate('date', '>=', $request->input('start_date'));
+            if (!empty($data['start_date'])) {
+                $query->whereDate('date', '>=', $data['start_date']);
             }
-            if ($request->filled('end_date')) {
-                $query->whereDate('date', '<=', $request->input('end_date'));
+            if (!empty($data['end_date'])) {
+                $query->whereDate('date', '<=', $data['end_date']);
             }
 
             // Employee filter
-            if ($request->filled('employee_id')) {
-                $query->where('employee_id', $request->input('employee_id'));
+            if (!empty($data['employee_id'])) {
+                $query->where('employee_id', $data['employee_id']);
             }
 
             $attendances = $query->orderBy('date', 'desc')->get();
@@ -69,17 +67,12 @@ class ReportController extends BaseController
     /**
      * Get Leave and Overtime Report
      */
-    public function getLeaveOTReport(Request $request)
+    public function getLeaveOTReport(GetReportRequest $request)
     {
         try {
-            $request->validate([
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date|after_or_equal:start_date',
-                'employee_id' => 'nullable|exists:employees,id',
-                'type' => 'nullable|in:leave,overtime,both'
-            ]);
+            $data = $request->validated();
 
-            $type = $request->get('type', 'both');
+            $type = $data['type'] ?? $request->get('type', 'both');
 
             $leaveRequests = [];
             $overtimeRecords = [];
@@ -87,14 +80,14 @@ class ReportController extends BaseController
             if (in_array($type, ['leave', 'both'])) {
                 $leaveQuery = LeaveRequest::with(['employee.user']);
 
-                if ($request->filled('start_date')) {
-                    $leaveQuery->whereDate('start_date', '>=', $request->input('start_date'));
+                if (!empty($data['start_date'])) {
+                    $leaveQuery->whereDate('start_date', '>=', $data['start_date']);
                 }
-                if ($request->filled('end_date')) {
-                    $leaveQuery->whereDate('end_date', '<=', $request->input('end_date'));
+                if (!empty($data['end_date'])) {
+                    $leaveQuery->whereDate('end_date', '<=', $data['end_date']);
                 }
-                if ($request->filled('employee_id')) {
-                    $leaveQuery->where('employee_id', $request->input('employee_id'));
+                if (!empty($data['employee_id'])) {
+                    $leaveQuery->where('employee_id', $data['employee_id']);
                 }
 
                 $leaveRequests = $leaveQuery->orderBy('start_date', 'desc')->get()->map(function ($leave) {
@@ -111,14 +104,14 @@ class ReportController extends BaseController
                     ->whereNotNull('clock_in')
                     ->whereNotNull('clock_out');
 
-                if ($request->filled('start_date')) {
-                    $overtimeQuery->whereDate('date', '>=', $request->input('start_date'));
+                if (!empty($data['start_date'])) {
+                    $overtimeQuery->whereDate('date', '>=', $data['start_date']);
                 }
-                if ($request->filled('end_date')) {
-                    $overtimeQuery->whereDate('date', '<=', $request->input('end_date'));
+                if (!empty($data['end_date'])) {
+                    $overtimeQuery->whereDate('date', '<=', $data['end_date']);
                 }
-                if ($request->filled('employee_id')) {
-                    $overtimeQuery->where('employee_id', $request->input('employee_id'));
+                if (!empty($data['employee_id'])) {
+                    $overtimeQuery->where('employee_id', $data['employee_id']);
                 }
 
                 $attendanceRecords = $overtimeQuery->orderBy('date', 'desc')->get();
@@ -156,34 +149,30 @@ class ReportController extends BaseController
     /**
      * Get Task Completion Report
      */
-    public function getTaskCompletionReport(Request $request)
+    public function getTaskCompletionReport(GetReportRequest $request)
     {
         try {
-            $request->validate([
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date|after_or_equal:start_date',
-                'assigned_to' => 'nullable|exists:employees,id',
-                'status' => 'nullable|in:pending,in_progress,completed,cancelled'
-            ]);
+
+            $data = $request->validated();
 
             $query = Task::with(['assignedTo.user', 'assignedBy.user']);
 
             // Date range filter
-            if ($request->filled('start_date')) {
-                $query->whereDate('due_date', '>=', $request->input('start_date'));
+            if (!empty($data['start_date'])) {
+                $query->whereDate('due_date', '>=', $data['start_date']);
             }
-            if ($request->filled('end_date')) {
-                $query->whereDate('due_date', '<=', $request->input('end_date'));
+            if (!empty($data['end_date'])) {
+                $query->whereDate('due_date', '<=', $data['end_date']);
             }
 
             // Employee filter
-            if ($request->filled('assigned_to')) {
-                $query->where('assigned_to', $request->input('assigned_to'));
+            if (!empty($data['assigned_to'])) {
+                $query->where('assigned_to', $data['assigned_to']);
             }
 
             // Status filter
-            if ($request->filled('status')) {
-                $query->where('status', $request->input('status'));
+            if (!empty($data['status'])) {
+                $query->where('status', $data['status']);
             }
 
             $tasks = $query->orderBy('due_date', 'desc')->get();
@@ -218,17 +207,13 @@ class ReportController extends BaseController
     /**
      * Get Bean Usage Report
      */
-    public function getBeanUsageReport(Request $request)
+    public function getBeanUsageReport(GetReportRequest $request)
     {
         try {
-            $request->validate([
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date|after_or_equal:start_date',
-                'bean_id' => 'nullable|exists:coffee_beans,id'
-            ]);
+            $data = $request->validated();
 
-            $startDate = $request->get('start_date', now()->subMonth()->toDateString());
-            $endDate = $request->get('end_date', now()->toDateString());
+            $startDate = $data['start_date'] ?? now()->subMonth()->toDateString();
+            $endDate = $data['end_date'] ?? now()->toDateString();
 
             // Get all coffee beans with featured origin counts
             $beansQuery = CoffeeBean::withCount([
@@ -237,8 +222,8 @@ class ReportController extends BaseController
                 }
             ]);
 
-            if ($request->has('bean_id')) {
-                $beansQuery->where('id', $request->input('bean_id'));
+            if (!empty($data['bean_id'])) {
+                $beansQuery->where('id', $data['bean_id']);
             }
 
             $beans = $beansQuery->get();
@@ -285,16 +270,13 @@ class ReportController extends BaseController
     /**
      * Export report to CSV
      */
-    public function exportReport(Request $request)
+    public function exportReport(GetReportRequest $request)
     {
         try {
-            $request->validate([
-                'report_type' => 'required|in:attendance,leave_ot,task_completion,bean_usage',
-                'format' => 'required|in:csv,pdf'
-            ]);
+            $data = $request->validated();
 
-            $reportType = $request->input('report_type');
-            $format = $request->input('format');
+            $reportType = $data['report_type'];
+            $format = $data['format'];
 
             // Get the report data
             $reportData = $this->getReportData($reportType, $request);

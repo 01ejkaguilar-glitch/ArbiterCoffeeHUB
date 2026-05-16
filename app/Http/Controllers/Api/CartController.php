@@ -12,6 +12,25 @@ use Illuminate\Support\Facades\DB;
 class CartController extends BaseController
 {
     /**
+     * Initialize an empty cart for the authenticated user.
+     */
+    public function create()
+    {
+        try {
+            $user = Auth::user();
+
+            $cart = Cart::firstOrCreate(
+                ['user_id' => $user->id],
+                ['user_id' => $user->id]
+            );
+
+            return $this->sendResponse($this->cartResponse($cart), 'Cart created successfully', 201);
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to create cart', 500, ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
      * Build a normalised cart response with items, subtotal, etc.
      */
     private function cartResponse(Cart $cart): array
@@ -69,18 +88,14 @@ class CartController extends BaseController
     /**
      * Add item to cart
      */
-    public function addItem(Request $request)
+    public function addItem(\App\Http\Requests\AddCartItemRequest $request)
     {
         try {
-            $request->validate([
-                'product_id' => 'required|exists:products,id',
-                'quantity' => 'required|integer|min:1',
-                'customizations' => 'sometimes|array',
-            ]);
+            $data = $request->validated();
 
             $user = Auth::user();
 
-            $productId = $request->input('product_id');
+            $productId = $data['product_id'];
             $product = Product::findOrFail($productId);
             if (!$product->is_available) {
                 return $this->sendError('Product is not available', 400);
@@ -95,8 +110,8 @@ class CartController extends BaseController
                 ->where('product_id', $productId)
                 ->first();
 
-            $quantity = $request->input('quantity');
-            $customizations = $request->has('customizations') ? $request->input('customizations') : null;
+            $quantity = $data['quantity'];
+            $customizations = $data['customizations'] ?? null;
 
             if ($existingItem) {
                 $existingItem->quantity += $quantity;
@@ -125,13 +140,10 @@ class CartController extends BaseController
     /**
      * Update cart item
      */
-    public function updateItem(Request $request, $id)
+    public function updateItem(\App\Http\Requests\UpdateCartItemRequest $request, $id)
     {
         try {
-            $request->validate([
-                'quantity' => 'required|integer|min:1',
-                'customizations' => 'sometimes|array',
-            ]);
+            $data = $request->validated();
 
             $user = Auth::user();
             $cart = Cart::where('user_id', $user->id)->first();
@@ -149,8 +161,8 @@ class CartController extends BaseController
             }
 
             $cartItem->update([
-                'quantity' => $request->input('quantity'),
-                'customizations' => $request->has('customizations') ? $request->input('customizations') : $cartItem->customizations,
+                'quantity' => $data['quantity'],
+                'customizations' => $data['customizations'] ?? $cartItem->customizations,
             ]);
 
             return $this->sendResponse($this->cartResponse($cart), 'Cart item updated successfully');

@@ -9,9 +9,11 @@ use App\Events\OrderCreated;
 use App\Jobs\ProcessOrderNotification;
 use App\Notifications\OrderStatusNotification;
 use App\Http\Requests\StoreOrderRequest;
+use App\Http\Requests\UpdateOrderRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\SendOrderNotificationRequest;
 
 class OrderController extends BaseController
 {
@@ -197,6 +199,121 @@ class OrderController extends BaseController
             return $this->sendError('Failed to retrieve order details', 500, ['error' => $e->getMessage()]);
         }
     }
+
+        /**
+         * Update an order (pending/preparing orders only)
+         *
+         * @param int $id
+         * @param \App\Http\Requests\UpdateOrderRequest $request
+         * @return \Illuminate\Http\JsonResponse
+         */
+        public function update($id, UpdateOrderRequest $request)
+        {
+            try {
+                $user = Auth::user();
+
+                $order = Order::where('user_id', $user->id)
+                    ->where('id', $id)
+                    ->with(['orderItems.product'])
+                    ->first();
+
+                if (!$order) {
+                    return $this->sendError('Order not found', 404);
+                }
+
+                // Only allow updates for pending/preparing orders
+                if (!in_array($order->status, ['pending', 'preparing'])) {
+                    return $this->sendError('Can only update pending or preparing orders', 400, [
+                        'current_status' => $order->status
+                    ]);
+                }
+
+                DB::beginTransaction();
+
+                // Update order items if provided
+                if ($request->has('items') && is_array($request->input('items'))) {
+                    $items = $request->input('items', []);
+                    $subtotal = 0;
+                    $newOrderItems = [];
+
+                    // Batch-load products
+                    $productIds = array_column($items, 'product_id');
+                    $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
+                    foreach ($items as $item) {
+                        $product = $products->get($item['product_id']);
+
+                        if (!$product || !$product->is_available) {
+                            DB::rollBack();
+                            return $this->sendError('Product not available', 400, [
+                                'product' => $product->name ?? 'Unknown'
+                            ]);
+                        }
+
+                        $unitPrice = $product->price;
+                        $quantity = $item['quantity'];
+                        $subtotal += $unitPrice * $quantity;
+
+                        $newOrderItems[] = [
+                            'product_id' => $product->id,
+                            'quantity' => $quantity,
+                            'unit_price' => $unitPrice,
+                            'special_instructions' => $item['special_instructions'] ?? null,
+                        ];
+                    }
+
+                    // Delete existing order items and create new ones
+                    OrderItem::where('order_id', $order->id)->delete();
+
+                    foreach ($newOrderItems as $item) {
+                        OrderItem::create([
+                            'order_id' => $order->id,
+                            'product_id' => $item['product_id'],
+                            'quantity' => $item['quantity'],
+                            'unit_price' => $item['unit_price'],
+                            'special_instructions' => $item['special_instructions'],
+                        ]);
+                    }
+
+                    // Recalculate totals
+                    $order->subtotal = $subtotal;
+                    $order->total_amount = $subtotal + $order->delivery_fee;
+                }
+
+                // Update other fields if provided
+                if ($request->has('delivery_address_id')) {
+                    $order->delivery_address_id = $request->input('delivery_address_id');
+                }
+
+                if ($request->has('pickup_time')) {
+                    $order->scheduled_time = $request->input('pickup_time');
+                }
+
+                if ($request->has('notes')) {
+                    $order->notes = $request->input('notes');
+                }
+
+                if ($request->has('payment_method')) {
+                    $order->payment_method = $request->input('payment_method');
+                }
+
+                $order->save();
+
+                DB::commit();
+
+                // Load relationships
+                $order->load(['orderItems.product', 'user', 'deliveryAddress']);
+
+                return $this->sendResponse($order, 'Order updated successfully');
+
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                DB::rollBack();
+                return $this->sendValidationError($e->errors());
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return $this->sendError('Failed to update order', 500, ['error' => $e->getMessage()]);
+            }
+        }
 
     /**
      * Reorder a previous order
@@ -390,12 +507,10 @@ class OrderController extends BaseController
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function sendNotification(Request $request, $id)
+    public function sendNotification(SendOrderNotificationRequest $request, $id)
     {
         try {
-            $validated = $request->validate([
-                'type' => 'required|in:order_created,status_update,order_ready,order_completed,order_cancelled',
-            ]);
+            $validated = $request->validated();
 
             $user = Auth::user();
 
@@ -404,7 +519,14 @@ class OrderController extends BaseController
             // Staff (barista, manager, admin) can send for any order
             $query = Order::query();
 
-            if (!$user->hasAnyRole(['barista', 'manager', 'workforce-manager', 'admin', 'super-admin'])) {
+            $isStaff = DB::table('model_has_roles')
+                ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+                ->where('model_has_roles.model_type', get_class($user))
+                ->where('model_has_roles.model_id', $user->id)
+                ->whereIn('roles.name', ['barista', 'manager', 'workforce-manager', 'admin', 'super-admin'])
+                ->exists();
+
+            if (!$isStaff) {
                 $query->where('user_id', $user->id);
             }
 

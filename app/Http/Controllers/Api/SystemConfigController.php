@@ -4,9 +4,23 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\SystemConfig;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\Rule;
 
 class SystemConfigController extends BaseController
 {
+    /**
+     * Keys that are allowed to be managed through the API.
+     *
+     * @var array<int, string>
+     */
+    private array $allowedKeys = [
+        'operating_hours',
+        'contact_info',
+        'team_members',
+        'company_timeline',
+    ];
+
     /**
      * Get all system configurations
      *
@@ -46,22 +60,19 @@ class SystemConfigController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request)
+    public function update(\App\Http\Requests\UpdateSystemConfigRequest $request)
     {
         try {
-            $request->validate([
-                'key' => 'required|string|max:255',
-                'value' => 'required',
-                'type' => 'sometimes|in:json,string,number,boolean',
-                'description' => 'sometimes|string',
-            ]);
+            $data = $request->validated();
 
             $config = SystemConfig::setValue(
-                $request->input('key'),
-                $request->input('value'),
-                $request->get('type', 'json'),
-                $request->get('description', '')
+                $data['key'],
+                $data['value'] ?? null,
+                $data['type'] ?? 'json',
+                $data['description'] ?? ''
             );
+
+            $this->forgetPublicConfigCache($data['key']);
 
             return $this->sendResponse($config, 'Configuration updated successfully');
 
@@ -70,6 +81,59 @@ class SystemConfigController extends BaseController
         } catch (\Exception $e) {
             return $this->sendError('Failed to update configuration', 500, ['error' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Get validation rules for the config value based on the key.
+     *
+     * @param string|null $key
+     * @return array<string, mixed>
+     */
+    private function getValueRules(?string $key): array
+    {
+        return match ($key) {
+            'operating_hours' => [
+                'value' => 'required|array',
+                'value.monday.open' => 'required|string|max:5',
+                'value.monday.close' => 'required|string|max:5',
+                'value.tuesday.open' => 'required|string|max:5',
+                'value.tuesday.close' => 'required|string|max:5',
+                'value.wednesday.open' => 'required|string|max:5',
+                'value.wednesday.close' => 'required|string|max:5',
+                'value.thursday.open' => 'required|string|max:5',
+                'value.thursday.close' => 'required|string|max:5',
+                'value.friday.open' => 'required|string|max:5',
+                'value.friday.close' => 'required|string|max:5',
+                'value.saturday.open' => 'required|string|max:5',
+                'value.saturday.close' => 'required|string|max:5',
+                'value.sunday.open' => 'required|string|max:5',
+                'value.sunday.close' => 'required|string|max:5',
+            ],
+            'contact_info' => [
+                'value' => 'required|array',
+                'value.phone' => 'required|string|max:50',
+                'value.email' => 'required|email|max:255',
+                'value.address' => 'required|string|max:500',
+                'value.social_media' => 'nullable|array',
+                'value.social_media.facebook' => 'nullable|url|max:255',
+                'value.social_media.instagram' => 'nullable|url|max:255',
+                'value.social_media.twitter' => 'nullable|url|max:255',
+            ],
+            'team_members' => [
+                'value' => 'required|array|min:1',
+                'value.*.name' => 'required|string|max:255',
+                'value.*.position' => 'required|string|max:255',
+                'value.*.bio' => 'required|string|max:1000',
+                'value.*.image' => 'nullable|string|max:255',
+            ],
+            'company_timeline' => [
+                'value' => 'required|array|min:1',
+                'value.*.year' => 'required|string|max:10',
+                'value.*.title' => 'required|string|max:255',
+                'value.*.description' => 'required|string|max:1000',
+            ],
+            default => [],
+        };
     }
 
     /**
@@ -83,6 +147,8 @@ class SystemConfigController extends BaseController
         try {
             $config = SystemConfig::where('key', $key)->firstOrFail();
             $config->delete();
+
+            $this->forgetPublicConfigCache($key);
 
             return $this->sendResponse(null, 'Configuration deleted successfully');
         } catch (\Exception $e) {
@@ -181,6 +247,24 @@ class SystemConfigController extends BaseController
             return $this->sendResponse($timeline, 'Company timeline retrieved successfully');
         } catch (\Exception $e) {
             return $this->sendError('Failed to retrieve company timeline', 500, ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Clear cached public settings for a specific config key.
+     */
+    private function forgetPublicConfigCache(string $key): void
+    {
+        $cacheKey = match ($key) {
+            'operating_hours' => 'public.settings.operating_hours',
+            'contact_info' => 'public.settings.contact_info',
+            'team_members' => 'public.settings.team_members',
+            'company_timeline' => 'public.settings.company_timeline',
+            default => null,
+        };
+
+        if ($cacheKey !== null) {
+            Cache::forget($cacheKey);
         }
     }
 }

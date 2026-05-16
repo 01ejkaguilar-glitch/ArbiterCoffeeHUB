@@ -5,13 +5,82 @@ namespace App\Http\Controllers\Api;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\Product;
+use App\Models\ProductFavorite;
 use Illuminate\Http\Request;
+use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Requests\ChangePasswordRequest;
+use App\Http\Requests\FavoriteRequest;
+use App\Http\Requests\UploadProfilePictureRequest;
+use App\Http\Requests\UpdateNotificationPreferencesRequest;
+use App\Http\Requests\DeactivateAccountRequest;
+use App\Http\Requests\TasteProfileRequest;
+use App\Http\Requests\TasteProfileRequest as AdminTastePreferencesRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class CustomerController extends BaseController
 {
+    /**
+     * Get a customer's taste preferences for admin support.
+     */
+    public function getCustomerTastePreferences($id)
+    {
+        try {
+            /** @var User $admin */
+            $admin = Auth::user();
+            if (!$admin->hasAnyRole(['admin', 'super-admin'])) {
+                return $this->sendError('Unauthorized', 403);
+            }
+
+            $customer = User::with('customerProfile')->findOrFail($id);
+            $profile = $customer->customerProfile;
+
+            return $this->sendResponse([
+                'customer_id' => $customer->id,
+                'customer_name' => $customer->name,
+                'customer_email' => $customer->email,
+                'taste_preferences' => $profile->taste_preferences ?? [],
+                'last_updated' => $profile?->updated_at,
+            ], 'Customer taste preferences retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to retrieve customer taste preferences', 500, ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Update a customer's taste preferences for admin support.
+     */
+    public function updateCustomerTastePreferences(TasteProfileRequest $request, $id)
+    {
+        try {
+            /** @var User $admin */
+            $admin = Auth::user();
+            if (!$admin->hasAnyRole(['admin', 'super-admin'])) {
+                return $this->sendError('Unauthorized', 403);
+            }
+
+            $request->validate([
+                'taste_preferences' => 'required|array',
+            ]);
+
+            $customer = User::findOrFail($id);
+            $customer->customerProfile()->updateOrCreate(
+                ['user_id' => $customer->id],
+                ['taste_preferences' => $request->input('taste_preferences')]
+            );
+
+            return $this->sendResponse([
+                'customer_id' => $customer->id,
+                'taste_preferences' => $request->input('taste_preferences'),
+            ], 'Customer taste preferences updated successfully');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->sendValidationError($e->errors());
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to update customer taste preferences', 500, ['error' => $e->getMessage()]);
+        }
+    }
+
     /**
      * Get customer dashboard data
      *
@@ -105,7 +174,7 @@ class CustomerController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateProfile(Request $request)
+    public function updateProfile(UpdateProfileRequest $request)
     {
         try {
             $validated = $request->validate([
@@ -116,6 +185,7 @@ class CustomerController extends BaseController
                 'taste_preferences' => 'sometimes|nullable|array',
             ]);
 
+            /** @var User $user */
             $user = Auth::user();
 
             // Update user name if provided
@@ -203,13 +273,14 @@ class CustomerController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateTastePreferences(Request $request)
+    public function updateTastePreferences(TasteProfileRequest $request)
     {
         try {
             $request->validate([
                 'taste_profile' => 'required|array',
             ]);
 
+            /** @var User $user */
             $user = Auth::user();
 
             // Update or create customer profile with taste preferences
@@ -309,13 +380,14 @@ class CustomerController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function uploadProfilePicture(Request $request)
+    public function uploadProfilePicture(UploadProfilePictureRequest $request)
     {
         try {
             $request->validate([
                 'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
+            /** @var User $user */
             $user = Auth::user();
 
             // Handle image upload
@@ -351,7 +423,7 @@ class CustomerController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateNotificationPreferences(Request $request)
+    public function updateNotificationPreferences(UpdateNotificationPreferencesRequest $request)
     {
         try {
             $request->validate([
@@ -361,6 +433,7 @@ class CustomerController extends BaseController
                 'promotional_offers' => 'boolean',
             ]);
 
+            /** @var User $user */
             $user = Auth::user();
 
             $preferences = $request->only([
@@ -445,12 +518,100 @@ class CustomerController extends BaseController
     }
 
     /**
+     * Get a single favorite item.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getFavorite($id)
+    {
+        try {
+            $user = Auth::user();
+
+            $favorite = ProductFavorite::with(['product.category'])
+                ->where('user_id', $user->id)
+                ->findOrFail($id);
+
+            if (!$favorite->product || !$favorite->product->is_available) {
+                return $this->sendError('Favorite product not found or unavailable', 404);
+            }
+
+            return $this->sendResponse([
+                'id' => $favorite->id,
+                'product' => [
+                    'id' => $favorite->product->id,
+                    'name' => $favorite->product->name,
+                    'description' => $favorite->product->description,
+                    'price' => $favorite->product->price,
+                    'image_url' => $favorite->product->image_url,
+                    'category_id' => $favorite->product->category_id,
+                    'category_name' => $favorite->product->category->name ?? null,
+                ],
+                'added_at' => $favorite->created_at,
+            ], 'Favorite retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to retrieve favorite', 500, ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Update a favorite item.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateFavorite(FavoriteRequest $request, $id)
+    {
+        try {
+            $request->validate([
+                'product_id' => 'required|integer|exists:products,id',
+            ]);
+
+            $user = Auth::user();
+            $favorite = ProductFavorite::where('user_id', $user->id)->findOrFail($id);
+            $productId = (int) $request->input('product_id');
+
+            $product = Product::with('category')
+                ->where('id', $productId)
+                ->where('is_available', true)
+                ->first();
+
+            if (!$product) {
+                return $this->sendError('Product not found or unavailable', 404);
+            }
+
+            $duplicate = ProductFavorite::where('user_id', $user->id)
+                ->where('product_id', $productId)
+                ->where('id', '!=', $favorite->id)
+                ->exists();
+
+            if ($duplicate) {
+                return $this->sendError('Product already in favorites', 409);
+            }
+
+            $favorite->product_id = $productId;
+            $favorite->save();
+
+            return $this->sendResponse([
+                'id' => $favorite->id,
+                'product_id' => $product->id,
+                'is_favorited' => true,
+            ], 'Favorite updated successfully');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->sendValidationError($e->errors());
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to update favorite', 500, ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
      * Add product to favorites
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function addFavorite(Request $request)
+    public function addFavorite(FavoriteRequest $request)
     {
         try {
             $request->validate([
@@ -535,7 +696,7 @@ class CustomerController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function changePassword(Request $request)
+    public function changePassword(ChangePasswordRequest $request)
     {
         try {
             $request->validate([
@@ -543,6 +704,7 @@ class CustomerController extends BaseController
                 'password' => 'required|string|min:8|confirmed',
             ]);
 
+            /** @var User $user */
             $user = Auth::user();
 
             if (!Hash::check($request->input('current_password'), $user->password)) {
@@ -566,7 +728,7 @@ class CustomerController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function deactivateAccount(Request $request)
+    public function deactivateAccount(DeactivateAccountRequest $request)
     {
         try {
             $request->validate([
@@ -574,6 +736,7 @@ class CustomerController extends BaseController
                 'password' => 'required|string',
             ]);
 
+            /** @var User $user */
             $user = Auth::user();
 
             // Verify password
@@ -598,7 +761,7 @@ class CustomerController extends BaseController
         }
     }
 
-    public function toggleFavorite(Request $request)
+    public function toggleFavorite(FavoriteRequest $request)
     {
         try {
             $user = Auth::user();

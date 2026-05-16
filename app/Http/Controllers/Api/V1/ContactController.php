@@ -9,11 +9,44 @@ use App\Http\Requests\StoreContactRequest;
 use App\Notifications\NewContactFormSubmission;
 use App\Notifications\ContactFormAutoReply;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Notification;
 
 class ContactController extends BaseController
 {
+    /**
+     * Track a contact or inquiry submission by ID and email.
+     */
+    public function trackSubmission(Request $request)
+    {
+        $validated = $request->validate([
+            'submission_type' => 'required|in:contact,inquiry',
+            'submission_id' => 'required|integer|min:1',
+            'email' => 'required|email|max:255',
+        ]);
+
+        $submissionType = $validated['submission_type'];
+        $submissionId = (int) $validated['submission_id'];
+        $email = $validated['email'];
+
+        $submission = $submissionType === 'contact'
+            ? Contact::where('id', $submissionId)->where('email', $email)->first()
+            : \App\Models\Inquiry::where('id', $submissionId)->where('email', $email)->first();
+
+        if (!$submission) {
+            return $this->sendNotFound('Submission not found');
+        }
+
+        return $this->sendResponse([
+            'submission_type' => $submissionType,
+            'id' => $submission->id,
+            'status' => $submission->status ?? 'pending',
+            'created_at' => $submission->created_at,
+            'updated_at' => $submission->updated_at,
+        ], 'Submission status retrieved successfully');
+    }
+
     /**
      * Store a contact form submission (public).
      */
@@ -36,7 +69,7 @@ class ContactController extends BaseController
                 ->notify(new ContactFormAutoReply($contact));
         } catch (\Exception $e) {
             // Log error but don't fail the request
-            \Log::error('Failed to send contact form notifications: ' . $e->getMessage());
+            Log::error('Failed to send contact form notifications: ' . $e->getMessage());
         }
 
         return $this->sendCreated($contact, 'Your message has been sent successfully. We will get back to you soon.');

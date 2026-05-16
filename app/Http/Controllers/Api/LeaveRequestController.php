@@ -14,7 +14,7 @@ class LeaveRequestController extends BaseController
      * Submit a leave request
      * POST /api/v1/workforce/leave-requests
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\StoreLeaveRequest $request)
     {
         try {
             // Debugging info in testing to help diagnose authorization issues
@@ -32,13 +32,7 @@ class LeaveRequestController extends BaseController
                     'user_roles' => $userRoles,
                 ]);
             }
-            $validated = $request->validate([
-                'employee_id' => 'nullable|exists:employees,id',
-                'type' => 'required|in:sick,vacation,personal,emergency,bereavement',
-                'start_date' => 'required|date|after_or_equal:today',
-                'end_date' => 'required|date|after_or_equal:start_date',
-                'reason' => 'required|string|max:1000',
-            ]);
+            $validated = $request->validated();
 
             \Log::debug('LeaveRequestController@store - after validation');
 
@@ -221,13 +215,10 @@ class LeaveRequestController extends BaseController
      * Approve or reject a leave request
      * PUT /api/v1/workforce/leave-requests/{id}
      */
-    public function update(Request $request, $id)
+    public function update(\App\Http\Requests\UpdateLeaveRequest $request, $id)
     {
         try {
-            $validated = $request->validate([
-                'status' => 'required|in:approved,rejected',
-                'review_notes' => 'nullable|string|max:1000',
-            ]);
+            $validated = $request->validated();
 
             $user = Auth::user();
 

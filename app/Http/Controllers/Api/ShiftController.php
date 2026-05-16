@@ -71,24 +71,17 @@ class ShiftController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\StoreShiftRequest $request)
     {
         try {
-            $request->validate([
-                'employee_id' => 'required|exists:employees,id',
-                'date' => 'required|date',
-                'start_time' => 'required|date_format:H:i',
-                'end_time' => 'required|date_format:H:i|after:start_time',
-                'position' => 'nullable|string|max:100',
-                'notes' => 'nullable|string|max:500',
-            ]);
+            $data = $request->validated();
 
             // Check for overlapping shifts
             $startDateTime = Carbon::parse($request->input('date') . ' ' . $request->input('start_time'));
             $endDateTime = Carbon::parse($request->input('date') . ' ' . $request->input('end_time'));
 
-            $overlap = Shift::where('employee_id', $request->input('employee_id'))
-                ->where('date', $request->input('date'))
+            $overlap = Shift::where('employee_id', $data['employee_id'])
+                ->where('date', $data['date'])
                 ->where('status', '!=', 'cancelled')
                 ->where(function($query) use ($startDateTime, $endDateTime) {
                     $query->whereBetween('start_time', [$startDateTime, $endDateTime])
@@ -105,12 +98,12 @@ class ShiftController extends BaseController
             }
 
             $shift = Shift::create([
-                'employee_id' => $request->input('employee_id'),
-                'date' => $request->input('date'),
+                'employee_id' => $data['employee_id'],
+                'date' => $data['date'],
                 'start_time' => $startDateTime,
                 'end_time' => $endDateTime,
-                'position' => $request->input('position'),
-                'notes' => $request->input('notes'),
+                'position' => $data['position'] ?? null,
+                'notes' => $data['notes'] ?? null,
             ]);
 
             $shift->load('employee.user');
@@ -131,25 +124,17 @@ class ShiftController extends BaseController
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(\App\Http\Requests\UpdateShiftRequest $request, $id)
     {
         try {
-            $request->validate([
-                'employee_id' => 'sometimes|exists:employees,id',
-                'date' => 'sometimes|date',
-                'start_time' => 'date_format:H:i',
-                'end_time' => 'date_format:H:i|after:start_time',
-                'position' => 'nullable|string|max:100',
-                'status' => 'in:scheduled,confirmed,completed,cancelled',
-                'notes' => 'nullable|string|max:500',
-            ]);
+            $data = $request->validated();
 
             $shift = Shift::findOrFail($id);
 
-            $targetEmployeeId = $request->input('employee_id', $shift->employee_id);
-            $targetDate = Carbon::parse($request->input('date', $shift->date->toDateString()));
-            $targetStartTime = $request->input('start_time', $shift->start_time->format('H:i'));
-            $targetEndTime = $request->input('end_time', $shift->end_time->format('H:i'));
+            $targetEmployeeId = $data['employee_id'] ?? $shift->employee_id;
+            $targetDate = Carbon::parse($data['date'] ?? $shift->date->toDateString());
+            $targetStartTime = $data['start_time'] ?? $shift->start_time->format('H:i');
+            $targetEndTime = $data['end_time'] ?? $shift->end_time->format('H:i');
 
             // Check for overlapping shifts when any scheduling field changes
             $overlap = Shift::where('employee_id', $targetEmployeeId)
@@ -177,7 +162,7 @@ class ShiftController extends BaseController
             $shift->date = $targetDate->toDateString();
             $shift->start_time = Carbon::parse($targetDate->toDateString() . ' ' . $targetStartTime);
             $shift->end_time = Carbon::parse($targetDate->toDateString() . ' ' . $targetEndTime);
-            $shift->fill($request->only(['position', 'status', 'notes']));
+            $shift->fill(array_filter($data, function($k) { return in_array($k, ['position','status','notes']); }, ARRAY_FILTER_USE_KEY));
             $shift->save();
 
             // Broadcast ShiftStarted event when status changes to 'confirmed'

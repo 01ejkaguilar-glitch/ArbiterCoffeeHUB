@@ -4,28 +4,131 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\ProcessGCashRequest;
+use App\Http\Requests\OrderIdRequest;
 use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends BaseController
 {
+    /**
+     * Get payment history (for customers - their own, for admins - all)
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            if (!$user instanceof User) {
+                return $this->sendError('Unauthorized', 401);
+            }
+
+            // Customers see only their own payments
+            if ($user->hasRole('customer')) {
+                $query = Payment::whereHas('order', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                });
+            } else if ($user->hasAnyRole(['admin', 'super-admin'])) {
+                // Admins see all payments
+                $query = Payment::query();
+            } else {
+                return $this->sendError('Unauthorized', 403);
+            }
+
+            // Apply filters
+            if ($request->has('status')) {
+                $query->where('status', $request->input('status'));
+            }
+
+            if ($request->has('method')) {
+                $query->where('method', $request->input('method'));
+            }
+
+            if ($request->has('date_from')) {
+                $query->whereDate('created_at', '>=', $request->input('date_from'));
+            }
+
+            if ($request->has('date_to')) {
+                $query->whereDate('created_at', '<=', $request->input('date_to'));
+            }
+
+            if ($request->has('min_amount')) {
+                $query->where('amount', '>=', $request->input('min_amount'));
+            }
+
+            if ($request->has('max_amount')) {
+                $query->where('amount', '<=', $request->input('max_amount'));
+            }
+
+            // Load relationships and paginate
+            $payments = $query->with(['order.user', 'order.orderItems.product'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+
+            return $this->sendResponse($payments, 'Payment history retrieved successfully');
+
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to retrieve payment history', 500, ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Get a single payment record with details
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show($id)
+    {
+        try {
+            $user = Auth::user();
+            if (!$user instanceof User) {
+                return $this->sendError('Unauthorized', 401);
+            }
+
+            // Build query based on user role
+            if ($user->hasRole('customer')) {
+                $payment = Payment::whereHas('order', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })->where('id', $id)
+                  ->with(['order.user', 'order.orderItems.product', 'order.deliveryAddress'])
+                  ->first();
+            } else if ($user->hasAnyRole(['admin', 'super-admin'])) {
+                $payment = Payment::where('id', $id)
+                    ->with(['order.user', 'order.orderItems.product', 'order.deliveryAddress'])
+                    ->first();
+            } else {
+                return $this->sendError('Unauthorized', 403);
+            }
+
+            if (!$payment) {
+                return $this->sendError('Payment record not found', 404);
+            }
+
+            return $this->sendResponse($payment, 'Payment record retrieved successfully');
+
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to retrieve payment record', 500, ['error' => $e->getMessage()]);
+        }
+    }
+
     /**
      * Process GCash payment
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function processGCash(Request $request)
+    public function processGCash(ProcessGCashRequest $request)
     {
         try {
-            $request->validate([
-                'order_id' => 'required|exists:orders,id',
-                'gcash_reference' => 'required|string|max:100',
-            ]);
+            $data = $request->validated();
 
             $user = Auth::user();
 
-            $orderId = $request->input('order_id');
+            $orderId = $data['order_id'];
             $order = Order::where('user_id', $user->id)
                 ->where('id', $orderId)
                 ->first();
@@ -45,7 +148,7 @@ class PaymentController extends BaseController
                 'order_id' => $order->id,
                 'amount' => $order->total_amount,
                 'method' => 'gcash',
-                'transaction_id' => $request->input('gcash_reference'),
+                'transaction_id' => $data['gcash_reference'],
                 'status' => 'completed',
                 'paid_at' => now(),
             ]);
@@ -74,15 +177,13 @@ class PaymentController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function processMaya(Request $request)
+    public function processMaya(OrderIdRequest $request)
     {
         try {
-            $request->validate([
-                'order_id' => 'required|exists:orders,id',
-            ]);
+            $data = $request->validated();
 
             $user = Auth::user();
-            $orderId = $request->input('order_id');
+            $orderId = $data['order_id'];
             $order = Order::where('user_id', $user->id)
                 ->where('id', $orderId)
                 ->first();
@@ -137,16 +238,14 @@ class PaymentController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function recordCash(Request $request)
+    public function recordCash(OrderIdRequest $request)
     {
         try {
-            $request->validate([
-                'order_id' => 'required|exists:orders,id',
-            ]);
+            $data = $request->validated();
 
             $user = Auth::user();
 
-            $orderId = $request->input('order_id');
+            $orderId = $data['order_id'];
             $order = Order::where('user_id', $user->id)
                 ->where('id', $orderId)
                 ->first();

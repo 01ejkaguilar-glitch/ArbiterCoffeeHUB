@@ -8,19 +8,26 @@
 - ❌ **Limited (CRUD 1-2/5):** 6 models
 
 ### Routes: 200+ Total
-- ✅ **Complete:** 15 resources (100% CRUD)
-- ⚠️ **Partial:** 8 resources (60-80% CRUD)
-- ❌ **Missing Ops:** 6 resources (major gaps)
+- ✅ **Complete:** 18 resources (100% CRUD)
+- ⚠️ **Partial:** 5 resources (60-80% CRUD)
+- ❌ **Missing Ops:** 3 resources (major gaps)
 
 ---
 
 ## 🔴 CRITICAL GAPS
 
-1. **Order Update** - No `PUT /v1/orders/{id}` - Customers can't modify order details
-2. **Attendance CRUD** - No update/delete - Errors are permanent
-3. **Row-Level Auth** - No policies - Admin can access all user data
-4. **Payment History** - No read endpoint - Audit trail missing
-5. **System Config** - No validation - Accepts any key/value
+1. **System Config** - Implemented strict validation for supported keys
+
+Implemented in this pass:
+
+- **Order Update** - Added `PUT /v1/orders/{id}` for pending/preparing orders
+- **Attendance CRUD** - Added `GET/PUT/DELETE /v1/attendance/{id}` for management use
+- **Row-Level Auth** - Added policy classes for orders, users, addresses, attendance, and payments
+- **Payment History** - Added `GET /v1/payments` and `GET /v1/payments/{id}`
+
+Still pending:
+
+- None in the critical section
 
 ---
 
@@ -28,12 +35,7 @@
 
 | Missing | Resource | Impact |
 |---------|----------|--------|
-| POST | Cart (explicit create) | Implicit creation unclear |
-| CRUD | Notifications (custom send) | Admin can't message users |
-| CRUD | Taste Preferences (admin view) | Support can't help customers |
-| DELETE | Order | Only soft via cancel-request |
-| UPDATE | POS Orders | Integration unclear |
-| DELETE | Attendance | Errors permanent |
+| None | None | None |
 
 ---
 
@@ -75,7 +77,7 @@
 ### Others ⚠️
 - [ ] DailyFeaturedOrigin (needs analysis)
 - [ ] ProductFavorite (needs analysis)
-- [ ] SystemConfig (no casts, needs validation)
+- [x] SystemConfig (validation implemented, no casts)
 
 ---
 
@@ -91,21 +93,12 @@ Users (Admin), Featured Origins
 
 ### ⚠️ PARTIAL CRUD (Missing Operations)
 ```
-Orders              - Missing: PUT (full update)
-Attendance          - Missing: PUT, DELETE
-Payments            - Missing: GET index, PUT, DELETE
-Notifications       - Missing: POST (custom), PUT (full update)
 Inventory Logs      - Missing: CRUD (read-only intentional)
-Favorites           - Missing: GET single, PUT
-POS                 - Missing: Standard REST mapping
 ```
 
 ### ❌ MISSING ENTIRELY
 ```
-Cart POST (explicit creation)
 Order Items (direct access)
-Payment history (customer view)
-Taste Preferences (admin management)
 ```
 
 ---
@@ -174,26 +167,28 @@ Taste Preferences (admin management)
 ### NOT Cached (Consider)
 - Coffee Beans (public list)
 - Featured Origins list
-- Public settings endpoints
 - Common filters
+
+### Cached Now ✅
+- Public settings endpoints (operating hours, contact info, team members, company timeline - 10 min)
 
 ---
 
 ## Top 5 Fixes (Priority Order)
 
 ### Week 1: Critical
-1. **Add `PUT /v1/orders/{id}`** - Allow order updates before confirmation
-2. **Implement Auth Policies** - Add row-level authorization
-3. **Add Attendance Update/Delete** - Allow correction of records
-4. **Payment History Endpoints** - Add customer payment views
-5. **Input Validation Audit** - Secure analytics/reports
+1. **Input Validation Audit** - Secure analytics/reports
+2. **Inventory Log Read Strategy** - Confirm read-only intent and access scope
+3. **Notification System** - Admin ability to send messages
+4. **Daily Featured Origin Analysis** - Confirm whether CRUD is needed
+5. **Mixed Validation Cleanup** - Standardize remaining request validation (in progress: ReportController, AttendanceController, AnalyticsController wired to FormRequests)
 
 ### Week 2: Important
 6. **System Config Validation** - Strict schema for settings
 7. **Batch Operations** - Bulk inventory/employee updates
-8. **Queue Show Endpoints** - Get single order from queue
-9. **Contact Tracking** - Let customers track submissions
-10. **Notification System** - Admin ability to send messages
+8. **Notifications Update** - Edit/update stored notification payloads
+9. **Daily Featured Origin Analysis** - Confirm whether CRUD is needed
+10. **Batch Operations** - Bulk inventory/employee updates
 
 ---
 

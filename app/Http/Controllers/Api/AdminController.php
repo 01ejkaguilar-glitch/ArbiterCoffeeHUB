@@ -8,7 +8,9 @@ use App\Models\Product;
 use App\Events\OrderStatusUpdated;
 use App\Notifications\OrderStatusNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
@@ -100,24 +102,19 @@ class AdminController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function createUser(Request $request)
+    public function createUser(\App\Http\Requests\CreateUserRequest $request)
     {
         try {
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:8',
-                'role' => 'required|in:customer,barista,manager,admin,super-admin',
-            ]);
+            $data = $request->validated();
 
             $user = User::create([
-                'name' => $request->input('name'),
-                'email' => $request->input('email'),
-                'password' => Hash::make($request->input('password')),
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
             ]);
 
             // Assign role
-            $user->assignRole($request->input('role'));
+            $user->assignRole($data['role']);
 
             return $this->sendResponse($user->load('roles'), 'User created successfully', 201);
 
@@ -135,36 +132,29 @@ class AdminController extends BaseController
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateUser(Request $request, $id)
+    public function updateUser(\App\Http\Requests\UpdateUserRequest $request, $id)
     {
         try {
-            $request->validate([
-                'name' => 'sometimes|string|max:255',
-                'email' => 'sometimes|email|unique:users,email,' . $id,
-                'password' => 'sometimes|string|min:8',
-                'role' => 'sometimes|in:customer,barista,manager,admin,super-admin',
-            ]);
+            $data = $request->validated();
 
             $user = User::findOrFail($id);
 
             // Update basic info
-            if ($request->has('name')) {
-                $user->name = $request->input('name');
+            if (isset($data['name'])) {
+                $user->name = $data['name'];
             }
-
-            if ($request->has('email')) {
-                $user->email = $request->input('email');
+            if (isset($data['email'])) {
+                $user->email = $data['email'];
             }
-
-            if ($request->has('password')) {
-                $user->password = Hash::make($request->input('password'));
+            if (isset($data['password'])) {
+                $user->password = Hash::make($data['password']);
             }
 
             $user->save();
 
             // Update role if provided
-            if ($request->has('role')) {
-                $user->syncRoles([$request->input('role')]);
+            if (isset($data['role'])) {
+                $user->syncRoles([$data['role']]);
             }
 
             return $this->sendResponse($user->load('roles'), 'User updated successfully');
@@ -186,9 +176,10 @@ class AdminController extends BaseController
     {
         try {
             $user = User::findOrFail($id);
+            $currentUser = Auth::id();
 
             // Prevent self-deactivation
-            if ($user->id === auth()->id()) {
+            if ($user->id === $currentUser) {
                 return $this->sendError('Cannot deactivate your own account', 403);
             }
 
@@ -226,23 +217,53 @@ class AdminController extends BaseController
     public function getUserStatistics()
     {
         try {
-            // Single query for user counts (active/total/trashed)
-            $userCounts = DB::selectOne("
-                SELECT
-                    COUNT(*) as total_users,
-                    SUM(CASE WHEN deleted_at IS NULL THEN 1 ELSE 0 END) as active_users,
-                    SUM(CASE WHEN deleted_at IS NOT NULL THEN 1 ELSE 0 END) as inactive_users,
-                    SUM(CASE WHEN deleted_at IS NULL AND DATE(created_at) = ? THEN 1 ELSE 0 END) as new_users_today,
-                    SUM(CASE WHEN deleted_at IS NULL AND created_at BETWEEN ? AND ? THEN 1 ELSE 0 END) as new_users_this_week,
-                    SUM(CASE WHEN deleted_at IS NULL AND MONTH(created_at) = ? AND YEAR(created_at) = ? THEN 1 ELSE 0 END) as new_users_this_month
-                FROM users
-            ", [
-                today()->toDateString(),
-                now()->startOfWeek()->toDateTimeString(),
-                now()->endOfWeek()->toDateTimeString(),
-                now()->month,
-                now()->year,
-            ]);
+            $connection = DB::connection()->getDriverName();
+            $today = today()->toDateString();
+            $startOfWeek = now()->startOfWeek()->toDateTimeString();
+            $endOfWeek = now()->endOfWeek()->toDateTimeString();
+            $month = now()->month;
+            $year = now()->year;
+            $monthStart = now()->startOfMonth()->toDateTimeString();
+            $monthEnd = now()->endOfMonth()->toDateTimeString();
+
+            // Build database-agnostic query for user counts
+            // For SQLite, we use BETWEEN for month filtering; for MySQL, we can use MONTH/YEAR
+            if ($connection === 'sqlite') {
+                $userCounts = DB::selectOne("
+                    SELECT
+                        COUNT(*) as total_users,
+                        SUM(CASE WHEN deleted_at IS NULL THEN 1 ELSE 0 END) as active_users,
+                        SUM(CASE WHEN deleted_at IS NOT NULL THEN 1 ELSE 0 END) as inactive_users,
+                        SUM(CASE WHEN deleted_at IS NULL AND DATE(created_at) = ? THEN 1 ELSE 0 END) as new_users_today,
+                        SUM(CASE WHEN deleted_at IS NULL AND created_at BETWEEN ? AND ? THEN 1 ELSE 0 END) as new_users_this_week,
+                        SUM(CASE WHEN deleted_at IS NULL AND created_at BETWEEN ? AND ? THEN 1 ELSE 0 END) as new_users_this_month
+                    FROM users
+                ", [
+                    $today,
+                    $startOfWeek,
+                    $endOfWeek,
+                    $monthStart,
+                    $monthEnd,
+                ]);
+            } else {
+                // MySQL-compatible version with MONTH/YEAR functions
+                $userCounts = DB::selectOne("
+                    SELECT
+                        COUNT(*) as total_users,
+                        SUM(CASE WHEN deleted_at IS NULL THEN 1 ELSE 0 END) as active_users,
+                        SUM(CASE WHEN deleted_at IS NOT NULL THEN 1 ELSE 0 END) as inactive_users,
+                        SUM(CASE WHEN deleted_at IS NULL AND DATE(created_at) = ? THEN 1 ELSE 0 END) as new_users_today,
+                        SUM(CASE WHEN deleted_at IS NULL AND created_at BETWEEN ? AND ? THEN 1 ELSE 0 END) as new_users_this_week,
+                        SUM(CASE WHEN deleted_at IS NULL AND MONTH(created_at) = ? AND YEAR(created_at) = ? THEN 1 ELSE 0 END) as new_users_this_month
+                    FROM users
+                ", [
+                    $today,
+                    $startOfWeek,
+                    $endOfWeek,
+                    $month,
+                    $year,
+                ]);
+            }
 
             // Single query for all role counts
             $roleCounts = DB::table('model_has_roles')
@@ -359,32 +380,28 @@ class AdminController extends BaseController
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateOrderStatus(Request $request, $id)
+    public function updateOrderStatus(\App\Http\Requests\UpdateOrderStatusRequest $request, $id)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'status' => 'required|in:pending,confirmed,preparing,ready,completed,cancelled',
-            ]);
-
-            if ($validator->fails()) {
-                return $this->sendValidationError($validator->errors()->toArray());
-            }
+            $data = $request->validated();
 
             $order = Order::findOrFail($id);
             $oldStatus = $order->status;
-            $newStatus = $request->input('status');
+            $newStatus = $data['status'];
+            /** @var User|null $actor */
+            $actor = Auth::user();
 
             // Create status history entry (store as JSON in a note or just log it)
             $statusHistory = [
                 'from' => $oldStatus,
                 'to' => $newStatus,
                 'timestamp' => now()->toIso8601String(),
-                'updated_by' => auth()->user()->name ?? 'Admin'
+                'updated_by' => $actor?->name ?? 'Admin'
             ];
 
             // For now, we'll just log the status change since status_history column doesn't exist
             // You might want to add a status_history column or use a separate table for this
-            \Log::info('Order status changed', $statusHistory);
+            Log::info('Order status changed', $statusHistory);
 
             $order->status = $newStatus;
 
@@ -401,7 +418,7 @@ class AdminController extends BaseController
             $order->save();
 
             // Broadcast real-time event and send notification to customer
-            event(new OrderStatusUpdated($order, $oldStatus, $newStatus, auth()->user()));
+            event(new OrderStatusUpdated($order, $oldStatus, $newStatus, $actor));
 
             if ($order->user) {
                 $notifType = match ($newStatus) {
@@ -419,6 +436,33 @@ class AdminController extends BaseController
             return $this->sendValidationError($e->errors());
         } catch (\Exception $e) {
             return $this->sendError('Failed to update order status', 500, ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Soft delete an order (admin archive only)
+     *
+     * Active orders should move through cancellation/status updates first.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteOrder($id)
+    {
+        try {
+            $order = Order::findOrFail($id);
+
+            if (in_array($order->status, ['pending', 'confirmed', 'preparing', 'ready'])) {
+                return $this->sendError('Active orders must be cancelled or completed before deletion', 400, [
+                    'current_status' => $order->status,
+                ]);
+            }
+
+            $order->delete();
+
+            return $this->sendResponse(null, 'Order deleted successfully');
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to delete order', 500, ['error' => $e->getMessage()]);
         }
     }
 

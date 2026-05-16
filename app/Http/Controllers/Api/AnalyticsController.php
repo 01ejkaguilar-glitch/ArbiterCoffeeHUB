@@ -11,6 +11,7 @@ use App\Models\InventoryItem;
 use App\Models\PerformanceReview;
 use App\Models\Shift;
 use Illuminate\Http\Request;
+use App\Http\Requests\GetAnalyticsRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
@@ -23,7 +24,7 @@ class AnalyticsController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getSalesAnalytics(Request $request)
+    public function getSalesAnalytics(GetAnalyticsRequest $request)
     {
         try {
             $startDate = $request->get('start_date', now()->startOfMonth());
@@ -143,7 +144,7 @@ class AnalyticsController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getCustomerAnalytics(Request $request)
+    public function getCustomerAnalytics(GetAnalyticsRequest $request)
     {
         try {
             $startDate = $request->get('start_date', now()->startOfMonth());
@@ -219,7 +220,7 @@ class AnalyticsController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getPerformanceAnalytics(Request $request)
+    public function getPerformanceAnalytics(GetAnalyticsRequest $request)
     {
         try {
             $startDate = $request->get('start_date', now()->startOfMonth());
@@ -332,19 +333,11 @@ class AnalyticsController extends BaseController
     public function getBaristaPerformance(Request $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date|after_or_equal:start_date',
-                'employee_id' => 'nullable|exists:employees,id',
-            ]);
+            $data = $request->validated();
 
-            if ($validator->fails()) {
-                return $this->sendError('Validation Error', 422, $validator->errors()->toArray());
-            }
-
-            $startDate = $request->input('start_date') ?? Carbon::now()->subDays(30)->toDateString();
-            $endDate = $request->input('end_date') ?? Carbon::now()->toDateString();
-            $employeeId = $request->input('employee_id');
+            $startDate = $data['start_date'] ?? Carbon::now()->subDays(30)->toDateString();
+            $endDate = $data['end_date'] ?? Carbon::now()->toDateString();
+            $employeeId = $data['employee_id'] ?? null;
 
             $query = Employee::with([
                     'user',
@@ -439,27 +432,16 @@ class AnalyticsController extends BaseController
      * @return \Illuminate\Http\JsonResponse
      */
     /** @phpstan-ignore-next-line */
-    public function generatePerformanceReport(Request $request)
+    public function generatePerformanceReport(\App\Http\Requests\GeneratePerformanceReportRequest $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after_or_equal:start_date',
-                'employee_ids' => 'nullable|array',
-                'employee_ids.*' => 'exists:employees,id',
-                'report_type' => 'required|in:summary,detailed,comparison',
-                'format' => 'nullable|in:json,pdf,csv',
-            ]);
+            $data = (\App\Http\Requests\GeneratePerformanceReportRequest::createFrom($request))->validated();
 
-            if ($validator->fails()) {
-                return $this->sendError('Validation Error', 422, $validator->errors()->toArray());
-            }
-
-            $startDate = $request->input('start_date');
-            $endDate = $request->input('end_date');
-            $employeeIds = $request->input('employee_ids');
-            $reportType = $request->input('report_type');
-            $format = $request->get('format', 'json');
+            $startDate = $data['start_date'];
+            $endDate = $data['end_date'];
+            $employeeIds = $data['employee_ids'] ?? [];
+            $reportType = $data['report_type'];
+            $format = $data['format'] ?? 'json';
 
             $query = Employee::with(['user', 'performanceReviews', 'attendances']);
 
@@ -585,22 +567,14 @@ class AnalyticsController extends BaseController
      * @return \Illuminate\Http\JsonResponse
      */
     /** @phpstan-ignore-next-line */
-    public function getInventoryAnalytics(Request $request)
+    public function getInventoryAnalytics(\App\Http\Requests\InventoryAnalyticsRequest $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date|after_or_equal:start_date',
-                'type' => 'nullable|in:ingredient,equipment,packaging',
-            ]);
+            $data = (\App\Http\Requests\InventoryAnalyticsRequest::createFrom($request))->validated();
 
-            if ($validator->fails()) {
-                return $this->sendError('Validation Error', 422, $validator->errors()->toArray());
-            }
-
-            $startDate = $request->input('start_date') ?? Carbon::now()->subDays(30)->toDateString();
-            $endDate = $request->input('end_date') ?? Carbon::now()->toDateString();
-            $type = $request->input('type');
+            $startDate = $data['start_date'] ?? Carbon::now()->subDays(30)->toDateString();
+            $endDate = $data['end_date'] ?? Carbon::now()->toDateString();
+            $type = $data['type'] ?? null;
 
             $query = InventoryItem::with(['logs' => function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('created_at', [$startDate, $endDate]);
@@ -680,21 +654,13 @@ class AnalyticsController extends BaseController
      * @return \Illuminate\Http\JsonResponse
      */
     /** @phpstan-ignore-next-line */
-    public function generateInventoryForecast(Request $request)
+    public function generateInventoryForecast(\App\Http\Requests\GenerateInventoryForecastRequest $request)
     {
-        try {
-            $validator = Validator::make($request->all(), [
-                'item_id' => 'required|exists:inventory_items,id',
-                'forecast_days' => 'nullable|integer|min:1|max:90',
-                'method' => 'nullable|in:simple_average,weighted_average,linear_regression',
-            ]);
+            $data = (\App\Http\Requests\GenerateInventoryForecastRequest::createFrom($request))->validated();
 
-            if ($validator->fails()) {
-                return $this->sendError('Validation Error', 422, $validator->errors()->toArray());
-            }
-
-            $itemId = $request->input('item_id');
-            $item = InventoryItem::with('logs')->findOrFail($itemId);
+            $itemId = $data['item_id'];
+            $forecastDays = (int)($data['forecast_days'] ?? 30);
+            $method = $data['method'] ?? 'simple_average';
             $forecastDays = $request->input('forecast_days') ?? 30;
             $method = $request->get('method', 'simple_average');
 
@@ -904,22 +870,14 @@ class AnalyticsController extends BaseController
      * @return \Illuminate\Http\JsonResponse
      */
     /** @phpstan-ignore-next-line */
-    public function generateCustomerInsights(Request $request)
+    public function generateCustomerInsights(\App\Http\Requests\GenerateCustomerInsightsRequest $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'segment' => 'nullable|in:loyal,frequent,occasional,at_risk,dormant,new,all',
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date|after_or_equal:start_date',
-            ]);
+            $data = (\App\Http\Requests\GenerateCustomerInsightsRequest::createFrom($request))->validated();
 
-            if ($validator->fails()) {
-                return $this->sendError('Validation Error', 422, $validator->errors()->toArray());
-            }
-
-            $segment = $request->input('segment') ?? 'all';
-            $startDate = $request->input('start_date') ?? Carbon::now()->subDays(90)->toDateString();
-            $endDate = $request->input('end_date') ?? Carbon::now()->toDateString();
+            $segment = $data['segment'] ?? 'all';
+            $startDate = $data['start_date'] ?? Carbon::now()->subDays(90)->toDateString();
+            $endDate = $data['end_date'] ?? Carbon::now()->toDateString();
 
             $customers = User::whereHas('roles', fn($q) => $q->where('name', 'customer'))
                 ->with(['orders' => function ($q) use ($startDate, $endDate) {

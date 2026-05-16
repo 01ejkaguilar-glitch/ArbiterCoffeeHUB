@@ -215,6 +215,174 @@ class PosController extends BaseController
     }
 
     /**
+     * Update an in-progress POS order or held order.
+     */
+    public function updateOrder(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|integer|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.special_instructions' => 'nullable|string|max:255',
+            'order_type' => 'required|in:dine-in,take-out',
+            'payment_method' => 'required|in:cash,gcash,card',
+            'amount_tendered' => 'nullable|numeric|min:0',
+            'reference_number' => 'nullable|string|max:100',
+            'customer_name' => 'nullable|string|max:100',
+            'discount_type' => 'nullable|in:senior,pwd,employee,promo',
+            'discount_percent' => 'nullable|numeric|min:0|max:100',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendValidationError($validator->errors()->toArray());
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $order = Order::with('orderItems')->findOrFail($id);
+
+            if (!preg_match('/^(POS|HOLD)-/', $order->order_number)) {
+                DB::rollBack();
+                return $this->sendError('Only POS or held orders can be updated', 400);
+            }
+
+            if (in_array($order->status, ['cancelled', 'completed'])) {
+                DB::rollBack();
+                return $this->sendError('Completed or cancelled orders cannot be updated', 400, [
+                    'current_status' => $order->status,
+                ]);
+            }
+
+            foreach ($order->orderItems as $existingItem) {
+                Product::where('id', $existingItem->product_id)
+                    ->increment('stock_quantity', $existingItem->quantity);
+            }
+
+            $items = $request->input('items');
+            $subtotal = 0;
+            $orderItems = [];
+
+            foreach ($items as $item) {
+                $product = Product::find($item['product_id']);
+                if (!$product || !$product->is_available) {
+                    DB::rollBack();
+                    return $this->sendError('Product unavailable: ' . ($product->name ?? 'Unknown'), 400);
+                }
+                if ($product->stock_quantity < $item['quantity']) {
+                    DB::rollBack();
+                    return $this->sendError("Insufficient stock for {$product->name}", 400);
+                }
+
+                $unitPrice = (float) $product->price;
+                $quantity = $item['quantity'];
+                $subtotal += $unitPrice * $quantity;
+
+                $orderItems[] = [
+                    'product_id' => $product->id,
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'special_instructions' => $item['special_instructions'] ?? null,
+                ];
+
+                $product->decrement('stock_quantity', $quantity);
+            }
+
+            $discountType = $request->input('discount_type');
+            $discountPercent = $request->input('discount_percent', 0);
+            $discountAmount = 0;
+            if ($discountType && $discountPercent > 0) {
+                $discountAmount = round($subtotal * ($discountPercent / 100), 2);
+            }
+
+            $totalAmount = $subtotal - $discountAmount;
+
+            $order->order_type = $request->input('order_type');
+            $order->subtotal = $subtotal;
+            $order->delivery_fee = 0;
+            $order->total_amount = $totalAmount;
+            $order->payment_method = $request->input('payment_method');
+            $order->notes = trim(implode(' | ', array_filter([
+                $request->input('customer_name') ? 'Customer: ' . $request->input('customer_name') : null,
+                $discountType ? "Discount: {$discountType} ({$discountPercent}%)" : null,
+                $request->input('notes'),
+            ])));
+
+            $order->save();
+
+            OrderItem::where('order_id', $order->id)->delete();
+            foreach ($orderItems as $item) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $item['unit_price'],
+                    'special_instructions' => $item['special_instructions'],
+                ]);
+            }
+
+            $payment = Payment::where('order_id', $order->id)->first();
+            $paymentMethod = $request->input('payment_method');
+            if ($payment) {
+                $payment->amount = $totalAmount;
+                $payment->method = $paymentMethod;
+                if ($paymentMethod === 'cash') {
+                    $payment->transaction_id = $payment->transaction_id ?: 'CASH-' . strtoupper(substr(uniqid(), -8));
+                } elseif ($request->filled('reference_number')) {
+                    $payment->transaction_id = $request->input('reference_number');
+                }
+                $payment->save();
+                $order->update(['payment_status' => 'paid']);
+            }
+
+            DB::commit();
+
+            $order->load('orderItems.product');
+
+            $amountTendered = $request->input('amount_tendered', 0);
+            $change = 0;
+            if ($paymentMethod === 'cash' && $amountTendered > 0) {
+                $change = round($amountTendered - $totalAmount, 2);
+            }
+
+            return $this->sendResponse([
+                'order' => [
+                    'id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'status' => $order->status,
+                    'order_type' => $order->order_type,
+                    'subtotal' => (float) $order->subtotal,
+                    'discount_amount' => $discountAmount,
+                    'total_amount' => (float) $order->total_amount,
+                    'payment_method' => $order->payment_method,
+                    'payment_status' => $order->payment_status,
+                    'customer_name' => $request->input('customer_name'),
+                    'items' => $order->orderItems->map(function ($oi) {
+                        return [
+                            'product_name' => $oi->product->name ?? 'Unknown',
+                            'quantity' => $oi->quantity,
+                            'unit_price' => (float) $oi->unit_price,
+                            'total' => (float) ($oi->quantity * $oi->unit_price),
+                        ];
+                    }),
+                    'created_at' => $order->created_at->toDateTimeString(),
+                ],
+                'payment' => $payment ? [
+                    'amount' => (float) $payment->amount,
+                    'method' => $payment->method,
+                    'amount_tendered' => (float) $amountTendered,
+                    'change' => $change,
+                    'reference' => $payment->transaction_id,
+                ] : null,
+            ], 'Order updated successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->sendError('Failed to update order: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
      * Hold/park an order for later (save cart state).
      */
     public function holdOrder(Request $request)

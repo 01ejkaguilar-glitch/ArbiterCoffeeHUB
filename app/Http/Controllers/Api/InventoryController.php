@@ -6,6 +6,9 @@ use App\Models\InventoryItem;
 use App\Models\InventoryLog;
 use App\Events\LowStockAlert;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreInventoryRequest;
+use App\Http\Requests\UpdateInventoryRequest;
+use App\Http\Requests\AdjustStockRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -82,21 +85,10 @@ class InventoryController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(StoreInventoryRequest $request)
     {
         try {
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'category' => 'nullable|string|max:100',
-                'source' => 'nullable|in:Wet Market,Online',
-                'type' => 'required|in:bar,kitchen,baking,deli,packaging,cleaning,stationery',
-                'quantity' => 'required|numeric|min:0',
-                'unit' => 'required|string|max:50',
-                'reorder_level' => 'required|numeric|min:0',
-                'cost_per_unit' => 'nullable|numeric|min:0',
-            ]);
-
-            $item = InventoryItem::create($request->all());
+            $item = InventoryItem::create($request->validated());
 
             // Log initial stock
             InventoryLog::create([
@@ -123,21 +115,11 @@ class InventoryController extends BaseController
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(UpdateInventoryRequest $request, $id)
     {
         try {
-            $request->validate([
-                'name' => 'string|max:255',
-                'category' => 'nullable|string|max:100',
-                'source' => 'nullable|in:Wet Market,Online',
-                'type' => 'in:bar,kitchen,baking,deli,packaging,cleaning,stationery',
-                'unit' => 'string|max:50',
-                'reorder_level' => 'numeric|min:0',
-                'cost_per_unit' => 'nullable|numeric|min:0',
-            ]);
-
             $item = InventoryItem::findOrFail($id);
-            $item->update($request->except(['quantity'])); // Quantity changes through adjustStock only
+            $item->update($request->validated()); // Quantity changes through adjustStock only
 
             return $this->sendResponse($item, 'Inventory item updated successfully');
 
@@ -173,22 +155,18 @@ class InventoryController extends BaseController
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function adjustStock(Request $request, $id)
+    public function adjustStock(AdjustStockRequest $request, $id)
     {
         try {
-            $request->validate([
-                'type' => 'required|in:restock,usage,wastage,adjustment',
-                'quantity' => 'required|numeric',
-                'notes' => 'nullable|string|max:500',
-            ]);
+            $data = $request->validated();
 
             DB::beginTransaction();
 
             $item = InventoryItem::findOrFail($id);
             $oldQuantity = $item->quantity;
 
-            $type = $request->input('type');
-            $quantity = $request->input('quantity');
+            $type = $data['type'];
+            $quantity = $data['quantity'];
 
             // Calculate new quantity based on type
             if ($type === 'restock' || $type === 'adjustment') {
@@ -210,7 +188,7 @@ class InventoryController extends BaseController
                 'inventory_item_id' => $item->id,
                 'type' => $type,
                 'quantity' => abs($quantity),
-                'notes' => $request->input('notes'),
+                'notes' => $data['notes'] ?? null,
                 'user_id' => Auth::id(),
             ]);
 

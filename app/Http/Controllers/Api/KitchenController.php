@@ -88,6 +88,28 @@ class KitchenController extends BaseController
     }
 
     /**
+     * Get a single order from the kitchen queue.
+     */
+    public function showOrder($id)
+    {
+        try {
+            $order = Order::whereIn('status', ['pending', 'confirmed', 'preparing', 'ready'])
+                ->whereHas('orderItems.product.category', function ($q) {
+                    $q->where('name', 'NOT LIKE', '%coffee%')
+                      ->where('name', 'NOT LIKE', '%tea%')
+                      ->where('name', 'NOT LIKE', '%beverage%')
+                      ->where('name', 'NOT LIKE', '%drink%');
+                })
+                ->with(['orderItems.product.category', 'user'])
+                ->findOrFail($id);
+
+            return $this->sendResponse($order, 'Order retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to retrieve order', 500, ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
      * Update order status
      */
     public function updateOrderStatus(UpdateOrderStatusRequest $request, $id)
@@ -129,10 +151,12 @@ class KitchenController extends BaseController
 
             $order->save();
             $order->load(['orderItems.product', 'user']);
+            /** @var \App\Models\User|null $actor */
+            $actor = Auth::user();
 
             // Broadcast real-time event and send notification to customer
             $oldStatus = $order->getOriginal('status') ?? 'pending';
-            event(new OrderStatusUpdated($order, $oldStatus, $request->input('status'), auth()->user()));
+            event(new OrderStatusUpdated($order, $oldStatus, $request->input('status'), $actor));
 
             if ($order->user) {
                 $notifType = match ($request->input('status')) {

@@ -135,6 +135,7 @@ Route::prefix('v1')->group(function () {
 
     // Contact Form (public submission)
     Route::post('/contact', [ContactController::class, 'store']);
+    Route::post('/contact/track', [ContactController::class, 'trackSubmission']);
 
     // Inquiries (public submission)
     Route::post('/inquiries/barista-training', [InquiryController::class, 'storeBaristaTraining']);
@@ -148,7 +149,10 @@ Route::prefix('v1')->group(function () {
 
         // Notification CRUD (authenticated users)
         Route::get('/notifications', [NotificationController::class, 'index']);
+            Route::post('/notifications/send', [NotificationController::class, 'sendNotification'])
+                ->middleware('role:admin|super-admin');
         Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::put('/notifications/{id}', [NotificationController::class, 'update']);
         Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
         Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
         Route::delete('/notifications', [NotificationController::class, 'clearAll']);
@@ -170,6 +174,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/admin/orders', [AdminController::class, 'getAllOrders']);
             Route::get('/admin/orders/{id}', [AdminController::class, 'getOrderDetails']);
             Route::patch('/admin/orders/{id}/status', [AdminController::class, 'updateOrderStatus']);
+            Route::delete('/admin/orders/{id}', [AdminController::class, 'deleteOrder']);
 
             // Dashboard Statistics
             Route::get('/admin/dashboard/stats', [AdminController::class, 'getDashboardStats']);
@@ -257,6 +262,10 @@ Route::prefix('v1')->group(function () {
 
             // Customer Insights Analytics (Admin can view all customers)
             Route::post('/admin/analytics/customer-insights/bulk', [\App\Http\Controllers\Api\V1\CustomerInsightsController::class, 'getBulkInsights']);
+
+            // Customer Taste Preferences (Admin support view)
+            Route::get('/admin/customers/{id}/taste-preferences', [CustomerController::class, 'getCustomerTastePreferences']);
+            Route::put('/admin/customers/{id}/taste-preferences', [CustomerController::class, 'updateCustomerTastePreferences']);
 
             // Reports
             Route::get('/admin/reports/attendance', [ReportController::class, 'getAttendanceReport']);
@@ -348,6 +357,8 @@ Route::prefix('v1')->group(function () {
 
             // Customer Favorites/Wishlist
             Route::get('/customer/favorites', [CustomerController::class, 'getFavorites']);
+            Route::get('/customer/favorites/{id}', [CustomerController::class, 'getFavorite']);
+            Route::put('/customer/favorites/{id}', [CustomerController::class, 'updateFavorite']);
             Route::post('/customer/favorites', [CustomerController::class, 'addFavorite']);
             Route::delete('/customer/favorites/{id}', [CustomerController::class, 'removeFavorite']);
             Route::post('/customer/favorites/toggle', [CustomerController::class, 'toggleFavorite']);
@@ -363,12 +374,15 @@ Route::prefix('v1')->group(function () {
             Route::post('/orders', [OrderController::class, 'store'])
                 ->middleware('throttle.user:10,1'); // 10 orders per minute per user
             Route::get('/orders/{id}', [OrderController::class, 'show']);
+                        Route::put('/orders/{id}', [OrderController::class, 'update'])
+                            ->middleware('throttle.user:5,1'); // 5 order updates per minute per user
             Route::post('/orders/{id}/reorder', [OrderController::class, 'reorder'])
                 ->middleware('throttle.user:5,1'); // 5 reorders per minute per user
             Route::post('/orders/{id}/confirm', [OrderController::class, 'confirm']);
             Route::post('/orders/{id}/cancel-request', [OrderController::class, 'requestCancellation']);
 
             // Shopping Cart
+            Route::post('/cart', [CartController::class, 'create']);
             Route::get('/cart', [CartController::class, 'index']);
             Route::post('/cart/items', [CartController::class, 'addItem']);
             Route::put('/cart/items/{id}', [CartController::class, 'updateItem']);
@@ -376,6 +390,8 @@ Route::prefix('v1')->group(function () {
             Route::post('/cart/clear', [CartController::class, 'clear']);
 
             // Payments
+                Route::get('/payments', [PaymentController::class, 'index']);
+                Route::get('/payments/{id}', [PaymentController::class, 'show']);
             Route::post('/payments/gcash', [PaymentController::class, 'processGCash']);
             // Route::post('/payments/maya', [PaymentController::class, 'processMaya']); // Temporarily disabled
             Route::post('/payments/cash', [PaymentController::class, 'recordCash']);
@@ -423,6 +439,7 @@ Route::prefix('v1')->group(function () {
 
                 // Order Queue Management
                 Route::get('/orders/queue', [BaristaController::class, 'getOrderQueue']);
+                Route::get('/orders/queue/{id}', [BaristaController::class, 'showOrder']);
                 Route::put('/orders/{id}/status', [BaristaController::class, 'updateOrderStatus']);
                 Route::get('/orders/completed', [BaristaController::class, 'getCompletedOrders']);
 
@@ -462,6 +479,7 @@ Route::prefix('v1')->group(function () {
                 Route::prefix('pos')->group(function () {
                     Route::get('/products', [PosController::class, 'getProducts']);
                     Route::post('/orders', [PosController::class, 'createOrder']);
+                    Route::put('/orders/{id}', [PosController::class, 'updateOrder']);
                     Route::post('/orders/hold', [PosController::class, 'holdOrder']);
                     Route::get('/orders/held', [PosController::class, 'getHeldOrders']);
                     Route::post('/orders/held/{id}/resume', [PosController::class, 'resumeHeldOrder']);
@@ -482,6 +500,7 @@ Route::prefix('v1')->group(function () {
 
                 // Food Order Queue Management
                 Route::get('/orders/queue', [KitchenController::class, 'getOrderQueue']);
+                Route::get('/orders/queue/{id}', [KitchenController::class, 'showOrder']);
                 Route::put('/orders/{id}/status', [KitchenController::class, 'updateOrderStatus']);
                 Route::get('/orders/completed', [KitchenController::class, 'getCompletedOrders']);
 
@@ -535,9 +554,12 @@ Route::prefix('v1')->group(function () {
             Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
 
             // Attendance Management
-            Route::get('/attendance', [AttendanceController::class, 'index']);
-            Route::post('/attendance/mark', [AttendanceController::class, 'markAttendance']);
-            Route::get('/attendance/summary', [AttendanceController::class, 'getSummary']);
+            Route::get('/attendance', '\App\Http\Controllers\Api\AttendanceController@index');
+            Route::post('/attendance/mark', '\App\Http\Controllers\Api\AttendanceController@markAttendance');
+            Route::get('/attendance/summary', '\App\Http\Controllers\Api\AttendanceController@getSummary');
+            Route::get('/attendance/{id}', '\App\Http\Controllers\Api\AttendanceController@show');
+            Route::put('/attendance/{id}', '\App\Http\Controllers\Api\AttendanceController@update');
+            Route::delete('/attendance/{id}', '\App\Http\Controllers\Api\AttendanceController@destroy');
 
             // Shift Scheduling
             Route::get('/shifts', [ShiftController::class, 'index']);
@@ -593,9 +615,9 @@ Route::prefix('v1')->group(function () {
         Route::middleware(['auth:sanctum', 'role:barista|kitchen-staff|manager|admin|super-admin'])->prefix('employee')->group(function () {
 
             // Attendance Clock In/Out
-            Route::get('/attendance', [AttendanceController::class, 'getMyAttendance']);
-            Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn']);
-            Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut']);
+            Route::get('/attendance', '\App\Http\Controllers\Api\AttendanceController@getMyAttendance');
+            Route::post('/attendance/clock-in', '\App\Http\Controllers\Api\AttendanceController@clockIn');
+            Route::post('/attendance/clock-out', '\App\Http\Controllers\Api\AttendanceController@clockOut');
 
             // My Shifts
             Route::get('/shifts', [ShiftController::class, 'getMyShifts']);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\SystemConfig;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class PublicController extends Controller
 {
@@ -14,15 +15,17 @@ class PublicController extends Controller
      */
     public function getOperatingHours(): JsonResponse
     {
-        $operatingHours = SystemConfig::getValue('operating_hours', [
-            'monday' => ['open' => '00:00', 'close' => '00:00', 'is_open' => false],
-            'tuesday' => ['open' => '09:00', 'close' => '21:00', 'is_open' => true],
-            'wednesday' => ['open' => '09:00', 'close' => '21:00', 'is_open' => true],
-            'thursday' => ['open' => '09:00', 'close' => '21:00', 'is_open' => true],
-            'friday' => ['open' => '09:00', 'close' => '21:00', 'is_open' => true],
-            'saturday' => ['open' => '09:00', 'close' => '21:00', 'is_open' => true],
-            'sunday' => ['open' => '09:00', 'close' => '21:00', 'is_open' => true],
-        ]);
+        $operatingHours = Cache::remember('public.settings.operating_hours', now()->addMinutes(10), function () {
+            return SystemConfig::getValue('operating_hours', [
+                'monday' => ['open' => '00:00', 'close' => '00:00', 'is_open' => false],
+                'tuesday' => ['open' => '09:00', 'close' => '21:00', 'is_open' => true],
+                'wednesday' => ['open' => '09:00', 'close' => '21:00', 'is_open' => true],
+                'thursday' => ['open' => '09:00', 'close' => '21:00', 'is_open' => true],
+                'friday' => ['open' => '09:00', 'close' => '21:00', 'is_open' => true],
+                'saturday' => ['open' => '09:00', 'close' => '21:00', 'is_open' => true],
+                'sunday' => ['open' => '09:00', 'close' => '21:00', 'is_open' => true],
+            ]);
+        });
 
         return $this->sendResponse($operatingHours, 'Operating hours retrieved successfully');
     }
@@ -33,27 +36,29 @@ class PublicController extends Controller
      */
     public function getContactInfo(): JsonResponse
     {
-        $contactInfo = SystemConfig::getValue('contact_info', [
-            'phone' => '0977 278 8903',
-            'email' => 'arbitercoffee.ph@gmail.com',
-            'address' => [
-                'street' => 'Behind House, 146 Bagong Bayan 2',
-                'city' => 'Bongabong',
-                'province' => 'Oriental Mindoro',
-                'postal_code' => '5211',
-                'country' => 'Philippines',
-            ],
-            'social_media' => [
-                'facebook' => 'https://www.facebook.com/profile.php?id=100085413528378',
-                'instagram' => 'https://instagram.com/arbitercoffee.ph',
-                'twitter' => 'https://twitter.com/arbitercoffee',
-                'tiktok' => 'https://tiktok.com/@arbitercoffee.ph',
-            ],
-            'map_coordinates' => [
-                'latitude' => 12.751724280270828,
-                'longitude' => 121.48253475276138,
-            ],
-        ]);
+        $contactInfo = Cache::remember('public.settings.contact_info', now()->addMinutes(10), function () {
+            return SystemConfig::getValue('contact_info', [
+                'phone' => '0977 278 8903',
+                'email' => 'arbitercoffee.ph@gmail.com',
+                'address' => [
+                    'street' => 'Behind House, 146 Bagong Bayan 2',
+                    'city' => 'Bongabong',
+                    'province' => 'Oriental Mindoro',
+                    'postal_code' => '5211',
+                    'country' => 'Philippines',
+                ],
+                'social_media' => [
+                    'facebook' => 'https://www.facebook.com/profile.php?id=100085413528378',
+                    'instagram' => 'https://instagram.com/arbitercoffee.ph',
+                    'twitter' => 'https://twitter.com/arbitercoffee',
+                    'tiktok' => 'https://tiktok.com/@arbitercoffee.ph',
+                ],
+                'map_coordinates' => [
+                    'latitude' => 12.751724280270828,
+                    'longitude' => 121.48253475276138,
+                ],
+            ]);
+        });
 
         return $this->sendResponse($contactInfo, 'Contact information retrieved successfully');
     }
@@ -64,35 +69,37 @@ class PublicController extends Controller
      */
     public function getTeamMembers(): JsonResponse
     {
-        $teamMembers = SystemConfig::getValue('team_members', [
-            [
-                'id' => 1,
-                'name' => 'Juan Dela Cruz',
-                'position' => 'Head Barista',
-                'bio' => 'Passionate coffee enthusiast with 10+ years of experience in specialty coffee.',
-                'photo_url' => '/images/team/juan.jpg',
-                'specialties' => ['Espresso', 'Latte Art', 'Coffee Tasting'],
-                'order' => 1,
-            ],
-            [
-                'id' => 2,
-                'name' => 'Maria Santos',
-                'position' => 'Coffee Roaster',
-                'bio' => 'Expert in coffee roasting with a focus on single-origin beans.',
-                'photo_url' => '/images/team/maria.jpg',
-                'specialties' => ['Coffee Roasting', 'Bean Selection', 'Quality Control'],
-                'order' => 2,
-            ],
-            [
-                'id' => 3,
-                'name' => 'Carlos Reyes',
-                'position' => 'Customer Experience Manager',
-                'bio' => 'Dedicated to creating memorable coffee experiences for every customer.',
-                'photo_url' => '/images/team/carlos.jpg',
-                'specialties' => ['Customer Service', 'Coffee Education', 'Event Management'],
-                'order' => 3,
-            ],
-        ]);
+        $teamMembers = Cache::remember('public.settings.team_members', now()->addMinutes(10), function () {
+            return SystemConfig::getValue('team_members', [
+                [
+                    'id' => 1,
+                    'name' => 'Juan Dela Cruz',
+                    'position' => 'Head Barista',
+                    'bio' => 'Passionate coffee enthusiast with 10+ years of experience in specialty coffee.',
+                    'photo_url' => '/images/team/juan.jpg',
+                    'specialties' => ['Espresso', 'Latte Art', 'Coffee Tasting'],
+                    'order' => 1,
+                ],
+                [
+                    'id' => 2,
+                    'name' => 'Maria Santos',
+                    'position' => 'Coffee Roaster',
+                    'bio' => 'Expert in coffee roasting with a focus on single-origin beans.',
+                    'photo_url' => '/images/team/maria.jpg',
+                    'specialties' => ['Coffee Roasting', 'Bean Selection', 'Quality Control'],
+                    'order' => 2,
+                ],
+                [
+                    'id' => 3,
+                    'name' => 'Carlos Reyes',
+                    'position' => 'Customer Experience Manager',
+                    'bio' => 'Dedicated to creating memorable coffee experiences for every customer.',
+                    'photo_url' => '/images/team/carlos.jpg',
+                    'specialties' => ['Customer Service', 'Coffee Education', 'Event Management'],
+                    'order' => 3,
+                ],
+            ]);
+        });
 
         // Sort by order
         usort($teamMembers, function ($a, $b) {
@@ -108,48 +115,50 @@ class PublicController extends Controller
      */
     public function getCompanyTimeline(): JsonResponse
     {
-        $timeline = SystemConfig::getValue('company_timeline', [
-            [
-                'id' => 1,
-                'year' => 2023,
-                'title' => 'The Beginning',
-                'description' => 'Arbiter Coffee Hub opened its doors in April 2023 with a vision to bring specialty coffee to the Philippines.',
-                'image_url' => '/images/timeline/2023.jpg',
-                'order' => 1,
-            ],
-            [
-                'id' => 2,
-                'year' => 2023,
-                'title' => 'Building the Menu',
-                'description' => 'Curated our signature drinks and food offerings, sourcing quality beans from local and international roasters.',
-                'image_url' => '/images/timeline/2023b.jpg',
-                'order' => 2,
-            ],
-            [
-                'id' => 3,
-                'year' => 2024,
-                'title' => 'Going Digital',
-                'description' => 'Launched our online ordering platform, making it easier for customers to enjoy Arbiter Coffee anywhere.',
-                'image_url' => '/images/timeline/2024.jpg',
-                'order' => 3,
-            ],
-            [
-                'id' => 4,
-                'year' => 2025,
-                'title' => 'Growing Community',
-                'description' => 'Expanded our team, introduced loyalty rewards, and built a community of coffee lovers around the brand.',
-                'image_url' => '/images/timeline/2025.jpg',
-                'order' => 4,
-            ],
-            [
-                'id' => 5,
-                'year' => 2026,
-                'title' => 'What\'s Next',
-                'description' => 'Continuing to grow — new products, new experiences, and an even stronger coffee community.',
-                'image_url' => '/images/timeline/2026.jpg',
-                'order' => 5,
-            ],
-        ]);
+        $timeline = Cache::remember('public.settings.company_timeline', now()->addMinutes(10), function () {
+            return SystemConfig::getValue('company_timeline', [
+                [
+                    'id' => 1,
+                    'year' => 2023,
+                    'title' => 'The Beginning',
+                    'description' => 'Arbiter Coffee Hub opened its doors in April 2023 with a vision to bring specialty coffee to the Philippines.',
+                    'image_url' => '/images/timeline/2023.jpg',
+                    'order' => 1,
+                ],
+                [
+                    'id' => 2,
+                    'year' => 2023,
+                    'title' => 'Building the Menu',
+                    'description' => 'Curated our signature drinks and food offerings, sourcing quality beans from local and international roasters.',
+                    'image_url' => '/images/timeline/2023b.jpg',
+                    'order' => 2,
+                ],
+                [
+                    'id' => 3,
+                    'year' => 2024,
+                    'title' => 'Going Digital',
+                    'description' => 'Launched our online ordering platform, making it easier for customers to enjoy Arbiter Coffee anywhere.',
+                    'image_url' => '/images/timeline/2024.jpg',
+                    'order' => 3,
+                ],
+                [
+                    'id' => 4,
+                    'year' => 2025,
+                    'title' => 'Growing Community',
+                    'description' => 'Expanded our team, introduced loyalty rewards, and built a community of coffee lovers around the brand.',
+                    'image_url' => '/images/timeline/2025.jpg',
+                    'order' => 4,
+                ],
+                [
+                    'id' => 5,
+                    'year' => 2026,
+                    'title' => 'What\'s Next',
+                    'description' => 'Continuing to grow — new products, new experiences, and an even stronger coffee community.',
+                    'image_url' => '/images/timeline/2026.jpg',
+                    'order' => 5,
+                ],
+            ]);
+        });
 
         // Sort by order (chronological)
         usort($timeline, function ($a, $b) {
@@ -163,18 +172,9 @@ class PublicController extends Controller
      * Update team members (admin only)
      * PUT /api/v1/admin/team-members
      */
-    public function updateTeamMembers(\Illuminate\Http\Request $request): JsonResponse
+    public function updateTeamMembers(\App\Http\Requests\UpdateTeamMembersRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'team'                      => 'required|array|min:1',
-            'team.*.name'               => 'required|string|max:120',
-            'team.*.position'           => 'required|string|max:120',
-            'team.*.bio'                => 'required|string|max:500',
-            'team.*.photo_url'          => 'nullable|string|max:255',
-            'team.*.specialties'        => 'nullable|array',
-            'team.*.specialties.*'      => 'string|max:80',
-            'team.*.order'              => 'nullable|integer',
-        ]);
+        $validated = $request->validated();
 
         $items = array_values($validated['team']);
         foreach ($items as $i => &$item) {
@@ -196,16 +196,9 @@ class PublicController extends Controller
      * Update company timeline (admin only)
      * PUT /api/v1/admin/company-timeline
      */
-    public function updateCompanyTimeline(\Illuminate\Http\Request $request): JsonResponse
+    public function updateCompanyTimeline(\App\Http\Requests\UpdateCompanyTimelineRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'timeline'                  => 'required|array|min:1',
-            'timeline.*.year'           => 'required|integer|min:1900|max:2100',
-            'timeline.*.title'          => 'required|string|max:120',
-            'timeline.*.description'    => 'required|string|max:500',
-            'timeline.*.image_url'      => 'nullable|string|max:255',
-            'timeline.*.order'          => 'nullable|integer',
-        ]);
+        $validated = $request->validated();
 
         $items = array_values($validated['timeline']);
         foreach ($items as $i => &$item) {
@@ -228,15 +221,9 @@ class PublicController extends Controller
      * Create a single timeline entry (admin only)
      * POST /api/v1/admin/company-timeline
      */
-    public function createTimelineEntry(\Illuminate\Http\Request $request): JsonResponse
+    public function createTimelineEntry(\App\Http\Requests\CreateTimelineEntryRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'year'        => 'required|integer|min:1900|max:2100',
-            'title'       => 'required|string|max:120',
-            'description' => 'required|string|max:500',
-            'image_url'   => 'nullable|string|max:255',
-            'order'       => 'nullable|integer',
-        ]);
+        $validated = $request->validated();
 
         $timeline = SystemConfig::getValue('company_timeline', []);
         $maxId = collect($timeline)->max('id') ?? 0;
@@ -255,15 +242,9 @@ class PublicController extends Controller
      * Update a single timeline entry by id (admin only)
      * PUT /api/v1/admin/company-timeline/{id}
      */
-    public function updateTimelineEntry(\Illuminate\Http\Request $request, $id): JsonResponse
+    public function updateTimelineEntry(\App\Http\Requests\UpdateTimelineEntryRequest $request, $id): JsonResponse
     {
-        $validated = $request->validate([
-            'year'        => 'required|integer|min:1900|max:2100',
-            'title'       => 'required|string|max:120',
-            'description' => 'required|string|max:500',
-            'image_url'   => 'nullable|string|max:255',
-            'order'       => 'nullable|integer',
-        ]);
+        $validated = $request->validated();
 
         $timeline = SystemConfig::getValue('company_timeline', []);
         $found = false;
@@ -311,17 +292,9 @@ class PublicController extends Controller
      * Create a single team member (admin only)
      * POST /api/v1/admin/team-members
      */
-    public function createTeamMember(\Illuminate\Http\Request $request): JsonResponse
+    public function createTeamMember(\App\Http\Requests\CreateTeamMemberRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name'          => 'required|string|max:120',
-            'position'      => 'required|string|max:120',
-            'bio'           => 'required|string|max:500',
-            'photo_url'     => 'nullable|string|max:255',
-            'specialties'   => 'nullable|array',
-            'specialties.*' => 'string|max:80',
-            'order'         => 'nullable|integer',
-        ]);
+        $validated = $request->validated();
 
         $team  = SystemConfig::getValue('team_members', []);
         $maxId = collect($team)->max('id') ?? 0;
@@ -341,17 +314,9 @@ class PublicController extends Controller
      * Update a single team member by id (admin only)
      * PUT /api/v1/admin/team-members/{id}
      */
-    public function updateTeamMember(\Illuminate\Http\Request $request, $id): JsonResponse
+    public function updateTeamMember(\App\Http\Requests\UpdateTeamMemberRequest $request, $id): JsonResponse
     {
-        $validated = $request->validate([
-            'name'          => 'required|string|max:120',
-            'position'      => 'required|string|max:120',
-            'bio'           => 'required|string|max:500',
-            'photo_url'     => 'nullable|string|max:255',
-            'specialties'   => 'nullable|array',
-            'specialties.*' => 'string|max:80',
-            'order'         => 'nullable|integer',
-        ]);
+        $validated = $request->validated();
 
         $team  = SystemConfig::getValue('team_members', []);
         $found = false;

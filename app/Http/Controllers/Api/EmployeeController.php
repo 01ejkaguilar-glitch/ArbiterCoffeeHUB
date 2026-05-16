@@ -67,35 +67,23 @@ class EmployeeController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\StoreEmployeeRequest $request)
     {
         try {
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
-                'phone' => 'nullable|string|max:20',
-                'password' => 'required|string|min:8',
-                'position' => 'required|string|max:100',
-                'department' => 'nullable|string|max:100',
-                'hire_date' => 'required|date',
-                'salary' => 'nullable|numeric|min:0',
-                'emergency_contact_name' => 'nullable|string|max:255',
-                'emergency_contact_phone' => 'nullable|string|max:20',
-                'role' => 'required|in:barista,manager,admin',
-            ]);
+            $data = $request->validated();
 
             DB::beginTransaction();
 
             // Create user account
             $user = User::create([
-                'name' => $request->input('name'),
-                'email' => $request->input('email'),
-                'phone' => $request->input('phone'),
-                'password' => Hash::make($request->input('password')),
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'] ?? null,
+                'password' => Hash::make($data['password']),
             ]);
 
             // Assign role
-            $user->assignRole($request->input('role'));
+            $user->assignRole($data['role']);
 
             // Generate employee number
             $latestEmployee = Employee::latest('id')->first();
@@ -106,12 +94,12 @@ class EmployeeController extends BaseController
             $employee = Employee::create([
                 'user_id' => $user->id,
                 'employee_number' => $employeeNumber,
-                'position' => $request->input('position'),
-                'department' => $request->input('department'),
-                'hire_date' => $request->input('hire_date'),
-                'salary' => $request->input('salary'),
-                'emergency_contact_name' => $request->input('emergency_contact_name'),
-                'emergency_contact_phone' => $request->input('emergency_contact_phone'),
+                'position' => $data['position'],
+                'department' => $data['department'] ?? null,
+                'hire_date' => $data['hire_date'],
+                'salary' => $data['salary'] ?? null,
+                'emergency_contact_name' => $data['emergency_contact_name'] ?? null,
+                'emergency_contact_phone' => $data['emergency_contact_phone'] ?? null,
             ]);
 
             DB::commit();
@@ -136,23 +124,15 @@ class EmployeeController extends BaseController
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(\App\Http\Requests\UpdateEmployeeRequest $request, $id)
     {
         try {
-            $request->validate([
-                'position'                => 'string|max:100',
-                'department'              => 'nullable|string|max:100',
-                'salary'                  => 'nullable|numeric|min:0',
-                'hire_date'               => 'nullable|date',
-                'status'                  => 'in:active,on_leave,suspended,terminated,inactive',
-                'emergency_contact_name'  => 'nullable|string|max:255',
-                'emergency_contact_phone' => 'nullable|string|max:20',
-            ]);
+            $data = $request->validated();
 
             DB::beginTransaction();
 
             $employee = Employee::findOrFail($id);
-            $employee->update($request->only([
+            $employee->update(array_filter($request->only([
                 'position',
                 'department',
                 'hire_date',
@@ -160,11 +140,15 @@ class EmployeeController extends BaseController
                 'status',
                 'emergency_contact_name',
                 'emergency_contact_phone',
-            ]));
+            ]), function($v) { return $v !== null; }));
 
             // Update user info if provided
-            if ($request->has('name') || $request->has('phone') || $request->has('email')) {
-                $employee->user->update($request->only(['name', 'phone', 'email']));
+            $userData = array_filter($data, function($k) { return in_array($k, ['name','phone','email','password']); }, ARRAY_FILTER_USE_KEY);
+            if (!empty($userData)) {
+                if (isset($userData['password'])) {
+                    $userData['password'] = Hash::make($userData['password']);
+                }
+                $employee->user->update($userData);
             }
 
             DB::commit();

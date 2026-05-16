@@ -34,29 +34,22 @@ class AddressController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\StoreAddressRequest $request)
     {
         try {
-            $request->validate([
-                'type' => 'required|in:home,work,other',
-                'street' => 'required|string|max:255',
-                'city' => 'required|string|max:100',
-                'province' => 'required|string|max:100',
-                'postal_code' => 'required|string|max:10',
-                'is_default' => 'sometimes|boolean',
-            ]);
+            $data = $request->validated();
 
             $user = Auth::user();
 
             // If this is set as default, unset other defaults
-            if ($request->boolean('is_default')) {
+            if (!empty($data['is_default']) && $request->boolean('is_default')) {
                 Address::where('user_id', $user->id)
                     ->update(['is_default' => false]);
             }
 
             // If this is the first address, make it default
             $addressCount = Address::where('user_id', $user->id)->count();
-            $isDefault = $addressCount === 0 ? true : $request->boolean('is_default');
+            $isDefault = $addressCount === 0 ? true : ($request->boolean('is_default') || (!empty($data['is_default']) && $data['is_default']));
 
             $address = Address::create([
                 'user_id' => $user->id,
@@ -84,17 +77,10 @@ class AddressController extends BaseController
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(\App\Http\Requests\UpdateAddressRequest $request, $id)
     {
         try {
-            $request->validate([
-                'type' => 'sometimes|in:home,work,other',
-                'street' => 'sometimes|string|max:255',
-                'city' => 'sometimes|string|max:100',
-                'province' => 'sometimes|string|max:100',
-                'postal_code' => 'sometimes|string|max:10',
-                'is_default' => 'sometimes|boolean',
-            ]);
+            $data = $request->validated();
 
             $user = Auth::user();
 
@@ -107,15 +93,15 @@ class AddressController extends BaseController
             }
 
             // If setting as default, unset other defaults
-            if ($request->boolean('is_default')) {
+            if (!empty($data['is_default']) && $request->boolean('is_default')) {
                 Address::where('user_id', $user->id)
                     ->where('id', '!=', $id)
                     ->update(['is_default' => false]);
             }
 
-            $address->update($request->only([
+            $address->update(array_filter($request->only([
                 'type', 'street', 'city', 'province', 'postal_code', 'is_default'
-            ]));
+            ]), function($v) { return $v !== null; }));
 
             return $this->sendResponse($address, 'Address updated successfully');
 

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductFavorite extends Model
 {
+    protected $table = 'customer_favorites';
+
     protected $fillable = [
         'user_id',
         'product_id',

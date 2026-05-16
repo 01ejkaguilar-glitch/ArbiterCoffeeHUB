@@ -41,6 +41,22 @@ class BaristaController extends BaseController
     }
 
     /**
+     * Get a single order from the barista queue.
+     */
+    public function showOrder($id)
+    {
+        try {
+            $order = Order::whereIn('status', ['pending', 'confirmed', 'preparing', 'ready'])
+                ->with(['orderItems.product', 'user'])
+                ->findOrFail($id);
+
+            return $this->sendResponse($order, 'Order retrieved successfully');
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to retrieve order', 500, ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
      * Update order status
      *
      * @param \App\Http\Requests\UpdateOrderStatusRequest $request
@@ -92,9 +108,11 @@ class BaristaController extends BaseController
             $order->save();
 
             $order->load(['orderItems.product', 'user']);
+            /** @var \App\Models\User|null $actor */
+            $actor = Auth::user();
 
             // Broadcast real-time event and send notification to customer
-            event(new OrderStatusUpdated($order, $oldStatus, $request->input('status'), auth()->user()));
+            event(new OrderStatusUpdated($order, $oldStatus, $request->input('status'), $actor));
 
             if ($order->user) {
                 $notifType = match ($request->input('status')) {
