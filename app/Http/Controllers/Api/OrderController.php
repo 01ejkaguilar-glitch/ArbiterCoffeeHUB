@@ -433,4 +433,73 @@ class OrderController extends BaseController
             return $this->sendError('Failed to send notification', 500, ['error' => $e->getMessage()]);
         }
     }
+
+    /**
+     * Update order details
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(Request $request, $id)
+    {
+        try {
+            $user = Auth::user();
+
+            // Find order - customer can only update their own orders
+            $order = Order::where('user_id', $user->id)
+                ->where('id', $id)
+                ->first();
+
+            if (!$order) {
+                return $this->sendError('Order not found', 404);
+            }
+
+            // Only allow updates for pending or preparing orders
+            if (!in_array($order->status, ['pending', 'preparing'])) {
+                return $this->sendError('Order can only be updated when pending or preparing', 400);
+            }
+
+            // Validate input
+            $validated = $request->validate([
+                'delivery_address_id' => 'sometimes|exists:addresses,id',
+                'special_instructions' => 'sometimes|string|max:500',
+                'scheduled_time' => 'sometimes|date_format:H:i|after_or_equal:now',
+            ]);
+
+            // Update fields if provided
+            if ($request->has('delivery_address_id')) {
+                // Verify address belongs to user
+                $addressBelongsToUser = \App\Models\Address::where('id', $request->input('delivery_address_id'))
+                    ->where('user_id', $user->id)
+                    ->exists();
+
+                if (!$addressBelongsToUser) {
+                    return $this->sendError('Address does not belong to user', 403);
+                }
+
+                $order->delivery_address_id = $request->input('delivery_address_id');
+            }
+
+            if ($request->has('special_instructions')) {
+                $order->special_instructions = $request->input('special_instructions');
+            }
+
+            if ($request->has('scheduled_time')) {
+                $order->scheduled_time = $request->input('scheduled_time');
+            }
+
+            $order->save();
+
+            // Load relationships for response
+            $order->load(['orderItems.product', 'user', 'deliveryAddress']);
+
+            return $this->sendResponse($order, 'Order updated successfully');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->sendValidationError($e->errors());
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to update order', 500, ['error' => $e->getMessage()]);
+        }
+    }
 }

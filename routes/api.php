@@ -363,6 +363,8 @@ Route::prefix('v1')->group(function () {
             Route::post('/orders', [OrderController::class, 'store'])
                 ->middleware('throttle.user:10,1'); // 10 orders per minute per user
             Route::get('/orders/{id}', [OrderController::class, 'show']);
+            Route::put('/orders/{id}', [OrderController::class, 'update'])
+                ->middleware('throttle.user:10,1'); // 10 updates per minute per user
             Route::post('/orders/{id}/reorder', [OrderController::class, 'reorder'])
                 ->middleware('throttle.user:5,1'); // 5 reorders per minute per user
             Route::post('/orders/{id}/confirm', [OrderController::class, 'confirm']);
@@ -380,6 +382,17 @@ Route::prefix('v1')->group(function () {
             // Route::post('/payments/maya', [PaymentController::class, 'processMaya']); // Temporarily disabled
             Route::post('/payments/cash', [PaymentController::class, 'recordCash']);
             Route::get('/payments/{id}/status', [PaymentController::class, 'checkStatus']);
+
+            // Payment history endpoints
+            Route::middleware('auth:sanctum')->group(function () {
+                Route::get('/customer/payments', [PaymentController::class, 'index']);
+                Route::get('/customer/payments/{id}', [PaymentController::class, 'show']);
+            });
+
+            // Admin payment history endpoints
+            Route::middleware(['auth:sanctum', 'role:admin|super-admin'])->group(function () {
+                Route::get('/admin/payments', [PaymentController::class, 'adminIndex']);
+            });
             
             // ==================================================
             // RECOMMENDATION SYSTEM ROUTES
@@ -538,6 +551,8 @@ Route::prefix('v1')->group(function () {
             Route::get('/attendance', [AttendanceController::class, 'index']);
             Route::post('/attendance/mark', [AttendanceController::class, 'markAttendance']);
             Route::get('/attendance/summary', [AttendanceController::class, 'getSummary']);
+            Route::put('/attendance/{id}', [AttendanceController::class, 'update']);
+            Route::delete('/attendance/{id}', [AttendanceController::class, 'destroy']);
 
             // Shift Scheduling
             Route::get('/shifts', [ShiftController::class, 'index']);

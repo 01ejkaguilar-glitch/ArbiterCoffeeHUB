@@ -280,4 +280,121 @@ class AttendanceController extends BaseController
             return $this->sendError('Failed to retrieve attendance', 500, ['error' => $e->getMessage()]);
         }
     }
+
+    /**
+     * Update attendance record
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(Request $request, $id)
+    {
+        try {
+            // Only managers and admins can update attendance records
+            $user = Auth::user();
+
+            if (!$user->hasAnyRole(['manager', 'workforce-manager', 'admin', 'super-admin'])) {
+                return $this->sendError('Unauthorized', 403);
+            }
+
+            $attendance = Attendance::find($id);
+
+            if (!$attendance) {
+                return $this->sendError('Attendance record not found', 404);
+            }
+
+            // Only allow updates if not yet approved (to maintain audit integrity)
+            if ($attendance->status === 'approved') {
+                return $this->sendError('Cannot update approved attendance record', 400);
+            }
+
+            $request->validate([
+                'employee_id' => 'sometimes|exists:employees,id',
+                'date' => 'sometimes|date',
+                'status' => 'sometimes|in:present,absent,late,half_day,on_leave',
+                'clock_in' => 'nullable|date_format:H:i',
+                'clock_out' => 'nullable|date_format:H:i',
+                'notes' => 'nullable|string|max:500',
+                'hours_worked' => 'nullable|numeric|min:0|max:24',
+            ]);
+
+            if ($request->has('employee_id')) {
+                $attendance->employee_id = $request->input('employee_id');
+            }
+
+            if ($request->has('date')) {
+                $attendance->date = $request->input('date');
+            }
+
+            if ($request->has('status')) {
+                $attendance->status = $request->input('status');
+            }
+
+            if ($request->has('clock_in')) {
+                $attendance->clock_in = $request->input('clock_in') ?
+                    Carbon::parse($attendance->date . ' ' . $request->input('clock_in')) : null;
+            }
+
+            if ($request->has('clock_out')) {
+                $attendance->clock_out = $request->input('clock_out') ?
+                    Carbon::parse($attendance->date . ' ' . $request->input('clock_out')) : null;
+            }
+
+            if ($request->has('notes')) {
+                $attendance->notes = $request->input('notes');
+            }
+
+            if ($request->has('hours_worked')) {
+                $attendance->hours_worked = $request->input('hours_worked');
+            }
+
+            $attendance->save();
+
+            $attendance->load('employee.user');
+
+            return $this->sendResponse($attendance, 'Attendance record updated successfully');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->sendValidationError($e->errors());
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to update attendance record', 500, ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Delete attendance record
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy($id)
+    {
+        try {
+            // Only managers and admins can delete attendance records
+            $user = Auth::user();
+
+            if (!$user->hasAnyRole(['manager', 'workforce-manager', 'admin', 'super-admin'])) {
+                return $this->sendError('Unauthorized', 403);
+            }
+
+            $attendance = Attendance::find($id);
+
+            if (!$attendance) {
+                return $this->sendError('Attendance record not found', 404);
+            }
+
+            // Only allow deletion if not yet approved (to maintain audit integrity)
+            if ($attendance->status === 'approved') {
+                return $this->sendError('Cannot delete approved attendance record', 400);
+            }
+
+            $attendance->delete();
+
+            return $this->sendResponse([], 'Attendance record deleted successfully');
+
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to delete attendance record', 500, ['error' => $e->getMessage()]);
+        }
+    }
 }

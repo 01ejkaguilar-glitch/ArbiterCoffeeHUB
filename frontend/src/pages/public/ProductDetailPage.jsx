@@ -188,9 +188,10 @@ const ProductDetailPage = () => {
                 className="pdp-image"
                 width="800"
                 height="800"
-                loading="eager"
+                loading="lazy"
                 decoding="async"
-                fetchPriority="high"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                srcset={`${productImage} 400w, ${productImage} 800w, ${productImage} 1200w, ${productImage} 1600w`}
                 onError={(e) => { e.target.src = '/assets/images/product-placeholder.png'; }}
               />
             </div>

@@ -13,6 +13,7 @@ import { API_ENDPOINTS } from '../../config/api';
 import { AreaMetricChart } from '../../components/charts';
 import StatusBadge from '../../components/common/StatusBadge';
 import SEO from '../../components/SEO';
+import PullToRefresh from '../../components/mobile/PullToRefresh';
 import './CustomerDashboard.css';
 
 /* ── helpers ── */
@@ -120,7 +121,8 @@ const CustomerDashboard = () => {
   return (
     <main role="main">
       <SEO title="Dashboard" url="/customer/dashboard" />
-      <Container className="py-4">
+      <PullToRefresh onRefresh={fetchDashboard}>
+        <Container className="py-4">
 
         {/* ─── Hero Greeting ────────────────── */}
         <motion.div className="cdb-hero" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -272,8 +274,8 @@ const CustomerDashboard = () => {
             )}
           </div>
         </div>
-
       </Container>
+    </PullToRefresh>
     </main>
   );
 };

@@ -89,7 +89,11 @@
       "Bash(netstat -ano)",
       "Bash(findstr :5000)",
       "PowerShell(Get-Command *)",
-      "Bash(timeout 30 bash *)"
+      "Bash(timeout 30 bash *)",
+      "Bash(pkill -f serve)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(start \"\" \"http://localhost:5000\")",
+      "Bash(npx serve *)"
     ]
   },
   "prefersReducedMotion": false

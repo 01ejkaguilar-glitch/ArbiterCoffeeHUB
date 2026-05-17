@@ -217,4 +217,158 @@ class PaymentController extends BaseController
             return $this->sendError('Failed to retrieve payment status', 500, ['error' => $e->getMessage()]);
         }
     }
+
+    /**
+     * Get customer's payment history
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            $query = Payment::whereHas('order', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->with('order.orderItems.product');
+
+            // Filter by payment method
+            $method = $request->input('method');
+            if ($method) {
+                $query->where('method', $method);
+            }
+
+            // Filter by status
+            $status = $request->input('status');
+            if ($status) {
+                $query->where('status', $status);
+            }
+
+            // Filter by date range
+            if ($request->has('date_from')) {
+                $query->whereDate('paid_at', '>=', $request->input('date_from'));
+            }
+            if ($request->has('date_to')) {
+                $query->whereDate('paid_at', '<=', $request->input('date_to'));
+            }
+
+            // Search by transaction ID or order number
+            $search = $request->input('search');
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('transaction_id', 'like', '%' . $search . '%')
+                      ->orWhereHas('order', function ($query) use ($search) {
+                          $query->where('order_number', 'like', '%' . $search . '%');
+                      });
+                });
+            }
+
+            $payments = $query->orderBy('paid_at', 'desc')
+                ->paginate(15);
+
+            return $this->sendResponse($payments, 'Payment history retrieved successfully');
+
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to retrieve payment history', 500, ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Get specific payment details
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show($id)
+    {
+        try {
+            $user = Auth::user();
+
+            $payment = Payment::whereHas('order', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->where('id', $id)
+              ->with('order.orderItems.product')
+              ->first();
+
+            if (!$payment) {
+                return $this->sendError('Payment not found', 404);
+            }
+
+            return $this->sendResponse($payment, 'Payment details retrieved successfully');
+
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to retrieve payment details', 500, ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Get all payments (admin only)
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function adminIndex(Request $request)
+    {
+        try {
+            // Only admins can access this endpoint
+            $user = Auth::user();
+
+            if (!$user->hasAnyRole(['admin', 'super-admin'])) {
+                return $this->sendError('Unauthorized', 403);
+            }
+
+            $query = Payment::with(['order.user', 'order.orderItems.product']);
+
+            // Filter by payment method
+            $method = $request->input('method');
+            if ($method) {
+                $query->where('method', $method);
+            }
+
+            // Filter by status
+            $status = $request->input('status');
+            if ($status) {
+                $query->where('status', $status);
+            }
+
+            // Filter by date range
+            if ($request->has('date_from')) {
+                $query->whereDate('paid_at', '>=', $request->input('date_from'));
+            }
+            if ($request->has('date_to')) {
+                $query->whereDate('paid_at', '<=', $request->input('date_to'));
+            }
+
+            // Filter by user
+            $userId = $request->input('user_id');
+            if ($userId) {
+                $query->whereHas('order', function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                });
+            }
+
+            // Search by transaction ID, order number, or customer email
+            $search = $request->input('search');
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('transaction_id', 'like', '%' . $search . '%')
+                      ->orWhereHas('order', function ($query) use ($search) {
+                          $query->where('order_number', 'like', '%' . $search . '%')
+                                ->orWhereHas('user', function ($query) use ($search) {
+                                    $query->where('email', 'like', '%' . $search . '%');
+                                });
+                      });
+                });
+            }
+
+            $payments = $query->orderBy('paid_at', 'desc')
+                ->paginate(20);
+
+            return $this->sendResponse($payments, 'All payments retrieved successfully');
+
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to retrieve payments', 500, ['error' => $e->getMessage()]);
+        }
+    }
 }
