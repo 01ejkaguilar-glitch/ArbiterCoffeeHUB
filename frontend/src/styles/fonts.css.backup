@@ -1,0 +1,75 @@
+/* ========================================
+   Font Files - Self-hosted for performance
+   ======================================== */
+
+/* Playfair Display - 400 */
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/playfair-display/PlayfairDisplay-Regular.woff2') format('woff2');
+}
+
+/* Playfair Display - 500 */
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../fonts/playfair-display/PlayfairDisplay-Medium.woff2') format('woff2');
+}
+
+/* Playfair Display - 600 */
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/playfair-display/PlayfairDisplay-SemiBold.woff2') format('woff2');
+}
+
+/* Playfair Display - 700 */
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/playfair-display/PlayfairDisplay-Bold.woff2') format('woff2');
+}
+
+/* Inter - 400 */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/inter/Inter-Regular.woff2') format('woff2');
+}
+
+/* Inter - 500 */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../fonts/inter/Inter-Medium.woff2') format('woff2');
+}
+
+/* Inter - 600 */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/inter/Inter-SemiBold.woff2') format('woff2');
+}
+
+/* Inter - 700 */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/inter/Inter-Bold.woff2') format('woff2');
+}
