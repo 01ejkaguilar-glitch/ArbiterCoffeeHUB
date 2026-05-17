@@ -355,10 +355,19 @@
 }
 
 .auth-checkbox {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   accent-color: var(--color-dark-green);
   cursor: pointer;
+
+  /* Ensure minimum touch target of 44px */
+  min-width: 44px;
+  min-height: 44px;
+
+  /* Center the actual checkbox within the touch target */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .auth-forgot-link {
