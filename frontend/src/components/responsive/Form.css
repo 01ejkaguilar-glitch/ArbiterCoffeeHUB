@@ -1,0 +1,57 @@
+/* Mobile-first form styles */
+.form-group {
+  margin-bottom: var(--spacing-4);
+}
+
+.form-label {
+  margin-bottom: var(--spacing-1);
+  font-weight: 600;
+}
+
+.form-control {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: 1rem;
+  transition: var(--transition-base);
+}
+
+.form-control:focus {
+  border-color: var(--color-dark-green);
+  box-shadow: 0 0 0 3px rgba(var(--color-dark-green-rgb), 0.1);
+  outline: none;
+}
+
+.form-control.is-invalid {
+  border-color: var(--color-danger);
+}
+
+.form-check {
+  display: block;
+  min-height: 1.5rem;
+  padding-left: 1.5em;
+  margin-bottom: var(--spacing-2);
+}
+
+.form-check-input {
+  width: 1em;
+  height: 1em;
+  margin-top: 0.25em;
+  margin-left: -1.5em;
+}
+
+.form-check-label {
+  margin-bottom: 0;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .form-control {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: 0.875rem;
+  }
+
+  .form-group {
+    margin-bottom: var(--spacing-3);
+  }
+}
