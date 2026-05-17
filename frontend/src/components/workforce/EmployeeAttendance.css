@@ -7,7 +7,7 @@
 .ac-page {
   padding: 24px 28px;
   min-height: 100vh;
-  background: #f5f6fa;
+  background: var(--color-bg-light);
 }
 
 /* ── Topbar ─────────────────────────────────────────────────── */
@@ -23,12 +23,12 @@
   margin: 0;
   font-size: 1.55rem;
   font-weight: 700;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
 }
 .ac-topbar-title p {
   margin: 2px 0 0;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 /* ── Toast ───────────────────────────────────────────────────── */
@@ -43,7 +43,7 @@
   margin-bottom: 18px;
   animation: ac-slide-in 0.25s ease;
 }
-.ac-toast.success { background: #dcfce7; color: #15803d; border: 1.5px solid #bbf7d0; }
+.ac-toast.success { background: var(--color-success-bg); color: var(--color-success); border: 1.5px solid var(--color-success-border); }
 .ac-toast.error   { background: #fee2e2; color: #b91c1c; border: 1.5px solid #fecaca; }
 .ac-toast-close {
   margin-left: auto;
@@ -108,8 +108,8 @@
   font-weight: 700;
   margin-bottom: 24px;
 }
-.ac-status-badge.not-started { background: #f3f4f6; color: #6b7280; }
-.ac-status-badge.clocked-in  { background: #dcfce7; color: #15803d; }
+.ac-status-badge.not-started { background: var(--color-bg-light); color: var(--color-text-muted); }
+.ac-status-badge.clocked-in  { background: var(--color-success-bg); color: var(--color-success); }
 .ac-status-badge.clocked-out { background: #f3f4f6; color: #4A4A4A; }
 
 .ac-status-dot {
@@ -189,6 +189,31 @@
 .ac-btn.clock-in  { background: var(--wf-primary, #006837); color: #fff; }
 .ac-btn.clock-out { background: #ef4444; color: #fff; }
 .ac-btn.complete  { background: #f3f4f6; color: #6b7280; }
+
+/* Ensure touch targets are at least 44x44px on mobile */
+@media (max-width: 768px) {
+  .ac-btn {
+    min-height: 44px;
+    padding: 0.75rem 1.25rem; /* Increased padding for 44px touch target */
+    font-size: 1rem; /* Prevents iOS zoom */
+  }
+
+  .ac-toast-close {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ac-status-badge {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+  }
+}
 
 /* ── Side panel ──────────────────────────────────────────────── */
 .ac-side {

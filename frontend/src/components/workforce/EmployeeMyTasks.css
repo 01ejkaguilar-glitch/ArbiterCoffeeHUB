@@ -6,7 +6,7 @@
 .mt-page {
   padding: 24px 28px;
   min-height: 100vh;
-  background: #f5f6fa;
+  background: var(--color-bg-light);
 }
 
 /* ── Topbar ─────────────────────────────────────────────────── */
@@ -22,12 +22,12 @@
   margin: 0;
   font-size: 1.55rem;
   font-weight: 700;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
 }
 .mt-topbar-title p {
   margin: 2px 0 0;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 /* ── Toast messages ─────────────────────────────────────────── */
@@ -42,8 +42,8 @@
   margin-bottom: 18px;
   animation: mt-slide-in 0.25s ease;
 }
-.mt-toast.success { background: #dcfce7; color: #15803d; border: 1.5px solid #bbf7d0; }
-.mt-toast.error   { background: #fee2e2; color: #b91c1c; border: 1.5px solid #fecaca; }
+.mt-toast.success { background: var(--color-success-bg); color: var(--color-success); border: 1.5px solid var(--color-success-border); }
+.mt-toast.error   { background: var(--color-danger-bg); color: var(--color-danger); border: 1.5px solid var(--color-danger-border); }
 .mt-toast-close {
   margin-left: auto;
   background: none;

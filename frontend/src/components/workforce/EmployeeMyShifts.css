@@ -7,7 +7,7 @@
 .ms-page {
   padding: 24px 28px;
   min-height: 100vh;
-  background: #f5f6fa;
+  background: var(--color-bg-light);
 }
 
 /* ── Topbar ─────────────────────────────────────────────────── */
@@ -43,8 +43,8 @@
   margin-bottom: 18px;
   animation: ms-slide-in 0.25s ease;
 }
-.ms-toast.success { background: #dcfce7; color: #15803d; border: 1.5px solid #bbf7d0; }
-.ms-toast.error   { background: #fee2e2; color: #b91c1c; border: 1.5px solid #fecaca; }
+.ms-toast.success { background: var(--color-success-bg); color: var(--color-success); border: 1.5px solid var(--color-success-border); }
+.ms-toast.error   { background: var(--color-danger-bg); color: var(--color-danger); border: 1.5px solid var(--color-danger-border); }
 .ms-toast-close {
   margin-left: auto;
   background: none;

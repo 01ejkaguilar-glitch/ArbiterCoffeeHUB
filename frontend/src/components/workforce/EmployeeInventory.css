@@ -6,7 +6,7 @@
 .ic-page {
   padding: 1.5rem;
   min-height: 100vh;
-  background: #f9fafb;
+  background: var(--color-bg-light);
   font-family: 'Inter', system-ui, sans-serif;
 }
 
@@ -22,12 +22,12 @@
 .ic-title {
   font-size: 1.45rem;
   font-weight: 700;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
   margin: 0 0 .2rem;
 }
 .ic-subtitle {
   font-size: .85rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
   margin: 0;
 }
 .ic-topbar-actions {
@@ -45,7 +45,7 @@
   margin-bottom: 1.5rem;
 }
 .ic-stat-card {
-  background: #fff;
+  background: var(--color-white);
   border-radius: 12px;
   padding: .9rem 1.1rem;
   box-shadow: 0 1px 4px rgba(0,0,0,.07);
@@ -195,6 +195,43 @@
 .ic-btn.ghost:hover { background: #e5e7eb; }
 .ic-btn.sm      { padding: .32rem .65rem; font-size: .76rem; }
 .ic-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+/* Ensure touch targets are at least 44x44px on mobile */
+@media (max-width: 768px) {
+  .ic-btn {
+    min-height: 44px;
+    padding: 0.75rem 1.25rem; /* Increased padding for 44px touch target */
+    font-size: 1rem; /* Prevents iOS zoom */
+  }
+
+  .ic-adj-btn {
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .ic-filter-btn {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .ic-cat-tab {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ic-status-select {
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem; /* Prevents iOS zoom */
+  }
+}
 
 /* ── Category tabs ───────────────────────────────────────── */
 .ic-cat-tabs {

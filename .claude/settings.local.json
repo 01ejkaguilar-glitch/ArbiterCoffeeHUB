@@ -75,7 +75,21 @@
       "Bash(gh auth *)",
       "PowerShell(gh auth *)",
       "Bash(git status *)",
-      "Bash(exit 0)"
+      "Bash(exit 0)",
+      "Bash(taskkill /f /im node.exe)",
+      "Bash(dir)",
+      "Bash(npm install *)",
+      "Bash(serve *)",
+      "Bash(npx lighthouse *)",
+      "PowerShell(Get-Process *)",
+      "Bash(timeout 5)",
+      "PowerShell(Stop-Process *)",
+      "Bash(node *)",
+      "Bash(timeout 10 bash *)",
+      "Bash(netstat -ano)",
+      "Bash(findstr :5000)",
+      "PowerShell(Get-Command *)",
+      "Bash(timeout 30 bash *)"
     ]
   },
   "prefersReducedMotion": false

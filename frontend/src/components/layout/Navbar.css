@@ -6,7 +6,7 @@
   position: sticky;
   top: 0;
   z-index: 1020;
-  background: #212529;         /* Bootstrap dark */
+  background: var(--color-bg-dark);
   box-shadow: 0 2px 8px rgba(0,0,0,0.35);
 }
 
@@ -24,7 +24,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #fff;
+  color: var(--color-white);
   font-weight: 700;
   font-size: 1.1rem;
   text-decoration: none;
@@ -67,13 +67,13 @@
 
 .app-nav-link:hover,
 .app-nav-link:focus {
-  color: #fff;
+  color: var(--color-white);
   background: rgba(255,255,255,0.08);
   text-decoration: none;
 }
 
 .app-nav-link.active {
-  color: #fff;
+  color: var(--color-white);
   background: rgba(255,255,255,0.12);
   font-weight: 500;
 }
@@ -96,7 +96,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255,255,255,0.8);
+  color: rgba(var(--color-text-on-dark-rgb), 0.8);
   padding: 0.4rem;
   border-radius: 6px;
   text-decoration: none;
@@ -137,7 +137,7 @@
 .app-navbar-hamburger {
   background: transparent;
   border: none;
-  color: rgba(255,255,255,0.85);
+  color: rgba(var(--color-text-on-dark-rgb), 0.85);
   font-size: 1.3rem;
   cursor: pointer;
   padding: 0.4rem 0.5rem;
@@ -147,6 +147,26 @@
   justify-content: center;
   transition: background 0.15s ease, color 0.15s ease;
   -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Ensure touch targets are at least 44x44px on mobile */
+@media (max-width: 1199px) {
+  .app-navbar-hamburger {
+    padding: 0.75rem; /* Increased padding to maintain visual balance while ensuring touch target */
+  }
+
+  .app-nav-drawer-link {
+    min-height: 44px;
+    padding: 0.75rem 0.75rem; /* Adjusted padding to ensure 44px touch target */
+  }
+
+  .app-nav-icon-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.6rem; /* Increased padding to ensure 44px touch target while centering icon */
+  }
 }
 
 .app-navbar-hamburger:hover {
