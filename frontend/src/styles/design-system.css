@@ -1,0 +1,38 @@
+/* Add mobile-specific design tokens */
+
+/* Mobile Spacing Scale (8px base unit) */
+--spacing-mobile-0: 0;
+--spacing-mobile-1: 0.25rem; /* 4px */
+--spacing-mobile-2: 0.5rem;  /* 8px */
+--spacing-mobile-3: 0.75rem; /* 12px */
+--spacing-mobile-4: 1rem;    /* 16px */
+--spacing-mobile-5: 1.25rem; /* 20px */
+--spacing-mobile-6: 1.5rem;  /* 24px */
+--spacing-mobile-8: 2rem;    /* 32px */
+--spacing-mobile-10: 2.5rem; /* 40px */
+--spacing-mobile-12: 3rem;   /* 48px */
+--spacing-mobile-16: 4rem;   /* 64px */
+
+/* Mobile Typography - slightly smaller for mobile readability */
+--font-size-mobile-base: 0.875rem; /* 14px */
+--font-size-mobile-sm: 0.75rem;    /* 12px */
+--font-size-mobile-lg: 1rem;       /* 16px */
+
+/* Mobile Border Radius */
+--radius-mobile-sm: 0.25rem;   /* 4px */
+--radius-mobile-md: 0.375rem;  /* 6px */
+--radius-mobile-lg: 0.5rem;    /* 8px */
+
+/* Mobile Shadow Scale */
+--shadow-mobile-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+--shadow-mobile-md: 0 1px 3px rgba(0, 0, 0, 0.1);
+--shadow-mobile-lg: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+/* Mobile Transition */
+--transition-mobile-base: 0.15s ease-in-out;
+
+/* Breakpoints */
+--bp-mobile: 576px;
+--bp-tablet: 768px;
+--bp-desktop: 992px;
+--bp-wide: 1200px;
