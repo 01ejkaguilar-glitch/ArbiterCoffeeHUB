@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Row, Col, Card, Badge, Button } from 'react-bootstrap';
+import { Row, Col, Badge } from 'react-bootstrap';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveCard from '../../components/responsive/Card';
 import { Link } from 'react-router-dom';
 import { FaShoppingBag, FaUsers, FaBoxes, FaUserCheck, FaUserClock, FaDollarSign, FaBell, FaChartLine, FaArrowRight } from 'react-icons/fa';
 import apiService from '../../services/api.service';
@@ -171,7 +173,7 @@ const AdminDashboard = () => {
           <AdminRecentOrders orders={recentOrders} />
         </Col>
         <Col lg={4}>
-          <Card className="admin-card h-100">
+          <ResponsiveCard className="admin-card h-100">
             <Card.Header className="d-flex justify-content-between align-items-center">
               <div className="d-flex align-items-center gap-2">
                 <div className="dashboard-section-icon bg-info-soft">
@@ -182,9 +184,9 @@ const AdminDashboard = () => {
                   <small className="text-muted">Staff status at a glance</small>
                 </div>
               </div>
-              <Button as={Link} to="/admin/employees" variant="outline-secondary" size="sm" className="d-flex align-items-center gap-1">
+              <ResponsiveButton as={Link} to="/admin/employees" variant="outline-secondary" size="sm" className="d-flex align-items-center gap-1">
                 View <FaArrowRight size={12} />
-              </Button>
+              </ResponsiveButton>
             </Card.Header>
             <Card.Body className="p-0">
               <div className="workforce-stat-list">
@@ -203,8 +205,8 @@ const AdminDashboard = () => {
                   </div>
                 ))}
               </div>
-            </Card.Body>
-          </Card>
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
         </Col>
       </Row>
 
