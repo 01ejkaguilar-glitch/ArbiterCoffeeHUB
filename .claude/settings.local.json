@@ -96,7 +96,14 @@
       "Bash(npx serve *)",
       "Bash(unzip *)",
       "Bash(awk '{print $9}')",
-      "Bash(grep -E \"\\\\.\\(css\\)$\")"
+      "Bash(grep -E \"\\\\.\\(css\\)$\")",
+      "Skill(superpowers:writing-plans)",
+      "Skill(superpowers:brainstorming)",
+      "Bash(scripts/start-server.sh *)",
+      "Skill(superpowers:subagent-driven-development)",
+      "Bash(npx jest *)",
+      "Bash(grep -E \"\\(Settings|Tasks|Users|Workforce\\)\\\\.\\(jsx|css\\)$\")",
+      "Bash(grep -E \"\\(Users|Workforce\\)\\\\.\\(jsx\\)$\")"
     ]
   },
   "prefersReducedMotion": false
