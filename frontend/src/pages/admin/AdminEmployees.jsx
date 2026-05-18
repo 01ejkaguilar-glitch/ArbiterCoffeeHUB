@@ -6,6 +6,11 @@ import {
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveCard from '../../components/responsive/Card';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveModal from '../../components/responsive/Modal';
+import ResponsiveTable from '../../components/responsive/Table';
 import './AdminWorkforce.css';
 
 const blankForm = () => ({
@@ -174,10 +179,11 @@ const AdminEmployees = () => {
             { label: 'Inactive',        val: stats.inactive, icon: <FaUserTimes />, color: 'red'   },
             { label: 'New This Month',  val: stats.new,      icon: <FaPlus />,      color: 'amber' },
           ].map(({ label, val, icon, color }) => (
-            <div className="wf-stat-card" key={label}>
-              <div className={`wf-stat-icon ${color}`}>{icon}</div>
-              <div><div className="wf-stat-val">{val}</div><div className="wf-stat-label">{label}</div></div>
-            </div>
+            <ResponsiveCard key={label} className={`wf-stat-card text-center ${color}`}>
+              <div className="wf-stat-icon">{icon}</div>
+              <div className="wf-stat-val">{val}</div>
+              <div className="wf-stat-label">{label}</div>
+            </ResponsiveCard>
           ))}
         </div>
 
@@ -191,149 +197,158 @@ const AdminEmployees = () => {
             <option value="all">All Roles</option>
             {['barista', 'manager', 'admin'].map(r => <option key={r} value={r}>{r}</option>)}
           </select>
-          <button className="wf-btn secondary wf-btn-icon" onClick={fetchEmployees} title="Refresh"><FaSync /></button>
-          <button className="wf-btn primary" onClick={openAdd}><FaPlus style={{ marginRight: '.4rem' }} />Add Employee</button>
+          <ResponsiveButton variant="outline-secondary" size="sm" className="wf-btn-icon" onClick={fetchEmployees} title="Refresh"><FaSync /></ResponsiveButton>
+          <ResponsiveButton variant="primary" size="md" onClick={openAdd}><FaPlus style={{ marginRight: '.4rem' }} />Add Employee</ResponsiveButton>
         </div>
 
         {/* Table */}
         <div className="wf-table-wrap">
-          <table className="wf-table">
-            <thead>
-              <tr>
-                <th>Name</th><th>Contact</th><th>Role</th>
-                <th>Department</th><th>Hire Date</th><th>Status</th><th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan={7} className="wf-empty">Loading employees…</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={7} className="wf-empty"><FaUsers size={28} style={{ color: '#d1d5db', display: 'block', margin: '0 auto .5rem' }} />No employees found.</td></tr>
-              ) : filtered.map(emp => (
-                <tr key={emp.id}>
-                  <td className="wf-td-bold">{emp.name}</td>
-                  <td>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '.15rem' }}>
-                      {emp.email && <span style={{ fontSize: '.78rem', display: 'flex', alignItems: 'center', gap: '.3rem' }}><FaEnvelope size={10} style={{ color: '#9ca3af' }} />{emp.email}</span>}
-                      {emp.phone && <span style={{ fontSize: '.78rem', display: 'flex', alignItems: 'center', gap: '.3rem' }}><FaPhone size={10} style={{ color: '#9ca3af' }} />{emp.phone}</span>}
-                    </div>
-                  </td>
-                  <td><RoleBadge role={emp.role} /></td>
-                  <td className="wf-td-muted">{emp.department || '—'}</td>
-                  <td className="wf-td-muted">{emp.hire_date ? new Date(emp.hire_date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>
-                  <td><StatusBadge status={emp.status} /></td>
-                  <td>
-                    <div className="wf-action-group">
-                      <button className="wf-action-btn edit" title="Edit" onClick={() => openEdit(emp)}><FaEdit /></button>
-                      <button className="wf-action-btn delete" title="Delete" onClick={() => { setToDelete(emp); setShowDelete(true); }}><FaTrash /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ResponsiveTable
+            columns={[
+              { Header: 'Name', accessor: 'name' },
+              { Header: 'Contact', accessor: 'contact' }, // We'll need to handle this specially
+              { Header: 'Role', accessor: 'role' },
+              { Header: 'Department', accessor: 'department' },
+              { Header: 'Hire Date', accessor: 'hire_date' },
+              { Header: 'Status', accessor: 'status' },
+              { Header: 'Actions', accessor: 'actions' }
+            ]}
+            data={loading ? [] : filtered.length === 0 ? [] : filtered.map(emp => ({
+              name: emp.name,
+              contact: [
+                emp.email ? `Email: ${emp.email}` : null,
+                emp.phone ? `Phone: ${emp.phone}` : null
+              ].filter(Boolean).join(' / '),
+              role: emp.role,
+              department: emp.department || '—',
+              hire_date: emp.hire_date ? new Date(emp.hire_date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '—',
+              status: emp.status
+            }))}
+            loading={loading}
+            emptyMessage=filtered.length === 0 && !loading ? (
+              <FaUsers size={28} style={{ color: '#d1d5db', display: 'block', margin: '0 auto .5rem' }} />No employees found.
+            ) : null
+          >
+            {/* Custom rendering for actions column */}
+            {loading ? [] : filtered.length === 0 ? [] : filtered.map((emp, index) => (
+              <ResponsiveTable.Column
+                key={`actions-${emp.id}`}
+                accessor="actions"
+                Cell={({ row }) => (
+                  <div className="wf-action-group">
+                    <button className="wf-action-btn edit" title="Edit" onClick={() => openEdit(row.original)}><FaEdit /></button>
+                    <button className="wf-action-btn delete" title="Delete" onClick={() => { setToDelete(row.original); setShowDelete(true); }}><FaTrash /></button>
+                  </div>
+                )}
+              />
+            ))}
+          </ResponsiveTable>
         </div>
 
         {/* Add/Edit Modal */}
         {showModal && (
-          <div className="wf-modal-overlay" onClick={() => setShowModal(false)}>
-            <div className="wf-modal lg" onClick={e => e.stopPropagation()}>
-              <div className="wf-modal-head">
-                <span className="wf-modal-title"><FaUsers style={{ marginRight: '.5rem' }} />{selected ? 'Edit Employee' : 'Add Employee'}</span>
-                <button className="wf-modal-close" onClick={() => setShowModal(false)}><FaTimes /></button>
-              </div>
+          <ResponsiveModal show={showModal} onHide={() => setShowModal(false)} size="lg">
+            <ResponsiveModal.Header>
+              <ResponsiveModal.Title>
+                <FaUsers style={{ marginRight: '.5rem' }} />{selected ? 'Edit Employee' : 'Add Employee'}
+              </ResponsiveModal.Title>
+              <ResponsiveModal.CloseButton onClick={() => setShowModal(false)}>
+                <FaTimes />
+              </ResponsiveModal.CloseButton>
+            </ResponsiveModal.Header>
+            <ResponsiveModal.Body>
               <form onSubmit={handleSubmit}>
-                <div className="wf-modal-body">
-                  <div className="wf-form-row wf-2col">
-                    <div>
-                      <label className="wf-form-label">Full Name *</label>
-                      <input className={`wf-field-input${formErrors.name ? ' error' : ''}`} placeholder="Full name" {...field('name')} required />
-                      {formErrors.name && <span className="wf-field-error">{formErrors.name}</span>}
-                    </div>
-                    <div>
-                      <label className="wf-form-label">Email *</label>
-                      <input type="email" className={`wf-field-input${formErrors.email ? ' error' : ''}`} placeholder="Email address" {...field('email')} required />
-                      {formErrors.email && <span className="wf-field-error">{formErrors.email}</span>}
-                    </div>
+                <div className="wf-form-row wf-2col">
+                  <div>
+                    <label className="wf-form-label">Full Name *</label>
+                    <input className={`wf-field-input${formErrors.name ? ' error' : ''}`} placeholder="Full name" {...field('name')} required />
+                    {formErrors.name && <span className="wf-field-error">{formErrors.name}</span>}
                   </div>
-                  {!selected && (
-                    <div className="wf-form-row wf-2col">
-                      <div>
-                        <label className="wf-form-label">Password *</label>
-                        <input type="password" className={`wf-field-input${formErrors.password ? ' error' : ''}`} placeholder="Min. 8 characters" {...field('password')} />
-                        {formErrors.password && <span className="wf-field-error">{formErrors.password}</span>}
-                      </div>
-                      <div>
-                        <label className="wf-form-label">Role</label>
-                        <select className="wf-field-select" {...field('role')}>
-                          {['barista', 'manager', 'admin'].map(r => <option key={r} value={r}>{r}</option>)}
-                        </select>
-                      </div>
-                    </div>
-                  )}
-                  <div className="wf-form-row wf-2col">
-                    <div>
-                      <label className="wf-form-label">Phone</label>
-                      <input className="wf-field-input" placeholder="Phone number" {...field('phone')} />
-                    </div>
-                    <div>
-                      <label className="wf-form-label">Position / Job Title *</label>
-                      <input className={`wf-field-input${formErrors.position ? ' error' : ''}`} placeholder="e.g. Head Barista" {...field('position')} />
-                      {formErrors.position && <span className="wf-field-error">{formErrors.position}</span>}
-                    </div>
+                  <div>
+                    <label className="wf-form-label">Email *</label>
+                    <input type="email" className={`wf-field-input${formErrors.email ? ' error' : ''}`} placeholder="Email address" {...field('email')} required />
+                    {formErrors.email && <span className="wf-field-error">{formErrors.email}</span>}
                   </div>
+                </div>
+                {!selected && (
                   <div className="wf-form-row wf-2col">
                     <div>
-                      <label className="wf-form-label">Department</label>
-                      <input className="wf-field-input" placeholder="Department" {...field('department')} />
+                      <label className="wf-form-label">Password *</label>
+                      <input type="password" className={`wf-field-input${formErrors.password ? ' error' : ''}`} placeholder="Min. 8 characters" {...field('password')} />
+                      {formErrors.password && <span className="wf-field-error">{formErrors.password}</span>}
                     </div>
                     <div>
-                      <label className="wf-form-label">Hire Date</label>
-                      <input type="date" className="wf-field-input" {...field('hire_date')} />
-                    </div>
-                  </div>
-                  <div className="wf-form-row wf-2col">
-                    <div>
-                      <label className="wf-form-label">Salary (₱)</label>
-                      <input type="number" min="0" step="0.01" className="wf-field-input" placeholder="0.00" {...field('salary')} />
-                    </div>
-                    <div>
-                      <label className="wf-form-label">Status</label>
-                      <select className="wf-field-select" {...field('status')}>
-                        <option value="active">Active</option>
-                        <option value="on_leave">On Leave</option>
-                        <option value="suspended">Suspended</option>
-                        <option value="terminated">Terminated</option>
+                      <label className="wf-form-label">Role</label>
+                      <select className="wf-field-select" {...field('role')}>
+                        {['barista', 'manager', 'admin'].map(r => <option key={r} value={r}>{r}</option>)}
                       </select>
                     </div>
                   </div>
+                )}
+                <div className="wf-form-row wf-2col">
+                  <div>
+                    <label className="wf-form-label">Phone</label>
+                    <input className="wf-field-input" placeholder="Phone number" {...field('phone')} />
+                  </div>
+                  <div>
+                    <label className="wf-form-label">Position / Job Title *</label>
+                    <input className={`wf-field-input${formErrors.position ? ' error' : ''}`} placeholder="e.g. Head Barista" {...field('position')} />
+                    {formErrors.position && <span className="wf-field-error">{formErrors.position}</span>}
+                  </div>
                 </div>
-                <div className="wf-modal-foot">
-                  <button type="button" className="wf-btn secondary" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" className="wf-btn primary" disabled={saving}>{saving ? 'Saving…' : selected ? 'Update Employee' : 'Add Employee'}</button>
+                <div className="wf-form-row wf-2col">
+                  <div>
+                    <label className="wf-form-label">Department</label>
+                    <input className="wf-field-input" placeholder="Department" {...field('department')} />
+                  </div>
+                  <div>
+                    <label className="wf-form-label">Hire Date</label>
+                    <input type="date" className="wf-field-input" {...field('hire_date')} />
+                  </div>
+                </div>
+                <div className="wf-form-row wf-2col">
+                  <div>
+                    <label className="wf-form-label">Salary (₱)</label>
+                    <input type="number" min="0" step="0.01" className="wf-field-input" placeholder="0.00" {...field('salary')} />
+                  </div>
+                  <div>
+                    <label className="wf-form-label">Status</label>
+                    <select className="wf-field-select" {...field('status')}>
+                      <option value="active">Active</option>
+                      <option value="on_leave">On Leave</option>
+                      <option value="suspended">Suspended</option>
+                      <option value="terminated">Terminated</option>
+                    </select>
+                  </div>
                 </div>
               </form>
-            </div>
-          </div>
+            </ResponsiveModal.Body>
+            <ResponsiveModal.Footer>
+              <button type="button" className="wf-btn secondary" onClick={() => setShowModal(false)}>Cancel</button>
+              <button type="submit" className="wf-btn primary" disabled={saving}>{saving ? 'Saving…' : selected ? 'Update Employee' : 'Add Employee'}</button>
+            </ResponsiveModal.Footer>
+          </ResponsiveModal>
         )}
 
         {/* Delete Confirm */}
         {showDelete && toDelete && (
-          <div className="wf-modal-overlay" onClick={() => setShowDelete(false)}>
-            <div className="wf-modal sm" onClick={e => e.stopPropagation()}>
-              <div className="wf-modal-head">
-                <span className="wf-modal-title" style={{ color: '#C41E3A' }}><FaExclamationTriangle style={{ marginRight: '.5rem' }} />Delete Employee</span>
-                <button className="wf-modal-close" onClick={() => setShowDelete(false)}><FaTimes /></button>
-              </div>
-              <div className="wf-modal-body" style={{ textAlign: 'center', padding: '1.5rem 1.75rem' }}>
-                <p>Are you sure you want to delete <strong>{toDelete.name}</strong>? This action cannot be undone.</p>
-              </div>
-              <div className="wf-modal-foot">
-                <button className="wf-btn secondary" onClick={() => setShowDelete(false)}>Cancel</button>
-                <button className="wf-btn danger" onClick={handleDelete}>Delete</button>
-              </div>
-            </div>
-          </div>
+          <ResponsiveModal show={showDelete} onHide={() => setShowDelete(false)} size="sm">
+            <ResponsiveModal.Header>
+              <ResponsiveModal.Title style={{ color: '#C41E3A' }}>
+                <FaExclamationTriangle style={{ marginRight: '.5rem' }} />Delete Employee
+              </ResponsiveModal.Title>
+              <ResponsiveModal.CloseButton onClick={() => setShowDelete(false)}>
+                <FaTimes />
+              </ResponsiveModal.CloseButton>
+            </ResponsiveModal.Header>
+            <ResponsiveModal.Body style={{ textAlign: 'center', padding: '1.5rem 1.75rem' }}>
+              <p>Are you sure you want to delete <strong>{toDelete.name}</strong>? This action cannot be undone.</p>
+            </ResponsiveModal.Body>
+            <ResponsiveModal.Footer>
+              <button className="wf-btn secondary" onClick={() => setShowDelete(false)}>Cancel</button>
+              <button className="wf-btn danger" onClick={handleDelete}>Delete</button>
+            </ResponsiveModal.Footer>
+          </ResponsiveModal>
         )}
       </div>
     </PageShell>
