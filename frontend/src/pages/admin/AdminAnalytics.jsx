@@ -10,6 +10,11 @@ import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
 import { BarChart, LineChart, PieChart } from '../../components/common/Charts';
 import { exportToCSV } from '../../utils/exportUtils';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveCard from '../../components/responsive/Card';
+import ResponsiveTable from '../../components/responsive/Table';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveModal from '../../components/responsive/Modal';
 import './AdminAnalytics.css';
 
 /* ── Helpers ──────────────────────────────────────────────────── */
@@ -59,15 +64,15 @@ const TIME_RANGES = [
 ];
 
 /* ── Sub-components ───────────────────────────────────────────── */
-const KpiCard = ({ icon, iconClass, label, value, sub }) => (
-  <div className="aa-kpi-card">
+const KpiCard = ({ icon, iconClass, label, value, sub, className = '' }) => (
+  <ResponsiveCard className={`aa-kpi-card text-center ${className}`}>
     <div className={`aa-kpi-icon ${iconClass}`}>{icon}</div>
     <div className="aa-kpi-body">
       <div className="aa-kpi-label">{label}</div>
       <div className="aa-kpi-value">{value}</div>
       {sub && <div className="aa-kpi-sub">{sub}</div>}
     </div>
-  </div>
+  </ResponsiveCard>
 );
 
 const StatusChip = ({ status }) => (
@@ -241,60 +246,62 @@ const AdminAnalytics = () => {
         <div className="aa-table-grid">
           <div className="aa-section">
             <div className="aa-section-header"><span className="aa-section-title">Top Selling Products</span></div>
-            <table className="aa-table">
-              <thead><tr><th>#</th><th>Product</th><th>Category</th><th className="r">Sold</th><th className="r">Revenue</th></tr></thead>
-              <tbody>
-                {salesData.topProducts?.length > 0 ? salesData.topProducts.map((p, i) => (
-                  <tr key={i}>
-                    <td><span className="aa-rank">#{i + 1}</span></td>
-                    <td>{p.name}</td>
-                    <td><span className="aa-tag">{p.category}</span></td>
-                    <td className="r">{p.total_sold || 0}</td>
-                    <td className="r aa-mono">{php(p.revenue)}</td>
-                  </tr>
-                )) : <tr><td colSpan="5"><Empty /></td></tr>}
-              </tbody>
-            </table>
+            <ResponsiveTable
+              columns={[
+                { Header: '#', accessor: 'rank' },
+                { Header: 'Product', accessor: 'name' },
+                { Header: 'Category', accessor: 'category' },
+                { Header: 'Sold', accessor: 'total_sold' },
+                { Header: 'Revenue', accessor: 'revenue' }
+              ]}
+              data={salesData.topProducts?.length > 0 ? salesData.topProducts.map((p, i) => ({
+                rank: `#${i + 1}`,
+                name: p.name,
+                category: p.category,
+                total_sold: p.total_sold || 0,
+                revenue: php(p.revenue)
+              })) : []}
+              emptyMessage="No top selling products data available"
+            />
           </div>
 
           <div className="aa-section">
             <div className="aa-section-header"><span className="aa-section-title">Revenue by Category</span></div>
-            <table className="aa-table">
-              <thead><tr><th>Category</th><th className="r">Orders</th><th className="r">Revenue</th><th className="r">Share</th></tr></thead>
-              <tbody>
-                {salesData.revenueByCategory?.length > 0 ? salesData.revenueByCategory.map((c, i) => (
-                  <tr key={i}>
-                    <td><span className="aa-tag">{c.name}</span></td>
-                    <td className="r">{c.order_count || 0}</td>
-                    <td className="r aa-mono">{php(c.revenue)}</td>
-                    <td className="r">
-                      <div className="aa-pct-bar">
-                        <div className="aa-pct-fill" style={{ width: `${Math.min(parseFloat(c.percentage || 0), 100)}%` }} />
-                        <span>{pct(c.percentage)}</span>
-                      </div>
-                    </td>
-                  </tr>
-                )) : <tr><td colSpan="4"><Empty /></td></tr>}
-              </tbody>
-            </table>
+            <ResponsiveTable
+              columns={[
+                { Header: 'Category', accessor: 'name' },
+                { Header: 'Orders', accessor: 'order_count' },
+                { Header: 'Revenue', accessor: 'revenue' },
+                { Header: 'Share', accessor: 'percentage' }
+              ]}
+              data={salesData.revenueByCategory?.length > 0 ? salesData.revenueByCategory.map((c, i) => ({
+                name: c.name,
+                order_count: c.order_count || 0,
+                revenue: php(c.revenue),
+                percentage: `${pct(c.percentage)}` // Already formatted as percentage string
+              })) : []}
+              emptyMessage="No revenue by category data available"
+            />
           </div>
         </div>
 
         <div className="aa-section" style={{ marginTop: '1rem' }}>
           <div className="aa-section-header"><span className="aa-section-title">Orders by Status</span></div>
-          <table className="aa-table">
-            <thead><tr><th>Status</th><th className="r">Count</th><th className="r">Total Amount</th><th className="r">% of Orders</th></tr></thead>
-            <tbody>
-              {salesData.ordersByStatus?.length > 0 ? salesData.ordersByStatus.map((s, i) => (
-                <tr key={i}>
-                  <td><StatusChip status={s.status} /></td>
-                  <td className="r">{s.count || 0}</td>
-                  <td className="r aa-mono">{php(s.total)}</td>
-                  <td className="r">{pct(s.percentage)}</td>
-                </tr>
-              )) : <tr><td colSpan="4"><Empty /></td></tr>}
-            </tbody>
-          </table>
+          <ResponsiveTable
+            columns={[
+              { Header: 'Status', accessor: 'status' },
+              { Header: 'Count', accessor: 'count' },
+              { Header: 'Total Amount', accessor: 'total' },
+              { Header: '% of Orders', accessor: 'percentage' }
+            ]}
+            data={salesData.ordersByStatus?.length > 0 ? salesData.ordersByStatus.map((s, i) => ({
+              status: s.status,
+              count: s.count || 0,
+              total: php(s.total),
+              percentage: pct(s.percentage)
+            })) : []}
+            emptyMessage="No orders by status data available"
+          />
         </div>
       </>
     );
@@ -315,21 +322,25 @@ const AdminAnalytics = () => {
 
         <div className="aa-section">
           <div className="aa-section-header"><span className="aa-section-title">Top Customers</span></div>
-          <table className="aa-table">
-            <thead><tr><th>#</th><th>Name</th><th>Email</th><th className="r">Orders</th><th className="r">Total Spent</th><th className="r">Avg Order</th></tr></thead>
-            <tbody>
-              {custData.top_customers?.length > 0 ? custData.top_customers.map((c, i) => (
-                <tr key={i}>
-                  <td><span className="aa-rank">#{i + 1}</span></td>
-                  <td>{c.name || c.user?.name || 'N/A'}</td>
-                  <td>{c.email || c.user?.email || '—'}</td>
-                  <td className="r">{c.total_orders || c.orders_count || 0}</td>
-                  <td className="r aa-mono">{php(c.total_spent || c.revenue)}</td>
-                  <td className="r aa-mono">{php(c.average_order_value || c.avg_order)}</td>
-                </tr>
-              )) : <tr><td colSpan="6"><Empty /></td></tr>}
-            </tbody>
-          </table>
+          <ResponsiveTable
+            columns={[
+              { Header: '#', accessor: 'rank' },
+              { Header: 'Name', accessor: 'name' },
+              { Header: 'Email', accessor: 'email' },
+              { Header: 'Orders', accessor: 'total_orders' },
+              { Header: 'Total Spent', accessor: 'total_spent' },
+              { Header: 'Avg Order', accessor: 'average_order_value' }
+            ]}
+            data={custData.top_customers?.length > 0 ? custData.top_customers.map((c, i) => ({
+              rank: `#${i + 1}`,
+              name: c.name || c.user?.name || 'N/A',
+              email: c.email || c.user?.email || '—',
+              total_orders: c.total_orders || c.orders_count || 0,
+              total_spent: php(c.total_spent || c.revenue),
+              average_order_value: php(c.average_order_value || c.avg_order)
+            })) : []}
+            emptyMessage="No top customers data available"
+          />
         </div>
       </>
     );
@@ -349,20 +360,23 @@ const AdminAnalytics = () => {
 
         <div className="aa-section">
           <div className="aa-section-header"><span className="aa-section-title">Employee Performance</span></div>
-          <table className="aa-table">
-            <thead><tr><th>#</th><th>Employee</th><th>Position</th><th className="r">Orders Processed</th><th className="r">Days Worked</th></tr></thead>
-            <tbody>
-              {perfData.employee_performance?.length > 0 ? perfData.employee_performance.map((e, i) => (
-                <tr key={i}>
-                  <td><span className="aa-rank">#{i + 1}</span></td>
-                  <td>{e.user?.name || e.name || 'N/A'}</td>
-                  <td><span className="aa-tag">{e.position || 'Staff'}</span></td>
-                  <td className="r">{e.orders_processed || 0}</td>
-                  <td className="r">{e.days_worked || 0}</td>
-                </tr>
-              )) : <tr><td colSpan="5"><Empty /></td></tr>}
-            </tbody>
-          </table>
+          <ResponsiveTable
+            columns={[
+              { Header: '#', accessor: 'rank' },
+              { Header: 'Employee', accessor: 'name' },
+              { Header: 'Position', accessor: 'position' },
+              { Header: 'Orders Processed', accessor: 'orders_processed' },
+              { Header: 'Days Worked', accessor: 'days_worked' }
+            ]}
+            data={perfData.employee_performance?.length > 0 ? perfData.employee_performance.map((e, i) => ({
+              rank: `#${i + 1}`,
+              name: e.user?.name || e.name || 'N/A',
+              position: e.position || 'Staff',
+              orders_processed: e.orders_processed || 0,
+              days_worked: e.days_worked || 0
+            })) : []}
+            emptyMessage="No employee performance data available"
+          />
         </div>
       </>
     );
@@ -384,25 +398,23 @@ const AdminAnalytics = () => {
 
         <div className="aa-section">
           <div className="aa-section-header"><span className="aa-section-title">Segment Breakdown</span></div>
-          <table className="aa-table">
-            <thead><tr><th>Segment</th><th className="r">Customers</th><th className="r">Avg Spend</th><th className="r">Avg Orders</th><th className="r">Share</th></tr></thead>
-            <tbody>
-              {Array.isArray(segments) && segments.length > 0 ? segments.map((seg, i) => (
-                <tr key={i}>
-                  <td><span className="aa-tag">{seg.segment || seg.name || seg.label || 'Unknown'}</span></td>
-                  <td className="r">{seg.customer_count || seg.count || 0}</td>
-                  <td className="r aa-mono">{php(seg.avg_spend || seg.average_spend || 0)}</td>
-                  <td className="r">{parseFloat(seg.avg_orders || seg.average_orders || 0).toFixed(1)}</td>
-                  <td className="r">
-                    <div className="aa-pct-bar">
-                      <div className="aa-pct-fill" style={{ width: `${Math.min(parseFloat(seg.percentage || 0), 100)}%` }} />
-                      <span>{pct(seg.percentage)}</span>
-                    </div>
-                  </td>
-                </tr>
-              )) : <tr><td colSpan="5"><Empty /></td></tr>}
-            </tbody>
-          </table>
+          <ResponsiveTable
+            columns={[
+              { Header: 'Segment', accessor: 'segment' },
+              { Header: 'Customers', accessor: 'customer_count' },
+              { Header: 'Avg Spend', accessor: 'avg_spend' },
+              { Header: 'Avg Orders', accessor: 'avg_orders' },
+              { Header: 'Share', accessor: 'percentage' }
+            ]}
+            data={Array.isArray(segments) && segments.length > 0 ? segments.map((seg, i) => ({
+              segment: seg.segment || seg.name || seg.label || 'Unknown',
+              customer_count: seg.customer_count || seg.count || 0,
+              avg_spend: php(seg.avg_spend || seg.average_spend || 0),
+              avg_orders: parseFloat(seg.avg_orders || seg.average_orders || 0).toFixed(1),
+              percentage: pct(seg.percentage)
+            })) : []}
+            emptyMessage="No segment breakdown data available"
+          />
         </div>
       </>
     );
@@ -424,21 +436,25 @@ const AdminAnalytics = () => {
 
         <div className="aa-section">
           <div className="aa-section-header"><span className="aa-section-title">Barista Performance Ranking</span></div>
-          <table className="aa-table">
-            <thead><tr><th>#</th><th>Barista</th><th className="r">Orders</th><th className="r">Avg Prep</th><th className="r">Attendance</th><th className="r">Rating</th></tr></thead>
-            <tbody>
-              {Array.isArray(baristas) && baristas.length > 0 ? baristas.map((b, i) => (
-                <tr key={i}>
-                  <td><span className="aa-rank">#{i + 1}</span></td>
-                  <td>{b.user?.name || b.name || b.barista_name || 'N/A'}</td>
-                  <td className="r">{b.orders_completed || b.total_orders || 0}</td>
-                  <td className="r">{parseFloat(b.avg_prep_time || 0).toFixed(0)} min</td>
-                  <td className="r">{pct(b.attendance_rate)}</td>
-                  <td className="r">{parseFloat(b.performance_score || b.rating || 0).toFixed(1)}</td>
-                </tr>
-              )) : <tr><td colSpan="6"><Empty /></td></tr>}
-            </tbody>
-          </table>
+          <ResponsiveTable
+            columns={[
+              { Header: '#', accessor: 'rank' },
+              { Header: 'Barista', accessor: 'name' },
+              { Header: 'Orders', accessor: 'orders_completed' },
+              { Header: 'Avg Prep', accessor: 'avg_prep_time' },
+              { Header: 'Attendance', accessor: 'attendance_rate' },
+              { Header: 'Rating', accessor: 'performance_score' }
+            ]}
+            data={Array.isArray(baristas) && baristas.length > 0 ? baristas.map((b, i) => ({
+              rank: `#${i + 1}`,
+              name: b.user?.name || b.name || b.barista_name || 'N/A',
+              orders_completed: b.orders_completed || b.total_orders || 0,
+              avg_prep_time: `${parseFloat(b.avg_prep_time || 0).toFixed(0)} min`,
+              attendance_rate: pct(b.attendance_rate),
+              performance_score: parseFloat(b.performance_score || b.rating || 0).toFixed(1)
+            })) : []}
+            emptyMessage="No barista performance data available"
+          />
         </div>
       </>
     );
@@ -449,17 +465,34 @@ const AdminAnalytics = () => {
     <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
       <div className="aa-time-toggle">
         {TIME_RANGES.map(r => (
-          <button key={r.key} className={`aa-time-btn${timeRange === r.key ? ' active' : ''}`} onClick={() => setTimeRange(r.key)}>
+          <ResponsiveButton
+            key={r.key}
+            variant="outline-secondary"
+            size={timeRange === r.key ? 'sm' : 'xs'}
+            className={`aa-time-btn${timeRange === r.key ? ' active' : ''}`}
+            onClick={() => setTimeRange(r.key)}
+          >
             {r.label}
-          </button>
+          </ResponsiveButton>
         ))}
       </div>
-      <button className={`aa-icon-btn${refreshing ? ' spinning' : ''}`} onClick={handleRefresh} title="Refresh">
+      <ResponsiveButton
+        variant="outline-primary"
+        size="sm"
+        className={`aa-icon-btn${refreshing ? ' spinning' : ''}`}
+        onClick={handleRefresh}
+        title="Refresh"
+      >
         <FaSyncAlt />
-      </button>
-      <button className="aa-export-btn" onClick={handleExport}>
+      </ResponsiveButton>
+      <ResponsiveButton
+        variant="outline-success"
+        size="sm"
+        className="aa-export-btn"
+        onClick={handleExport}
+      >
         <FaFileExport /> Export CSV
-      </button>
+      </ResponsiveButton>
     </div>
   );
 
