@@ -278,29 +278,33 @@ const AdminInventory = () => {
       }
     >
       {alert.show && (
-        <Alert variant={alert.type} dismissible onClose={() => setAlert({ show: false, message: '', type: '' })} className="mb-3" style={{ borderRadius: 10, fontSize: '0.875rem' }}>
+        <div className={`ai-alert ai-alert-${alert.type} mb-3`} role="alert" style={{ borderRadius: 10, fontSize: '0.875rem' }}>
           {alert.message}
-        </Alert>
+        </div>
       )}
 
       {!loading && (
         <div className="ai-stats-bar">
-          <div className="ai-stat-card">
-            <div className="ai-stat-icon blue"><FaBoxes /></div>
-            <div><div className="ai-stat-value">{stats.total}</div><div className="ai-stat-label">Total Items</div></div>
-          </div>
-          <div className="ai-stat-card">
-            <div className="ai-stat-icon green"><FaBoxOpen /></div>
-            <div><div className="ai-stat-value">{stats.inStock}</div><div className="ai-stat-label">In Stock</div></div>
-          </div>
-          <div className="ai-stat-card">
-            <div className="ai-stat-icon amber"><FaBoxes /></div>
-            <div><div className="ai-stat-value">{stats.lowStock}</div><div className="ai-stat-label">Low Stock</div></div>
-          </div>
-          <div className="ai-stat-card">
-            <div className="ai-stat-icon red"><FaBoxes /></div>
-            <div><div className="ai-stat-value">{stats.outStock}</div><div className="ai-stat-label">Out of Stock</div></div>
-          </div>
+          <ResponsiveCard className="ai-stat-card text-center blue">
+            <FaBoxes className="ai-stat-icon" />
+            <div className="ai-stat-value">{stats.total}</div>
+            <div className="ai-stat-label">Total Items</div>
+          </ResponsiveCard>
+          <ResponsiveCard className="ai-stat-card text-center green">
+            <FaBoxOpen className="ai-stat-icon" />
+            <div className="ai-stat-value">{stats.inStock}</div>
+            <div className="ai-stat-label">In Stock</div>
+          </ResponsiveCard>
+          <ResponsiveCard className="ai-stat-card text-center amber">
+            <FaBoxes className="ai-stat-icon" />
+            <div className="ai-stat-value">{stats.lowStock}</div>
+            <div className="ai-stat-label">Low Stock</div>
+          </ResponsiveCard>
+          <ResponsiveCard className="ai-stat-card text-center red">
+            <FaBoxes className="ai-stat-icon" />
+            <div className="ai-stat-value">{stats.outStock}</div>
+            <div className="ai-stat-label">Out of Stock</div>
+          </ResponsiveCard>
         </div>
       )}
 
@@ -351,63 +355,68 @@ const AdminInventory = () => {
 
       {!loading && activeTab !== 'logs' && (
         <div className="ai-table-card">
-          <table className="ai-table">
-            <thead>
-              <tr>
-                <th style={{ width: 40 }}>#</th>
-                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('name')}>Name <SortIcon col="name" sortConfig={sortConfig} /></th>
-                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('source')}>Source <SortIcon col="source" sortConfig={sortConfig} /></th>
-                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('quantity')}>Quantity <SortIcon col="quantity" sortConfig={sortConfig} /></th>
-                <th>Status</th>
-                <th style={{ width: 112 }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paged.length > 0 ? paged.map((item, idx) => {
-                const status = getStockStatus(item);
-                const qty = parseFloat(item.quantity);
-                const lvl = parseFloat(item.reorder_level) || 1;
-                const barPct = Math.min(100, Math.round((qty / (lvl * 3)) * 100));
-                const barCls = status === 'in-stock' ? 'green' : status === 'low-stock' ? 'amber' : 'red';
-                return (
-                  <tr key={item.id}>
-                    <td className="ai-item-id">{(page - 1) * PAGE_SIZE + idx + 1}</td>
-                    <td>
-                      <div className="ai-item-name">{item.name}</div>
-                      <div className="ai-item-id" style={{ fontSize: '0.72rem', marginTop: 1 }}>{item.category}</div>
-                    </td>
-                    <td>
-                      <span className={`ai-cat-badge ${item.source === 'Online' ? 'bar' : 'kitchen'}`}>{item.source || '—'}</span>
-                    </td>
-                    <td>
-                      <span className="ai-qty-value">{parseFloat(item.quantity).toFixed(2)}</span>
-                      <span className="ai-qty-unit"> {item.unit}</span>
-                      <div className="ai-stock-bar-wrap">
-                        <div className={`ai-stock-bar ${barCls}`} style={{ width: `${barPct}%` }} />
-                      </div>
-                    </td>
-                    <td><StockBadge item={item} /></td>
-                    <td>
-                      <div style={{ display: 'flex', gap: 2 }}>
-                        <button className="ai-action-btn adjust" title="Adjust Stock" onClick={() => handleOpenAdjust(item)}><FaBoxes /></button>
-                        <button className="ai-action-btn log" title="View Logs" onClick={() => handleOpenLog(item)}><FaHistory /></button>
-                        <button className="ai-action-btn edit" title="Edit" onClick={() => handleShowModal(item)}><FaEdit /></button>
-                        <button className="ai-action-btn delete" title="Delete" onClick={() => handleDelete(item.id)}><FaTrash /></button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              }) : (
-                <tr><td colSpan={6}>
-                  <div className="ai-empty">
-                    <div className="ai-empty-icon"><FaBoxOpen /></div>
-                    <div className="ai-empty-text">No items found</div>
-                    <div className="ai-empty-sub">Try adjusting your search or filters</div>
+          <ResponsiveTable
+            columns={[
+              { Header: '#', accessor: 'index' },
+              { Header: 'Name', accessor: 'name' },
+              { Header: 'Category', accessor: 'category' },
+              { Header: 'Source', accessor: 'source' },
+              { Header: 'Quantity', accessor: 'quantity' },
+              { Header: 'Unit', accessor: 'unit' },
+              { Header: 'Status', accessor: 'status' },
+              { Header: 'Actions', accessor: 'actions' }
+            ]}
+            data={paged.map((item, idx) => {
+              const status = getStockStatus(item);
+              const qty = parseFloat(item.quantity);
+              const lvl = parseFloat(item.reorder_level) || 1;
+              const barPct = Math.min(100, Math.round((qty / (lvl * 3)) * 100));
+              const barCls = status === 'in-stock' ? 'green' : status === 'low-stock' ? 'amber' : 'red';
+              return {
+                index: (page - 1) * PAGE_SIZE + idx + 1,
+                name: item.name,
+                category: item.category,
+                source: item.source || '—',
+                quantity: parseFloat(item.quantity).toFixed(2),
+                unit: item.unit,
+                status: (
+                  <StockBadge item={item} />
+                ),
+                actions: (
+                  <div className="ai-action-group">
+                    <button className="ai-action-btn adjust" title="Adjust Stock" onClick={() => handleOpenAdjust(item)}><FaBoxes /></button>
+                    <button className="ai-action-btn log" title="View Logs" onClick={() => handleOpenLog(item)}><FaHistory /></button>
+                    <button className="ai-action-btn edit" title="Edit" onClick={() => handleShowModal(item)}><FaEdit /></button>
+                    <button className="ai-action-btn delete" title="Delete" onClick={() => handleDelete(item.id)}><FaTrash /></button>
                   </div>
-                </td></tr>
-              )}
-            </tbody>
-          </table>
+                )
+              };
+            })}
+            loading={loading}
+            emptyMessage=(
+              <div className="ai-empty">
+                <div className="ai-empty-icon"><FaBoxOpen /></div>
+                <div className="ai-empty-text">No items found</div>
+                <div className="ai-empty-sub">Try adjusting your search or filters</div>
+              </div>
+            )
+          >
+            {/* Custom rendering for status column (to show StockBadge) */}
+            {(columnProps) => {
+              if (columnProps.column.accessor === 'status') {
+                return <div>{columnProps.cell}</div>;
+              }
+              return <div>{columnProps.cell}</div>;
+            }}
+          >
+            {/* Custom rendering for actions column */}
+            {(columnProps) => {
+              if (columnProps.column.accessor === 'actions') {
+                return <div>{columnProps.cell}</div>;
+              }
+              return <div>{columnProps.cell}</div>;
+            }}
+          </ResponsiveTable>
           {totalPages > 1 && (
             <div className="ai-pagination">
               <span className="ai-pagination-info">
@@ -473,21 +482,23 @@ const AdminInventory = () => {
       )}
 
       {/* Add / Edit Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
-        <div className="ai-modal-head">
+      <ResponsiveModal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
+        <ResponsiveModal.Header>
           <div className="ai-modal-head-left">
             <div className={`ai-modal-icon ${editingItem ? 'slate' : 'green'}`}>
               {editingItem ? <FaEdit /> : <FaPlus />}
             </div>
             <div>
-              <div className="ai-modal-title">{editingItem ? 'Edit Inventory Item' : 'Add Inventory Item'}</div>
+              <ResponsiveModal.Title>{editingItem ? 'Edit Inventory Item' : 'Add Inventory Item'}</ResponsiveModal.Title>
               <div className="ai-modal-subtitle">{editingItem ? editingItem.name : 'Fill in the details to add a new item'}</div>
             </div>
           </div>
-          <button className="ai-modal-close" onClick={() => setShowModal(false)} aria-label="Close">&#x2715;</button>
-        </div>
-        <form onSubmit={handleSubmit}>
-          <div className="ai-modal-body">
+          <ResponsiveModal.CloseButton onClick={() => setShowModal(false)} aria-label="Close">
+            &#x2715;
+          </ResponsiveModal.CloseButton>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          <form onSubmit={handleSubmit}>
             <div className="ai-section-label">Item Details</div>
             <div className="ai-form-group">
               <label className="ai-form-label">Item Name *</label>
@@ -541,28 +552,30 @@ const AdminInventory = () => {
                   value={formData.cost_per_unit} onChange={e => setFormData(p => ({ ...p, cost_per_unit: e.target.value }))} />
               </div>
             </div>
-          </div>
-          <div className="ai-modal-footer">
-            <button type="button" className="ai-btn ai-btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
-            <button type="submit" className="ai-btn ai-btn-primary">{editingItem ? 'Update Item' : 'Add Item'}</button>
-          </div>
-        </form>
-      </Modal>
+          </form>
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+          <button type="button" className="ai-btn ai-btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
+          <button type="submit" className="ai-btn ai-btn-primary">{editingItem ? 'Update Item' : 'Add Item'}</button>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
 
       {/* Adjust Stock Modal */}
-      <Modal show={showAdjust} onHide={() => setShowAdjust(false)} centered>
-        <div className="ai-modal-head">
+      <ResponsiveModal show={showAdjust} onHide={() => setShowAdjust(false)} centered>
+        <ResponsiveModal.Header>
           <div className="ai-modal-head-left">
             <div className="ai-modal-icon amber"><FaBoxes /></div>
             <div>
-              <div className="ai-modal-title">Adjust Stock</div>
+              <ResponsiveModal.Title>Adjust Stock</ResponsiveModal.Title>
               <div className="ai-modal-subtitle">{adjustItem?.name}</div>
             </div>
           </div>
-          <button className="ai-modal-close" onClick={() => setShowAdjust(false)} aria-label="Close">&#x2715;</button>
-        </div>
-        <form onSubmit={handleAdjustSubmit}>
-          <div className="ai-modal-body">
+          <ResponsiveModal.CloseButton onClick={() => setShowAdjust(false)} aria-label="Close">
+            &#x2715;
+          </ResponsiveModal.CloseButton>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          <form onSubmit={handleAdjustSubmit}>
             {adjustItem && (
               <div className="ai-current-stock">
                 <div>
@@ -589,7 +602,7 @@ const AdminInventory = () => {
                   </button>
                 );
               })}
-            </div>
+            </div>>
             <div className="ai-form-row col-2" style={{ alignItems: 'end' }}>
               <div>
                 <label className="ai-form-label">
@@ -614,18 +627,20 @@ const AdminInventory = () => {
       </Modal>
 
       {/* Item Log Modal */}
-      <Modal show={showLogModal} onHide={() => setShowLogModal(false)} centered>
-        <div className="ai-modal-head">
+      <ResponsiveModal show={showLogModal} onHide={() => setShowLogModal(false)} centered>
+        <ResponsiveModal.Header>
           <div className="ai-modal-head-left">
             <div className="ai-modal-icon slate"><FaHistory /></div>
             <div>
-              <div className="ai-modal-title">Stock History</div>
+              <ResponsiveModal.Title>Stock History</ResponsiveModal.Title>
               <div className="ai-modal-subtitle">{logItem?.name}</div>
             </div>
           </div>
-          <button className="ai-modal-close" onClick={() => setShowLogModal(false)} aria-label="Close">&#x2715;</button>
-        </div>
-        <div className="ai-modal-body" style={{ maxHeight: '60vh', overflowY: 'auto', padding: '1.25rem 1.5rem' }}>
+          <ResponsiveModal.CloseButton onClick={() => setShowLogModal(false)} aria-label="Close">
+            &#x2715;
+          </ResponsiveModal.CloseButton>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body style={{ maxHeight: '60vh', overflowY: 'auto', padding: '1.25rem 1.5rem' }}>
           {loadingItemLogs
             ? <div className="ai-empty"><Spinner animation="border" size="sm" style={{ marginRight: 8 }} /> Loading...</div>
             : itemLogs.length > 0
@@ -661,54 +676,53 @@ const AdminInventory = () => {
               )
               : <div className="ai-empty"><div className="ai-empty-icon"><FaHistory /></div><div className="ai-empty-text">No logs yet for this item</div></div>
           }
-        </div>
-        <div className="ai-modal-footer">
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
           <button className="ai-btn ai-btn-secondary" onClick={() => setShowLogModal(false)}>Close</button>
-        </div>
-      </Modal>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
 
       {/* Bulk Add Modal */}
-      <Modal show={showBulkModal} onHide={() => { if (!bulkSubmitting) setShowBulkModal(false); }}
+      <ResponsiveModal show={showBulkModal} onHide={() => { if (!bulkSubmitting) setShowBulkModal(false); }}
         size="xl" centered backdrop={bulkSubmitting ? 'static' : true}>
-        <div className="ai-modal-head">
+        <ResponsiveModal.Header>
           <div className="ai-modal-head-left">
             <div className="ai-modal-icon green"><FaLayerGroup /></div>
             <div>
-              <div className="ai-modal-title">Bulk Add Items</div>
+              <ResponsiveModal.Title>Bulk Add Items</ResponsiveModal.Title>
               <div className="ai-modal-subtitle">Name and Unit are required per row</div>
             </div>
           </div>
-          {!bulkSubmitting && <button className="ai-modal-close" onClick={() => setShowBulkModal(false)} aria-label="Close">&#x2715;</button>}
-        </div>
-        <form onSubmit={handleBulkSubmit}>
-          <div className="ai-modal-body" style={{ padding: '1rem 1.5rem' }}>
-            {bulkProgress.total > 0 && (
-              <div className="ai-bulk-progress">
-                <div className="ai-bulk-progress-header">
-                  <span>Adding items...</span>
-                  <span>{bulkProgress.done} / {bulkProgress.total}</span>
+          {!bulkSubmitting && <ResponsiveModal.CloseButton onClick={() => setShowBulkModal(false)} aria-label="Close">
+            &#x2715;
+          </ResponsiveModal.CloseButton>}
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          <form onSubmit={handleBulkSubmit}>
+            <div className="ai-modal-body" style={{ padding: '1rem 1.5rem' }}>
+              {bulkProgress.total > 0 && (
+                <div className="ai-bulk-progress">
+                  <div className="ai-bulk-progress-header">
+                    <span>Adding items...</span>
+                    <span>{bulkProgress.done} / {bulkProgress.total}</span>
+                  </div>
+                  <ProgressBar now={(bulkProgress.done / bulkProgress.total) * 100}
+                    variant={bulkProgress.errors.length ? 'warning' : 'success'}
+                    animated={bulkSubmitting} style={{ height: 6, borderRadius: 99 }} />
+                  {bulkProgress.errors.length > 0 && (
+                    <ul className="ai-bulk-errors">
+                      {bulkProgress.errors.map((e, i) => <li key={i}>{e}</li>)}
+                    </ul>
+                  )}
                 </div>
-                <ProgressBar now={(bulkProgress.done / bulkProgress.total) * 100}
-                  variant={bulkProgress.errors.length ? 'warning' : 'success'}
-                  animated={bulkSubmitting} style={{ height: 6, borderRadius: 99 }} />
-                {bulkProgress.errors.length > 0 && (
-                  <ul className="ai-bulk-errors">
-                    {bulkProgress.errors.map((e, i) => <li key={i}>{e}</li>)}
-                  </ul>
-                )}
-              </div>
-            )}
-            <div style={{ overflowX: 'auto', maxHeight: '50vh', overflowY: 'auto' }}>
-              <table className="ai-table" style={{ minWidth: 1000 }}>
-                <thead>
-                  <tr>
-                    <th style={{ width: 32 }}>#</th>
-                    <th style={{ minWidth: 160 }}>Name *</th>
-                    <th style={{ minWidth: 130 }}>Type</th>
-                    <th style={{ minWidth: 150 }}>Category</th>
-                    <th style={{ minWidth: 110 }}>Source</th>
-                    <th style={{ width: 80 }}>Qty</th>
-                    <th style={{ width: 75 }}>Unit *</th>
+              )}
+              <div style={{ overflowX: 'auto', maxHeight: '50vh', overflowY: 'auto' }}>
+                <table className="ai-table" style={{ minWidth: 1000 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ width: 32 }}>#</th>
+                      <th style={{ minWidth: 160 }}>Name *</th>
+                      <th style={{ minWidth: 130 }}>Type</th>
                     <th style={{ width: 90 }}>Reorder</th>
                     <th style={{ width: 90 }}>Cost/Unit</th>
                     <th style={{ width: 36 }}></th>
