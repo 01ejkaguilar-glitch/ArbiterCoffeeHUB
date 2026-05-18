@@ -6,6 +6,17 @@ import {
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveModal from '../../components/responsive/Modal';
+import ResponsiveTable from '../../components/responsive/Table';
+import ResponsiveCard from '../../components/responsive/Card';
+import ResponsiveAlert from '../../components/responsive/Alert';
+import ResponsiveSpinner from '../../components/responsive/Spinner';
+import ResponsiveBadge from '../../components/responsive/Badge';
+import ResponsiveContainer from '../../components/responsive/Container';
+import ResponsiveRow from '../../components/responsive/Row';
+import ResponsiveCol from '../../components/responsive/Col';
 import './AdminWorkforce.css';
 
 const DAYS   = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -162,10 +173,12 @@ const AdminShifts = () => {
             { label: 'Upcoming',         val: stats.upcoming,  icon: <FaChevronRight />, color: 'amber' },
             { label: 'Employees Scheduled', val: stats.uniqueEmp, icon: <FaUsers />,    color: 'teal'  },
           ].map(({ label, val, icon, color }) => (
-            <div className="wf-stat-card" key={label}>
-              <div className={`wf-stat-icon ${color}`}>{icon}</div>
-              <div><div className="wf-stat-val">{val}</div><div className="wf-stat-label">{label}</div></div>
-            </div>
+            <ResponsiveCard className={`wf-stat-card ${color}-soft`} key={label}>
+              <ResponsiveCard.Body className="p-2">
+                <div className={`wf-stat-icon text-${color}`}>{icon}</div>
+                <div><div className="wf-stat-val">{val}</div><div className="wf-stat-label">{label}</div></div>
+              </ResponsiveCard.Body>
+            </ResponsiveCard>
           ))}
         </div>
 

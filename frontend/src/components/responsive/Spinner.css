@@ -1,0 +1,31 @@
+.spinner-border {
+  display: inline-block;
+  width: var(--width, 2rem);
+  height: var(--height, 2rem);
+  vertical-align: text-bottom;
+  border: var(--border-width, 0.25em) solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spinner-border .75s linear infinite;
+}
+
+.spinner-grow {
+  display: inline-block;
+  width: var(--width, 2rem);
+  height: var(--height, 2rem);
+  vertical-align: text-bottom;
+  background-color: currentColor;
+  border-radius: 50%;
+  opacity: 0;
+  animation: spinner-grow .75s linear infinite;
+}
+
+@keyframes spinner-border {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spinner-grow {
+  0% { transform: scale(0); }
+  50% { opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}

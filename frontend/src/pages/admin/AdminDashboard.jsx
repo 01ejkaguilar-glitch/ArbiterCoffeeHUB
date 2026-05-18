@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Row, Col, Badge } from 'react-bootstrap';
 import ResponsiveButton from '../../components/responsive/Button';
 import ResponsiveCard from '../../components/responsive/Card';
+import ResponsiveCol from '../../components/responsive/Col';
+import ResponsiveRow from '../../components/responsive/Row';
+import ResponsiveBadge from '../../components/responsive/Badge';
 import { Link } from 'react-router-dom';
 import { FaShoppingBag, FaUsers, FaBoxes, FaUserCheck, FaUserClock, FaDollarSign, FaBell, FaChartLine, FaArrowRight } from 'react-icons/fa';
 import apiService from '../../services/api.service';
@@ -168,13 +170,13 @@ const AdminDashboard = () => {
       />
 
       {/* Operational Row: Recent Orders + Workforce */}
-      <Row className="g-4 mb-5">
-        <Col lg={8}>
+      <ResponsiveRow className="g-4 mb-5">
+        <ResponsiveCol lg={8}>
           <AdminRecentOrders orders={recentOrders} />
-        </Col>
-        <Col lg={4}>
+        </ResponsiveCol>
+        <ResponsiveCol lg={4}>
           <ResponsiveCard className="admin-card h-100">
-            <Card.Header className="d-flex justify-content-between align-items-center">
+            <ResponsiveCard.Header className="d-flex justify-content-between align-items-center">
               <div className="d-flex align-items-center gap-2">
                 <div className="dashboard-section-icon bg-info-soft">
                   <FaUsers className="text-info" />
@@ -187,8 +189,8 @@ const AdminDashboard = () => {
               <ResponsiveButton as={Link} to="/admin/employees" variant="outline-secondary" size="sm" className="d-flex align-items-center gap-1">
                 View <FaArrowRight size={12} />
               </ResponsiveButton>
-            </Card.Header>
-            <Card.Body className="p-0">
+            </ResponsiveCard.Header>
+            <ResponsiveCard.Body className="p-0">
               <div className="workforce-stat-list">
                 {[
                   { label: 'Total Employees', value: mappedWorkforceStats.total, icon: FaUsers, color: 'info' },

@@ -6,6 +6,17 @@ import {
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveModal from '../../components/responsive/Modal';
+import ResponsiveTable from '../../components/responsive/Table';
+import ResponsiveCard from '../../components/responsive/Card';
+import ResponsiveAlert from '../../components/responsive/Alert';
+import ResponsiveSpinner from '../../components/responsive/Spinner';
+import ResponsiveBadge from '../../components/responsive/Badge';
+import ResponsiveContainer from '../../components/responsive/Container';
+import ResponsiveRow from '../../components/responsive/Row';
+import ResponsiveCol from '../../components/responsive/Col';
 import './AdminWorkforce.css';
 
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
@@ -123,43 +134,55 @@ const AdminLeaveRequests = () => {
         </div>
 
         {/* Table */}
-        <div className="wf-table-wrap">
-          <table className="wf-table">
-            <thead>
-              <tr>
-                <th>Employee</th><th>Type</th><th>Start</th><th>End</th>
-                <th>Days</th><th>Reason</th><th>Status</th><th>Actions</th>
+        <ResponsiveTable responsive hover className="wf-table">
+          <thead className="table-light">
+            <tr>
+              <th>Employee</th><th>Type</th><th>Start</th><th>End</th>
+              <th>Days</th><th>Reason</th><th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={8} className="text-center fw-light py-4">Loading leave requests…</td></tr>
+            ) : filtered.length === 0 ? (
+              <tr><td colSpan={8} className="text-center fw-light py-4"><FaFilter size={26} style={{ color: '#d1d5db', display: 'block', margin: '0 auto .5rem' }} />No requests match your filters.</td></tr>
+            ) : filtered.map(req => (
+              <tr key={req.id}>
+                <td className="fw-bold">{req.employee_name || req.employee?.name || `#${req.employee_id}`}</td>
+                <td><span className="badge bg-teal">{req.leave_type || 'annual'}</span></td>
+                <td className="text-muted">{fmtDate(req.start_date)}</td>
+                <td className="text-muted">{fmtDate(req.end_date)}</td>
+                <td style={{ textAlign: 'center', fontWeight: 600 }}>{diffDays(req.start_date, req.end_date)}</td>
+                <td className="text-muted" style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{req.reason || '—'}</td>
+                <td>
+                  <ResponsiveBadge variant={
+                    req.status === 'pending' ? 'warning' :
+                    req.status === 'approved' ? 'success' :
+                    'danger'
+                  }>
+                    {req.status}
+                  </ResponsiveBadge>
+                </td>
+                <td>
+                  {req.status === 'pending' ? (
+                    <div className="d-flex gap-2">
+                      <ResponsiveButton variant="outline-success" size="sm" className="me-1" title="Approve" onClick={() => openReview(req, 'approved')}>
+                        <FaCheck />
+                      </ResponsiveButton>
+                      <ResponsiveButton variant="outline-danger" size="sm" title="Reject"  onClick={() => openReview(req, 'rejected')}>
+                        <FaTimes />
+                      </ResponsiveButton>
+                    </div>
+                  ) : (
+                    <ResponsiveButton variant="outline-secondary" size="sm" className="me-1" onClick={() => openReview(req, 'approved')}>
+                      Review
+                    </ResponsiveButton>
+                  )}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan={8} className="wf-empty">Loading leave requests…</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={8} className="wf-empty"><FaFilter size={26} style={{ color: '#d1d5db', display: 'block', margin: '0 auto .5rem' }} />No requests match your filters.</td></tr>
-              ) : filtered.map(req => (
-                <tr key={req.id}>
-                  <td className="wf-td-bold">{req.employee_name || req.employee?.name || `#${req.employee_id}`}</td>
-                  <td><span className="wf-badge teal">{req.leave_type || 'annual'}</span></td>
-                  <td className="wf-td-muted">{fmtDate(req.start_date)}</td>
-                  <td className="wf-td-muted">{fmtDate(req.end_date)}</td>
-                  <td style={{ textAlign: 'center', fontWeight: 600 }}>{diffDays(req.start_date, req.end_date)}</td>
-                  <td className="wf-td-muted" style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{req.reason || '—'}</td>
-                  <td><StatusBadge status={req.status} /></td>
-                  <td>
-                    {req.status === 'pending' ? (
-                      <div className="wf-action-group">
-                        <button className="wf-action-btn edit" title="Approve" onClick={() => openReview(req, 'approved')}><FaCheck /></button>
-                        <button className="wf-action-btn delete" title="Reject"  onClick={() => openReview(req, 'rejected')}><FaTimes /></button>
-                      </div>
-                    ) : (
-                      <button className="wf-btn secondary" style={{ fontSize: '.73rem', padding: '4px 10px' }} onClick={() => openReview(req, 'approved')}>Review</button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </ResponsiveTable>
 
         {/* Review Modal */}
         {showModal && selected && (

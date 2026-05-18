@@ -1,5 +1,11 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { Alert, Modal, ProgressBar, Spinner } from 'react-bootstrap';
+import ResponsiveAlert from '../../components/responsive/Alert';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveModal from '../../components/responsive/Modal';
+import ResponsiveProgressBar from '../../components/responsive/ProgressBar';
+import ResponsiveSpinner from '../../components/responsive/Spinner';
+import ResponsiveTable from '../../components/responsive/Table';
 import {
   FaPlus, FaEdit, FaTrash, FaBoxes, FaCoffee, FaUtensils, FaBox, FaSprayCan,
   FaPencilAlt, FaSort, FaSortUp, FaSortDown, FaHistory, FaLayerGroup, FaTimesCircle,
@@ -268,19 +274,17 @@ const AdminInventory = () => {
       loading={loading}
       headerRight={
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button className="ai-btn ai-btn-secondary" onClick={handleOpenBulk}>
+          <ResponsiveButton variant="outline-secondary" size="md" onClick={handleOpenBulk}>
             <FaLayerGroup size={12} /> Bulk Add
-          </button>
-          <button className="ai-btn ai-btn-primary" onClick={() => handleShowModal()}>
+          </ResponsiveButton>
+          <ResponsiveButton variant="primary" size="md" onClick={() => handleShowModal()}>
             <FaPlus size={12} /> Add Item
-          </button>
+          </ResponsiveButton>
         </div>
       }
     >
       {alert.show && (
-        <div className={`ai-alert ai-alert-${alert.type} mb-3`} role="alert" style={{ borderRadius: 10, fontSize: '0.875rem' }}>
-          {alert.message}
-        </div>
+        <ResponsiveAlert show={alert.show} onHide={() => setAlert({ show: false, message: '', type: '' })} message={alert.message} type={alert.type} />
       )}
 
       {!loading && (
@@ -384,10 +388,18 @@ const AdminInventory = () => {
                 ),
                 actions: (
                   <div className="ai-action-group">
-                    <button className="ai-action-btn adjust" title="Adjust Stock" onClick={() => handleOpenAdjust(item)}><FaBoxes /></button>
-                    <button className="ai-action-btn log" title="View Logs" onClick={() => handleOpenLog(item)}><FaHistory /></button>
-                    <button className="ai-action-btn edit" title="Edit" onClick={() => handleShowModal(item)}><FaEdit /></button>
-                    <button className="ai-action-btn delete" title="Delete" onClick={() => handleDelete(item.id)}><FaTrash /></button>
+                    <ResponsiveButton variant="outline-secondary" size="sm" className="ai-action-btn adjust" title="Adjust Stock" onClick={() => handleOpenAdjust(item)}>
+                      <FaBoxes />
+                    </ResponsiveButton>
+                    <ResponsiveButton variant="outline-secondary" size="sm" className="ai-action-btn log" title="View Logs" onClick={() => handleOpenLog(item)}>
+                      <FaHistory />
+                    </ResponsiveButton>
+                    <ResponsiveButton variant="outline-secondary" size="sm" className="ai-action-btn edit" title="Edit" onClick={() => handleShowModal(item)}>
+                      <FaEdit />
+                    </ResponsiveButton>
+                    <ResponsiveButton variant="outline-danger" size="sm" className="ai-action-btn delete" title="Delete" onClick={() => handleDelete(item.id)}>
+                      <FaTrash />
+                    </ResponsiveButton>
                   </div>
                 )
               };
@@ -498,7 +510,7 @@ const AdminInventory = () => {
           </ResponsiveModal.CloseButton>
         </ResponsiveModal.Header>
         <ResponsiveModal.Body>
-          <form onSubmit={handleSubmit}>
+          <ResponsiveForm onSubmit={handleSubmit}>
             <div className="ai-section-label">Item Details</div>
             <div className="ai-form-group">
               <label className="ai-form-label">Item Name *</label>
@@ -552,11 +564,15 @@ const AdminInventory = () => {
                   value={formData.cost_per_unit} onChange={e => setFormData(p => ({ ...p, cost_per_unit: e.target.value }))} />
               </div>
             </div>
-          </form>
+          </ResponsiveForm>
         </ResponsiveModal.Body>
         <ResponsiveModal.Footer>
-          <button type="button" className="ai-btn ai-btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
-          <button type="submit" className="ai-btn ai-btn-primary">{editingItem ? 'Update Item' : 'Add Item'}</button>
+          <ResponsiveButton variant="outline-secondary" size="sm" onClick={() => setShowModal(false)}>
+            Cancel
+          </ResponsiveButton>
+          <ResponsiveButton variant="primary" size="sm" type="submit">
+            {editingItem ? 'Update Item' : 'Add Item'}
+          </ResponsiveButton>
         </ResponsiveModal.Footer>
       </ResponsiveModal>
 
@@ -575,7 +591,7 @@ const AdminInventory = () => {
           </ResponsiveModal.CloseButton>
         </ResponsiveModal.Header>
         <ResponsiveModal.Body>
-          <form onSubmit={handleAdjustSubmit}>
+          <ResponsiveForm onSubmit={handleAdjustSubmit}>
             {adjustItem && (
               <div className="ai-current-stock">
                 <div>
@@ -618,10 +634,12 @@ const AdminInventory = () => {
             </div>
           </div>
           <div className="ai-modal-footer">
-            <button type="button" className="ai-btn ai-btn-secondary" onClick={() => setShowAdjust(false)}>Cancel</button>
-            <button type="submit" className="ai-btn ai-btn-primary" disabled={adjustSubmitting}>
+            <ResponsiveButton variant="outline-secondary" size="sm" onClick={() => setShowAdjust(false)}>
+              Cancel
+            </ResponsiveButton>
+            <ResponsiveButton variant="primary" size="sm" type="submit" disabled={adjustSubmitting}>
               {adjustSubmitting ? <><Spinner animation="border" size="sm" /> Saving...</> : 'Confirm Adjustment'}
-            </button>
+            </ResponsiveButton>
           </div>
         </form>
       </Modal>
@@ -678,7 +696,9 @@ const AdminInventory = () => {
           }
         </ResponsiveModal.Body>
         <ResponsiveModal.Footer>
-          <button className="ai-btn ai-btn-secondary" onClick={() => setShowLogModal(false)}>Close</button>
+          <ResponsiveButton variant="outline-secondary" size="sm" onClick={() => setShowLogModal(false)}>
+            Close
+          </ResponsiveButton>
         </ResponsiveModal.Footer>
       </ResponsiveModal>
 
@@ -698,7 +718,7 @@ const AdminInventory = () => {
           </ResponsiveModal.CloseButton>}
         </ResponsiveModal.Header>
         <ResponsiveModal.Body>
-          <form onSubmit={handleBulkSubmit}>
+          <ResponsiveForm onSubmit={handleBulkSubmit}>
             <div className="ai-modal-body" style={{ padding: '1rem 1.5rem' }}>
               {bulkProgress.total > 0 && (
                 <div className="ai-bulk-progress">
@@ -706,9 +726,9 @@ const AdminInventory = () => {
                     <span>Adding items...</span>
                     <span>{bulkProgress.done} / {bulkProgress.total}</span>
                   </div>
-                  <ProgressBar now={(bulkProgress.done / bulkProgress.total) * 100}
+                  <ResponsiveProgressBar now={(bulkProgress.done / bulkProgress.total) * 100}
                     variant={bulkProgress.errors.length ? 'warning' : 'success'}
-                    animated={bulkSubmitting} style={{ height: 6, borderRadius: 99 }} />
+                    animated={bulkSubmitting} />
                   {bulkProgress.errors.length > 0 && (
                     <ul className="ai-bulk-errors">
                       {bulkProgress.errors.map((e, i) => <li key={i}>{e}</li>)}

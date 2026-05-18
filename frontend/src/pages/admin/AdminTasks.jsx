@@ -6,6 +6,11 @@ import {
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveModal from '../../components/responsive/Modal';
+import ResponsiveTable from '../../components/responsive/Table';
+import ResponsiveCard from '../../components/responsive/Card';
 import './AdminWorkforce.css';
 
 const blankForm = () => ({
@@ -155,51 +160,79 @@ const AdminTasks = () => {
             <option value="medium">Medium</option>
             <option value="low">Low</option>
           </select>
-          <button className="wf-btn secondary wf-btn-icon" onClick={fetchTasks} title="Refresh"><FaSync /></button>
-          <button className="wf-btn primary" onClick={openAdd}><FaPlus style={{ marginRight: '.4rem' }} />Add Task</button>
+          <ResponsiveButton variant="outline-secondary" size="sm" className="wf-btn-icon" onClick={fetchTasks} title="Refresh"><FaSync /></ResponsiveButton>
+          <ResponsiveButton variant="primary" size="md" onClick={openAdd}><FaPlus style={{ marginRight: '.4rem' }} />Add Task</ResponsiveButton>
         </div>
 
         {/* Table */}
-        <div className="wf-table-wrap">
-          <table className="wf-table">
-            <thead>
-              <tr>
-                <th>Task</th><th>Assigned To</th><th>Priority</th>
-                <th>Due Date</th><th>Status</th><th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan={6} className="wf-empty">Loading tasks…</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={6} className="wf-empty"><FaTasks size={28} style={{ color: '#d1d5db', display: 'block', margin: '0 auto .5rem' }} />No tasks found.</td></tr>
-              ) : filtered.map(task => (
-                <tr key={task.id} style={overdue(task) ? { background: '#fff5f5' } : {}}>
-                  <td>
-                    <div className="wf-td-bold">{task.title}</div>
-                    {task.description && <div className="wf-td-muted" style={{ fontSize: '.75rem', marginTop: 2, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{task.description}</div>}
-                    {overdue(task) && <span style={{ fontSize: '.7rem', color: '#ef4444', fontWeight: 600 }}>OVERDUE</span>}
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
-                      <FaUser size={10} style={{ color: '#9ca3af' }} />
-                      <span>{empName(task.assigned_to || task.employee_id)}</span>
-                    </div>
-                  </td>
-                  <td><PriorityBadge priority={task.priority} /></td>
-                  <td className="wf-td-muted">{task.due_date ? new Date(task.due_date + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>
-                  <td><StatusBadge status={task.status} /></td>
-                  <td>
-                    <div className="wf-action-group">
-                      <button className="wf-action-btn edit" title="Edit" onClick={() => openEdit(task)}><FaEdit /></button>
-                      <button className="wf-action-btn delete" title="Delete" onClick={() => { setToDelete(task); setShowDelete(true); }}><FaTrash /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ResponsiveTable
+          columns={[
+            { Header: 'Task', accessor: 'title' },
+            { Header: 'Assigned To', accessor: 'assigned_to' },
+            { Header: 'Priority', accessor: 'priority' },
+            { Header: 'Due Date', accessor: 'due_date' },
+            { Header: 'Status', accessor: 'status' },
+            { Header: 'Actions', accessor: 'actions' }
+          ]}
+          data={filtered.map(task => ({
+            id: task.id,
+            title: task.title,
+            description: task.description,
+            assigned_to: task.assigned_to || task.employee_id,
+            priority: task.priority,
+            status: task.status,
+            due_date: task.due_date,
+            overdue: overdue(task)
+          }))}
+          loading={loading}
+          emptyMessage={<><FaTasks size={28} style={{ color: '#d1d5db', display: 'block', margin: '0 auto .5rem' }} />No tasks found.</>}
+        >
+          {(columnProps) => {
+            if (columnProps.column.accessor === 'title') {
+              return (
+                <div className="wf-td-bold">{columnProps.value}</div>
+                {columnProps.row.description && <div className="wf-td-muted" style={{ fontSize: '.75rem', marginTop: 2, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{columnProps.row.description}</div>}
+                {columnProps.row.overdue && <span style={{ fontSize: '.7rem', color: '#ef4444', fontWeight: 600 }}>OVERDUE</span>}
+              );
+            }
+
+            if (columnProps.column.accessor === 'assigned_to') {
+              return (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+                  <FaUser size={10} style={{ color: '#9ca3af' }} />
+                  <span>{empName(columnProps.row.assigned_to)}</span>
+                </div>
+              );
+            }
+
+            if (columnProps.column.accessor === 'priority') {
+              return <PriorityBadge priority={columnProps.value} />;
+            }
+
+            if (columnProps.column.accessor === 'due_date') {
+              return <td className="wf-td-muted">{columnProps.value ? new Date(columnProps.value + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>;
+            }
+
+            if (columnProps.column.accessor === 'status') {
+              return <StatusBadge status={columnProps.value} />;
+            }
+
+            if (columnProps.column.accessor === 'actions') {
+              return (
+                <div className="wf-action-group">
+                  <ResponsiveButton variant="outline-secondary" size="sm" className="wf-action-btn edit" title="Edit" onClick={() => openEdit(columnProps.row)}>
+                    <FaEdit />
+                  </ResponsiveButton>
+                  <ResponsiveButton variant="outline-danger" size="sm" className="wf-action-btn delete" title="Delete" onClick={() => { setToDelete(columnProps.row); setShowDelete(true); }}>
+                    <FaTrash />
+                  </ResponsiveButton>
+                </div>
+              );
+            }
+
+            return <td>{columnProps.cell}</td>;
+          }}
+        </ResponsiveTable>
 
         {/* Add/Edit Modal */}
         {showModal && (
@@ -211,48 +244,70 @@ const AdminTasks = () => {
               </div>
               <form onSubmit={handleSubmit}>
                 <div className="wf-modal-body">
-                  <div className="wf-form-row">
-                    <label className="wf-form-label">Task Title *</label>
-                    <input className="wf-field-input" placeholder="Task title" required {...field('title')} />
-                  </div>
-                  <div className="wf-form-row">
-                    <label className="wf-form-label">Description</label>
-                    <textarea className="wf-field-textarea" rows={3} placeholder="Task description…" {...field('description')} />
-                  </div>
-                  <div className="wf-form-row">
-                    <label className="wf-form-label">Assign To</label>
-                    <select className="wf-field-select" {...field('assigned_to')}>
+                  <ResponsiveForm.Group className="wf-form-row">
+                    <ResponsiveForm.Label className="wf-form-label">Task Title *</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
+                      type="text"
+                      placeholder="Task title"
+                      required
+                      {...field('title')}
+                    />
+                  </ResponsiveForm.Group>
+                  <ResponsiveForm.Group className="wf-form-row">
+                    <ResponsiveForm.Label className="wf-form-label">Description</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
+                      type="textarea"
+                      rows={3}
+                      placeholder="Task description…"
+                      {...field('description')}
+                    />
+                  </ResponsiveForm.Group>
+                  <ResponsiveForm.Group className="wf-form-row">
+                    <ResponsiveForm.Label className="wf-form-label">Assign To</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
+                      type="select"
+                      {...field('assigned_to')}
+                    >
                       <option value="">Unassigned</option>
                       {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                    </select>
-                  </div>
-                  <div className="wf-form-row wf-2col">
+                    </ResponsiveForm.Control>
+                  </ResponsiveForm.Group>
+                  <ResponsiveForm.Group className="wf-form-row wf-2col">
                     <div>
-                      <label className="wf-form-label">Priority</label>
-                      <select className="wf-field-select" {...field('priority')}>
+                      <ResponsiveForm.Label className="wf-form-label">Priority</ResponsiveForm.Label>
+                      <ResponsiveForm.Control
+                        type="select"
+                        {...field('priority')}
+                      >
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
                         <option value="high">High</option>
-                      </select>
+                      </ResponsiveForm.Control>
                     </div>
                     <div>
-                      <label className="wf-form-label">Status</label>
-                      <select className="wf-field-select" {...field('status')}>
+                      <ResponsiveForm.Label className="wf-form-label">Status</ResponsiveForm.Label>
+                      <ResponsiveForm.Control
+                        type="select"
+                        {...field('status')}
+                      >
                         <option value="pending">Pending</option>
                         <option value="in_progress">In Progress</option>
                         <option value="completed">Completed</option>
                         <option value="cancelled">Cancelled</option>
-                      </select>
+                      </ResponsiveForm.Control>
                     </div>
-                  </div>
-                  <div className="wf-form-row">
-                    <label className="wf-form-label">Due Date</label>
-                    <input type="date" className="wf-field-input" {...field('due_date')} />
-                  </div>
+                  </ResponsiveForm.Group>
+                  <ResponsiveForm.Group className="wf-form-row">
+                    <ResponsiveForm.Label className="wf-form-label">Due Date</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
+                      type="date"
+                      {...field('due_date')}
+                    />
+                  </ResponsiveForm.Group>
                 </div>
                 <div className="wf-modal-foot">
-                  <button type="button" className="wf-btn secondary" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" className="wf-btn primary" disabled={saving}>{saving ? 'Saving…' : selected ? 'Update Task' : 'Add Task'}</button>
+                  <ResponsiveButton variant="outline-secondary" size="sm" onClick={() => setShowModal(false)}>Cancel</ResponsiveButton>
+                  <ResponsiveButton variant="primary" size="sm" type="submit" disabled={saving}>{saving ? 'Saving…' : selected ? 'Update Task' : 'Add Task'}</ResponsiveButton>
                 </div>
               </form>
             </div>
@@ -271,8 +326,8 @@ const AdminTasks = () => {
                 <p>Delete task <strong>"{toDelete.title}"</strong>?</p>
               </div>
               <div className="wf-modal-foot">
-                <button className="wf-btn secondary" onClick={() => setShowDelete(false)}>Cancel</button>
-                <button className="wf-btn danger" onClick={handleDelete}>Delete</button>
+                <ResponsiveButton variant="outline-secondary" size="sm" onClick={() => setShowDelete(false)}>Cancel</ResponsiveButton>
+                <ResponsiveButton variant="outline-danger" size="sm" onClick={handleDelete}>Delete</ResponsiveButton>
               </div>
             </div>
           </div>

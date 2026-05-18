@@ -1,9 +1,9 @@
 import React from 'react';
-import { Card } from 'react-bootstrap';
+import ResponsiveCard from '../../components/responsive/Card';
 
 const AdminChartSection = ({ stats, analyticsData }) => {
   return (
-    <Card className="admin-card">
+    <ResponsiveCard className="admin-card">
       <Card.Body>
         <h5 className="fw-semibold mb-3">Sales Overview</h5>
         <pre className="mb-0 small text-muted">{JSON.stringify({ stats, analyticsData }, null, 2)}</pre>

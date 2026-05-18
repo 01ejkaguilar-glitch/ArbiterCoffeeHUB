@@ -1,4 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveAlert from '../../components/responsive/Alert';
 import {
   FaClock, FaSearch, FaPlus, FaCheckCircle, FaTimesCircle,
   FaUserClock, FaTimes, FaCalendarAlt, FaSync,
@@ -94,7 +97,10 @@ const AdminAttendance = () => {
   });
 
   return (
-    <PageShell title="Attendance Management" subtitle="Track daily employee clock-in/out records" error={error} onRetry={fetchAttendance}>
+    <PageShell title="Attendance Management" subtitle="Track daily employee clock-in/out records" onRetry={fetchAttendance}>
+      {error && (
+        <ResponsiveAlert show={true} onHide={() => setError(null)} message={error} type="danger" />
+      )}
       <div className="wf-page">
 
         {/* Stats */}
@@ -125,10 +131,12 @@ const AdminAttendance = () => {
               <option key={s} value={s}>{s.replace('_', ' ')}</option>
             ))}
           </select>
-          <button className="wf-btn secondary wf-btn-icon" onClick={fetchAttendance} title="Refresh"><FaSync /></button>
-          <button className="wf-btn primary" onClick={() => { setFormData(blankForm()); setShowModal(true); }}>
+          <ResponsiveButton variant="outline-secondary" size="sm" className="wf-btn-icon" onClick={fetchAttendance} title="Refresh">
+            <FaSync />
+          </ResponsiveButton>
+          <ResponsiveButton variant="primary" size="md" onClick={() => { setFormData(blankForm()); setShowModal(true); }}>
             <FaPlus style={{ marginRight: '.4rem' }} />Mark Attendance
-          </button>
+          </ResponsiveButton>
         </div>
 
         {/* Table */}
@@ -200,10 +208,12 @@ const AdminAttendance = () => {
                   </div>
                 </div>
                 <div className="wf-modal-foot">
-                  <button type="button" className="wf-btn secondary" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" className="wf-btn primary" disabled={saving}>
+                  <ResponsiveButton variant="outline-secondary" size="sm" onClick={() => setShowModal(false)}>
+                    Cancel
+                  </ResponsiveButton>
+                  <ResponsiveButton variant="primary" size="md" type="submit" disabled={saving}>
                     {saving ? 'Saving…' : 'Mark Attendance'}
-                  </button>
+                  </ResponsiveButton>
                 </div>
               </form>
             </div>

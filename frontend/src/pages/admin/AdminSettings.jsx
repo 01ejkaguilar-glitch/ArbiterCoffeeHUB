@@ -1,4 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveModal from '../../components/responsive/Modal';
+import ResponsiveAlert from '../../components/responsive/Alert';
 import {
   FaHistory, FaUsers, FaPlus, FaEdit, FaTrash, FaTimes,
   FaChevronUp, FaChevronDown, FaSave, FaUserCircle, FaSync,
@@ -137,12 +141,16 @@ const AdminSettings = () => {
             <span className="as-section-title">Company Timeline</span>
             <span className="as-section-count">{timeline.length} entries</span>
             <div className="as-head-actions">
-              <button className="as-btn add" onClick={fetchTimeline} title="Refresh"><FaSync /></button>
-              <button className="as-btn add" onClick={openTlAdd}><FaPlus />Add Entry</button>
+              <ResponsiveButton variant="outline-secondary" size="sm" className="as-btn add" onClick={fetchTimeline} title="Refresh">
+                <FaSync />
+              </ResponsiveButton>
+              <ResponsiveButton variant="primary" size="sm" className="as-btn add" onClick={openTlAdd}>
+                <FaPlus />Add Entry
+              </ResponsiveButton>
             </div>
           </div>
           <div className="as-section-body">
-            <Alert msg={alert.timeline?.msg} type={alert.timeline?.type} onClose={() => clearAlert('timeline')} />
+            <ResponsiveAlert show={!!alert.timeline?.msg} onHide={() => clearAlert('timeline')} message={alert.timeline?.msg} type={alert.timeline?.type} />
             {loading.timeline ? (
               <div className="as-loading"><div className="as-spinner" />Loading timeline…</div>
             ) : timeline.length === 0 ? (
@@ -185,12 +193,16 @@ const AdminSettings = () => {
             <span className="as-section-title">Team Members</span>
             <span className="as-section-count">{team.length} members</span>
             <div className="as-head-actions">
-              <button className="as-btn add" onClick={fetchTeam} title="Refresh"><FaSync /></button>
-              <button className="as-btn add" onClick={openTmAdd}><FaPlus />Add Member</button>
+              <ResponsiveButton variant="outline-secondary" size="sm" className="as-btn add" onClick={fetchTeam} title="Refresh">
+                <FaSync />
+              </ResponsiveButton>
+              <ResponsiveButton variant="primary" size="sm" className="as-btn add" onClick={openTmAdd}>
+                <FaPlus />Add Member
+              </ResponsiveButton>
             </div>
           </div>
           <div className="as-section-body">
-            <Alert msg={alert.team?.msg} type={alert.team?.type} onClose={() => clearAlert('team')} />
+            <ResponsiveAlert show={!!alert.team?.msg} onHide={() => clearAlert('team')} message={alert.team?.msg} type={alert.team?.type} />
             {loading.team ? (
               <div className="as-loading"><div className="as-spinner" />Loading team members…</div>
             ) : team.length === 0 ? (
@@ -305,8 +317,12 @@ const AdminSettings = () => {
                   )}
                 </div>
                 <div className="wf-modal-foot">
-                  <button type="button" className="wf-btn secondary" onClick={() => setTmModal(false)}>Cancel</button>
-                  <button type="submit" className="wf-btn primary" disabled={saving.team}><FaSave style={{ marginRight: '.3rem' }} />{saving.team ? 'Saving…' : selected ? 'Update' : 'Add Member'}</button>
+                  <ResponsiveButton variant="outline-secondary" size="sm" type="button" onClick={() => setTmModal(false)}>
+                    Cancel
+                  </ResponsiveButton>
+                  <ResponsiveButton variant="primary" size="sm" type="submit" disabled={saving.team}>
+                    <FaSave style={{ marginRight: '.3rem' }} />{saving.team ? 'Saving…' : selected ? 'Update' : 'Add Member'}
+                  </ResponsiveButton>
                 </div>
               </form>
             </div>

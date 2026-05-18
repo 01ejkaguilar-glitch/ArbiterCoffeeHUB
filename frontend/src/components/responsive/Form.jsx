@@ -115,6 +115,20 @@ ResponsiveForm.Button = ({
   </button>
 );
 
+ResponsiveForm.Select = ({
+  className = '',
+  ...props
+}) => (
+  <select
+    className={`form-select ${className}`}
+    {...props}
+  />
+);
+
+ResponsiveForm.Select.propTypes = {
+  className: PropTypes.string
+};
+
 ResponsiveForm.Button.propTypes = {
   variant: PropTypes.oneOf(['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'link']),
   size: PropTypes.oneOf(['xs', 'sm', 'md', 'lg']),

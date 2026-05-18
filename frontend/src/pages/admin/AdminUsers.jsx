@@ -8,6 +8,19 @@ import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveModal from '../../components/responsive/Modal';
+import ResponsiveTable from '../../components/responsive/Table';
+import ResponsiveCard from '../../components/responsive/Card';
+import ResponsiveAlert from '../../components/responsive/Alert';
+import ResponsiveSpinner from '../../components/responsive/Spinner';
+import ResponsiveBadge from '../../components/responsive/Badge';
+import ResponsiveContainer from '../../components/responsive/Container';
+import ResponsiveRow from '../../components/responsive/Row';
+import ResponsiveCol from '../../components/responsive/Col';
+import ResponsiveTabs from '../../components/responsive/Tabs';
+import ResponsiveTab from '../../components/responsive/Tab';
 import './AdminUsers.css';
 
 const PER_PAGE_OPTIONS = [10, 15, 25, 50];
@@ -21,16 +34,17 @@ function getAvatarClass(name) {
 
 function RoleBadge({ role }) {
   const name = typeof role === 'string' ? role : role?.name || '';
-  return <span className={`au-role-badge ${name}`}>{name}</span>;
+  return <ResponsiveBadge className={`au-role-badge ${name}`}>{name}</ResponsiveBadge>;
 }
 
 function StatusChip({ status }) {
   const s = status || 'active';
-  return (
-    <span className={`au-status ${s}`}>
-      <span className="au-dot" /> {s}
-    </span>
-  );
+  const variantMap = {
+    active: 'success',
+    inactive: 'danger',
+  };
+  const variant = variantMap[s] || 'secondary';
+  return <ResponsiveBadge bg={variant}>{s}</ResponsiveBadge>;
 }
 
 const AdminUsers = () => {
@@ -214,57 +228,88 @@ const AdminUsers = () => {
     >
       {/* Stats Bar */}
       <div className="au-stats-bar">
-        <div className="au-stat-card">
-          <div className="au-stat-icon blue"><FaUsers /></div>
-          <div><div className="au-stat-label">Total Users</div><div className="au-stat-value">{stats.total_users}</div></div>
-        </div>
-        <div className="au-stat-card">
-          <div className="au-stat-icon green"><FaUserCheck /></div>
-          <div><div className="au-stat-label">Active</div><div className="au-stat-value">{stats.active_users}</div></div>
-        </div>
-        <div className="au-stat-card">
-          <div className="au-stat-icon red"><FaUserTimes /></div>
-          <div><div className="au-stat-label">Inactive</div><div className="au-stat-value">{stats.inactive_users}</div></div>
-        </div>
-        <div className="au-stat-card">
-          <div className="au-stat-icon purple"><FaUserShield /></div>
-          <div><div className="au-stat-label">Admins</div><div className="au-stat-value">{stats.by_role?.admins ?? 0}</div></div>
-        </div>
-        <div className="au-stat-card">
-          <div className="au-stat-icon teal"><FaUsers /></div>
-          <div><div className="au-stat-label">Baristas</div><div className="au-stat-value">{stats.by_role?.baristas ?? 0}</div></div>
-        </div>
-        <div className="au-stat-card">
-          <div className="au-stat-icon amber"><FaUsers /></div>
-          <div><div className="au-stat-label">Customers</div><div className="au-stat-value">{stats.by_role?.customers ?? 0}</div></div>
-        </div>
+        <ResponsiveCard className="au-stat-card">
+          <ResponsiveCard.Body>
+            <div className="au-stat-icon blue"><FaUsers /></div>
+            <div><div className="au-stat-label">Total Users</div><div className="au-stat-value">{stats.total_users}</div></div>
+          </ResponsiveCard.Body>
+        </ResponsiveCard>
+        <ResponsiveCard className="au-stat-card">
+          <ResponsiveCard.Body>
+            <div className="au-stat-icon green"><FaUserCheck /></div>
+            <div><div className="au-stat-label">Active</div><div className="au-stat-value">{stats.active_users}</div></div>
+          </ResponsiveCard.Body>
+        </ResponsiveCard>
+        <ResponsiveCard className="au-stat-card">
+          <ResponsiveCard.Body>
+            <div className="au-stat-icon red"><FaUserTimes /></div>
+            <div><div className="au-stat-label">Inactive</div><div className="au-stat-value">{stats.inactive_users}</div></div>
+          </ResponsiveCard.Body>
+        </ResponsiveCard>
+        <ResponsiveCard className="au-stat-card">
+          <ResponsiveCard.Body>
+            <div className="au-stat-icon purple"><FaUserShield /></div>
+            <div><div className="au-stat-label">Admins</div><div className="au-stat-value">{stats.by_role?.admins ?? 0}</div></div>
+          </ResponsiveCard.Body>
+        </ResponsiveCard>
+        <ResponsiveCard className="au-stat-card">
+          <ResponsiveCard.Body>
+            <div className="au-stat-icon teal"><FaUsers /></div>
+            <div><div className="au-stat-label">Baristas</div><div className="au-stat-value">{stats.by_role?.baristas ?? 0}</div></div>
+          </ResponsiveCard.Body>
+        </ResponsiveCard>
+        <ResponsiveCard className="au-stat-card">
+          <ResponsiveCard.Body>
+            <div className="au-stat-icon amber"><FaUsers /></div>
+            <div><div className="au-stat-label">Customers</div><div className="au-stat-value">{stats.by_role?.customers ?? 0}</div></div>
+          </ResponsiveCard.Body>
+        </ResponsiveCard>
       </div>
 
       {/* Filter Bar */}
       <div className="au-filter-bar">
         <div className="au-search-wrap">
           <FaSearch className="au-search-icon" />
-          <input
+          <ResponsiveForm.Control
+            type="text"
             className="au-search"
             placeholder="Search by name or email…"
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <select className="au-select" value={roleFilter} onChange={e => handleRole(e.target.value)}>
+        <ResponsiveForm.Control
+          type="select"
+          className="au-select"
+          value={roleFilter}
+          onChange={e => handleRole(e.target.value)}
+        >
           <option value="all">All Roles</option>
           {ROLES.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
-        </select>
-        <select className="au-select" value={statusFilter} onChange={e => handleStatus(e.target.value)}>
+        </ResponsiveForm.Control>
+        <ResponsiveForm.Control
+          type="select"
+          className="au-select"
+          value={statusFilter}
+          onChange={e => handleStatus(e.target.value)}
+        >
           <option value="all">All Status</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
-        </select>
-        <select className="au-select" value={perPage} onChange={e => handlePerPage(e.target.value)} style={{minWidth:90}}>
+        </ResponsiveForm.Control>
+        <ResponsiveForm.Control
+          type="select"
+          className="au-select"
+          value={perPage}
+          onChange={e => handlePerPage(e.target.value)}
+          style={{minWidth:90}}
+        >
           {PER_PAGE_OPTIONS.map(n => <option key={n} value={n}>{n} / page</option>)}
-        </select>
+        </ResponsiveForm.Control>
         {meta.total > 0 && <span className="au-count-label">{meta.from}–{meta.to} of {meta.total}</span>}
-        <button className="au-add-btn" onClick={handleOpenCreate}><FaPlus /> Add User</button>
+        <ResponsiveButton variant="primary" size="md" className="au-add-btn" onClick={handleOpenCreate}>
+          <FaPlus /> Add User
+        </ResponsiveButton>
       </div>
 
       {/* Table */}
@@ -277,7 +322,7 @@ const AdminUsers = () => {
             <p>No users found.{(search || roleFilter !== 'all' || statusFilter !== 'all') && ' Try adjusting your filters.'}</p>
           </div>
         ) : (
-          <table className="au-table">
+          <ResponsiveTable responsive hover className="au-table">
             <thead>
               <tr>
                 <th>User</th>
@@ -311,13 +356,21 @@ const AdminUsers = () => {
                     </td>
                     <td>
                       <div className="au-actions-cell">
-                        <button className="au-action-btn view" title="View Details" onClick={() => handleView(user)}><FaEye /></button>
-                        <button className="au-action-btn edit" title="Edit User" onClick={() => handleOpenEdit(user)}><FaEdit /></button>
-                        <button
+                        <ResponsiveButton variant="outline-secondary" size="sm" className="au-action-btn view" title="View Details" onClick={() => handleView(user)}>
+                          <FaEye />
+                        </ResponsiveButton>
+                        <ResponsiveButton variant="outline-secondary" size="sm" className="au-action-btn edit" title="Edit User" onClick={() => handleOpenEdit(user)}>
+                          <FaEdit />
+                        </ResponsiveButton>
+                        <ResponsiveButton
+                          variant={status === 'active' ? 'outline-danger' : 'outline-success'}
+                          size="sm"
                           className={`au-action-btn ${status === 'active' ? 'deactivate' : 'reactivate'}`}
                           title={status === 'active' ? 'Deactivate' : 'Reactivate'}
                           onClick={() => handleToggleRequest(user)}
-                        >{status === 'active' ? <FaBan /> : <FaCheckCircle />}</button>
+                        >
+                          {status === 'active' ? <FaBan /> : <FaCheckCircle />}
+                        </ResponsiveButton>
                       </div>
                     </td>
                   </tr>

@@ -7,6 +7,17 @@ import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
 import './AdminWorkforce.css';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveModal from '../../components/responsive/Modal';
+import ResponsiveTable from '../../components/responsive/Table';
+import ResponsiveCard from '../../components/responsive/Card';
+import ResponsiveAlert from '../../components/responsive/Alert';
+import ResponsiveSpinner from '../../components/responsive/Spinner';
+import ResponsiveBadge from '../../components/responsive/Badge';
+import ResponsiveContainer from '../../components/responsive/Container';
+import ResponsiveRow from '../../components/responsive/Row';
+import ResponsiveCol from '../../components/responsive/Col';
 
 const blankForm = () => ({
   employee_id: '', review_period: '', overall_score: '', punctuality_score: '',
@@ -153,10 +164,12 @@ const AdminPerformance = () => {
             { label: 'Excellent (≥8)',     val: stats.excellent,        icon: <FaMedal />,      color: 'green' },
             { label: 'Needs Improvement', val: stats.needsImprovement,  icon: <FaUserCheck />,  color: 'red'   },
           ].map(({ label, val, icon, color }) => (
-            <div className="wf-stat-card" key={label}>
-              <div className={`wf-stat-icon ${color}`}>{icon}</div>
-              <div><div className="wf-stat-val">{val}</div><div className="wf-stat-label">{label}</div></div>
-            </div>
+            <ResponsiveCard className={`wf-stat-card ${color}-soft`} key={label}>
+              <ResponsiveCard.Body className="p-2">
+                <div className={`wf-stat-icon text-${color}`}>{icon}</div>
+                <div><div className="wf-stat-val">{val}</div><div className="wf-stat-label">{label}</div></div>
+              </ResponsiveCard.Body>
+            </ResponsiveCard>
           ))}
         </div>
 
@@ -164,7 +177,13 @@ const AdminPerformance = () => {
         <div className="wf-filter-bar">
           <div className="wf-search-wrap">
             <FaSearch className="wf-search-icon" />
-            <input className="wf-search-input" placeholder="Search by employee or period…" value={search} onChange={e => setSearch(e.target.value)} />
+            <ResponsiveForm.Control
+              type="text"
+              className="wf-search-input"
+              placeholder="Search by employee or period…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
           <input
             type="month"
@@ -180,100 +199,153 @@ const AdminPerformance = () => {
         </div>
 
         {/* Table */}
-        <div className="wf-table-wrap">
-          <table className="wf-table">
-            <thead>
-              <tr>
-                <th>Employee</th><th>Period</th><th>Overall</th>
-                <th>Punctuality</th><th>Quality</th><th>Teamwork</th>
-                <th>Rating</th><th>Actions</th>
+        <ResponsiveTable responsive hover className="wf-table">
+          <thead className="table-light">
+            <tr>
+              <th>Employee</th><th>Period</th><th>Overall</th>
+              <th>Punctuality</th><th>Quality</th><th>Teamwork</th>
+              <th>Rating</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={8} className="text-center fw-light py-4">Loading reviews…</td></tr>
+            ) : filtered.length === 0 ? (
+              <tr><td colSpan={8} className="text-center fw-light py-4"><FaChartLine size={28} style={{ color: '#d1d5db', display: 'block', margin: '0 auto .5rem' }} />No reviews found.</td></tr>
+            ) : filtered.map(review => (
+              <tr key={review.id}>
+                <td className="fw-bold">{empName(review.employee_id)}</td>
+                <td className="text-muted">{review.review_period || '—'}</td>
+                <td style={{ minWidth: 130 }}><ScoreBar score={review.overall_score} /></td>
+                <td style={{ minWidth: 110 }}><ScoreBar score={review.punctuality_score} /></td>
+                <td style={{ minWidth: 100 }}><ScoreBar score={review.quality_score} /></td>
+                <td style={{ minWidth: 100 }}><ScoreBar score={review.teamwork_score} /></td>
+                <td><StarRating score={review.overall_score} /></td>
+                <td>
+                  <div className="d-flex gap-2">
+                    <ResponsiveButton variant="outline-secondary" size="sm" className="me-1" title="Edit" onClick={() => openEdit(review)}>
+                      <FaEdit />
+                    </ResponsiveButton>
+                    <ResponsiveButton variant="outline-danger" size="sm" title="Delete" onClick={() => { setToDelete(review); setShowDelete(true); }}>
+                      <FaTrash />
+                    </ResponsiveButton>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan={8} className="wf-empty">Loading reviews…</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={8} className="wf-empty"><FaChartLine size={28} style={{ color: '#d1d5db', display: 'block', margin: '0 auto .5rem' }} />No reviews found.</td></tr>
-              ) : filtered.map(review => (
-                <tr key={review.id}>
-                  <td className="wf-td-bold">{empName(review.employee_id)}</td>
-                  <td className="wf-td-muted">{review.review_period || '—'}</td>
-                  <td style={{ minWidth: 130 }}><ScoreBar score={review.overall_score} /></td>
-                  <td style={{ minWidth: 110 }}><ScoreBar score={review.punctuality_score} /></td>
-                  <td style={{ minWidth: 100 }}><ScoreBar score={review.quality_score} /></td>
-                  <td style={{ minWidth: 100 }}><ScoreBar score={review.teamwork_score} /></td>
-                  <td><StarRating score={review.overall_score} /></td>
-                  <td>
-                    <div className="wf-action-group">
-                      <button className="wf-action-btn edit" title="Edit" onClick={() => openEdit(review)}><FaEdit /></button>
-                      <button className="wf-action-btn delete" title="Delete" onClick={() => { setToDelete(review); setShowDelete(true); }}><FaTrash /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </ResponsiveTable>
 
         {/* Add/Edit Modal */}
         {showModal && (
-          <div className="wf-modal-overlay" onClick={() => setShowModal(false)}>
-            <div className="wf-modal lg" onClick={e => e.stopPropagation()}>
-              <div className="wf-modal-head">
-                <span className="wf-modal-title"><FaChartLine style={{ marginRight: '.5rem' }} />{selected ? 'Edit Review' : 'Add Review'}</span>
-                <button className="wf-modal-close" onClick={() => setShowModal(false)}><FaTimes /></button>
-              </div>
+          <ResponsiveModal show={showModal} onHide={() => setShowModal(false)} centered={true} size="lg">
+            <ResponsiveModal.Header closeButton>
+              <ResponsiveModal.Title>
+                <FaChartLine className="me-2" />{selected ? 'Edit Review' : 'Add Review'}
+              </ResponsiveModal.Title>
+            </ResponsiveModal.Header>
+            <ResponsiveModal.Body>
               <form onSubmit={handleSubmit}>
-                <div className="wf-modal-body">
-                  <div className="wf-form-row wf-2col">
-                    <div>
-                      <label className="wf-form-label">Employee *</label>
-                      <select className="wf-field-select" required {...field('employee_id')}>
-                        <option value="">Select employee…</option>
-                        {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="wf-form-label">Review Period</label>
-                      <input type="month" className="wf-field-input" {...field('review_period')} />
-                    </div>
+                <div className="wf-form-row wf-2col">
+                  <div>
+                    <ResponsiveForm.Label className="wf-form-label">Employee *</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
+                      type="select"
+                      required
+                      {...field('employee_id')}
+                    >
+                      <option value="">Select employee…</option>
+                      {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                    </ResponsiveForm.Control>
                   </div>
-                  <div className="wf-form-row wf-2col">
-                    <div>
-                      <label className="wf-form-label">Overall Score (0-10)</label>
-                      <input type="number" min="0" max="10" step="0.1" className="wf-field-input" placeholder="e.g. 8.5" {...field('overall_score')} />
-                    </div>
-                    <div>
-                      <label className="wf-form-label">Punctuality Score (0-10)</label>
-                      <input type="number" min="0" max="10" step="0.1" className="wf-field-input" placeholder="e.g. 9.0" {...field('punctuality_score')} />
-                    </div>
-                  </div>
-                  <div className="wf-form-row wf-2col">
-                    <div>
-                      <label className="wf-form-label">Quality Score (0-10)</label>
-                      <input type="number" min="0" max="10" step="0.1" className="wf-field-input" placeholder="e.g. 8.0" {...field('quality_score')} />
-                    </div>
-                    <div>
-                      <label className="wf-form-label">Teamwork Score (0-10)</label>
-                      <input type="number" min="0" max="10" step="0.1" className="wf-field-input" placeholder="e.g. 7.5" {...field('teamwork_score')} />
-                    </div>
-                  </div>
-                  <div className="wf-form-row">
-                    <label className="wf-form-label">Reviewed By</label>
-                    <input className="wf-field-input" placeholder="Reviewer name" {...field('reviewed_by')} />
-                  </div>
-                  <div className="wf-form-row">
-                    <label className="wf-form-label">Comments</label>
-                    <textarea className="wf-field-textarea" rows={3} placeholder="Performance notes and comments…" {...field('comments')} />
+                  <div>
+                    <ResponsiveForm.Label className="wf-form-label">Review Period</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
+                      type="month"
+                      {...field('review_period')}
+                    />
                   </div>
                 </div>
-                <div className="wf-modal-foot">
-                  <button type="button" className="wf-btn secondary" onClick={() => setShowModal(false)}>Cancel</button>
-                  <button type="submit" className="wf-btn primary" disabled={saving}>{saving ? 'Saving…' : selected ? 'Update Review' : 'Add Review'}</button>
+                <div className="wf-form-row wf-2col">
+                  <div>
+                    <ResponsiveForm.Label className="wf-form-label">Overall Score (0-10)</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      className="wf-field-input"
+                      placeholder="e.g. 8.5"
+                      {...field('overall_score')}
+                    />
+                  </div>
+                  <div>
+                    <ResponsiveForm.Label className="wf-form-label">Punctuality Score (0-10)</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      className="wf-field-input"
+                      placeholder="e.g. 9.0"
+                      {...field('punctuality_score')}
+                    />
+                  </div>
                 </div>
+                <div className="wf-form-row wf-2col">
+                  <div>
+                    <ResponsiveForm.Label className="wf-form-label">Quality Score (0-10)</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      className="wf-field-input"
+                      placeholder="e.g. 8.0"
+                      {...field('quality_score')}
+                    />
+                  </div>
+                  <div>
+                    <ResponsiveForm.Label className="wf-form-label">Teamwork Score (0-10)</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      className="wf-field-input"
+                      placeholder="e.g. 7.5"
+                      {...field('teamwork_score')}
+                    />
+                  </div>
+                </div>
+                <div className="wf-form-row">
+                  <ResponsiveForm.Label className="wf-form-label">Reviewed By</ResponsiveForm.Label>
+                  <ResponsiveForm.Control
+                    type="text"
+                    placeholder="Reviewer name"
+                    {...field('reviewed_by')}
+                  />
+                </div>
+                <div className="wf-form-row">
+                  <ResponsiveForm.Label className="wf-form-label">Comments</ResponsiveForm.Label>
+                  <ResponsiveForm.Control
+                    type="textarea"
+                    rows={3}
+                    placeholder="Performance notes and comments…"
+                    {...field('comments')}
+                  />
+                </div>
+                <ResponsiveModal.Footer>
+                  <ResponsiveButton variant="outline-secondary" size="sm" onClick={() => setShowModal(false)}>
+                    Cancel
+                  </ResponsiveButton>
+                  <ResponsiveButton variant="primary" size="sm" type="submit" disabled={saving}>
+                    {saving ? 'Saving…' : selected ? 'Update Review' : 'Add Review'}
+                  </ResponsiveButton>
+                </ResponsiveModal.Footer>
               </form>
-            </div>
-          </div>
+            </ResponsiveModal.Body>
+          </ResponsiveModal>
         )}
 
         {/* Delete Confirm */}

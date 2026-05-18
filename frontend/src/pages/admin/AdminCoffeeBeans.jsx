@@ -1,10 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Row, Col, Card, Button, Badge, Modal, Form, Alert, InputGroup, Table } from 'react-bootstrap';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveModal from '../../components/responsive/Modal';
+import ResponsiveAlert from '../../components/responsive/Alert';
+import ResponsiveTable from '../../components/responsive/Table';
+import ResponsiveCard from '../../components/responsive/Card';
+import ResponsiveInputGroup from '../../components/responsive/InputGroup';
+import ResponsiveBadge from '../../components/responsive/Badge';
+import ResponsiveLoadingFallback from '../../components/responsive/LoadingFallback';
 import { FaEdit, FaTrash, FaSearch, FaStar, FaPlus } from 'react-icons/fa';
 import { API_ENDPOINTS } from '../../config/api';
 import { BACKEND_BASE_URL } from '../../config/api';
 import apiService from '../../services/api.service';
-import LoadingFallback from '../../components/common/LoadingFallback';
 
 const AdminCoffeeBeans = () => {
   const [beans, setBeans] = useState([]);
@@ -184,95 +191,93 @@ const AdminCoffeeBeans = () => {
   );
 
   const getStockBadge = (quantity) => {
-    if (quantity === 0) return <Badge bg="danger">Out of Stock</Badge>;
-    if (quantity < 10) return <Badge bg="warning">Low Stock</Badge>;
-    return <Badge bg="success">In Stock</Badge>;
+    if (quantity === 0) return <ResponsiveBadge variant="danger">Out of Stock</ResponsiveBadge>;
+    if (quantity < 10) return <ResponsiveBadge variant="warning">Low Stock</ResponsiveBadge>;
+    return <ResponsiveBadge variant="success">In Stock</ResponsiveBadge>;
   };
 
   if (loading) {
-    return <LoadingFallback message="Loading coffee beans..." />;
+    return <ResponsiveLoadingFallback message="Loading coffee beans..." />;
   }
 
   return (
-    <Container className="py-5">
-      <Row className="mb-4">
-        <Col>
+    <div className="container py-5">
+      <div className="row mb-4">
+        <div className="col">
           <div className="d-flex justify-content-between align-items-center">
             <div>
               <h1 className="display-5 fw-bold">Coffee Bean Management</h1>
               <p className="lead text-muted">Manage your coffee bean inventory</p>
             </div>
-            <Button variant="primary" size="lg" onClick={() => handleShowModal()}>
+            <ResponsiveButton variant="primary" size="lg" onClick={() => handleShowModal()}>
               <FaPlus className="me-2" />
               Add Coffee Bean
-            </Button>
+            </ResponsiveButton>
           </div>
-        </Col>
-      </Row>
+        </div>
+      </div>
 
       {alert.show && (
-        <Alert variant={alert.type} dismissible onClose={() => setAlert({ show: false, message: '', type: '' })}>
-          {alert.message}
-        </Alert>
+        <ResponsiveAlert show={alert.show} onHide={() => setAlert({ show: false, message: '', type: '' })} message={alert.message} type={alert.type} />
       )}
 
       {/* Stats Cards */}
-      <Row className="mb-4 g-2 g-md-3">
-        <Col xs={6} md={3}>
-          <Card className="border-0 shadow-sm">
-            <Card.Body className="p-2 p-md-3">
+      <div className="row mb-4 g-2 g-md-3">
+        <div className="col-xs-6 col-md-3">
+          <ResponsiveCard className="border-0 shadow-sm">
+            <div className="p-2 p-md-3">
               <h6 className="text-muted mb-1 small">Total Beans</h6>
               <h3 className="mb-0 fs-5 fs-md-3">{beans.length}</h3>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col xs={6} md={3}>
-          <Card className="border-0 shadow-sm">
-            <Card.Body className="p-2 p-md-3">
+            </div>
+          </ResponsiveCard>
+        </div>
+        <div className="col-xs-6 col-md-3">
+          <ResponsiveCard className="border-0 shadow-sm">
+            <div className="p-2 p-md-3">
               <h6 className="text-muted mb-1 small">Featured</h6>
               <h3 className="mb-0 fs-5 fs-md-3 text-warning">{beans.filter(b => b.is_featured).length}</h3>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col xs={6} md={3}>
-          <Card className="border-0 shadow-sm">
-            <Card.Body className="p-2 p-md-3">
+            </div>
+          </ResponsiveCard>
+        </div>
+        <div className="col-xs-6 col-md-3">
+          <ResponsiveCard className="border-0 shadow-sm">
+            <div className="p-2 p-md-3">
               <h6 className="text-muted mb-1 small">Low Stock</h6>
               <h3 className="mb-0 fs-5 fs-md-3 text-warning">{beans.filter(b => b.stock_quantity < 10 && b.stock_quantity > 0).length}</h3>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col xs={6} md={3}>
-          <Card className="border-0 shadow-sm">
-            <Card.Body className="p-2 p-md-3">
+            </div>
+          </ResponsiveCard>
+        </div>
+        <div className="col-xs-6 col-md-3">
+          <ResponsiveCard className="border-0 shadow-sm">
+            <div className="p-2 p-md-3">
               <h6 className="text-muted mb-1 small">Out of Stock</h6>
               <h3 className="mb-0 fs-5 fs-md-3 text-danger">{beans.filter(b => b.stock_quantity === 0).length}</h3>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+            </div>
+          </ResponsiveCard>
+        </div>
+      </div>
 
       {/* Search Bar */}
       <Row className="mb-4">
         <Col md={6}>
-          <InputGroup>
-            <InputGroup.Text>
+          <ResponsiveInputGroup>
+            <div className="input-group-text">
               <FaSearch />
-            </InputGroup.Text>
+            </div>
             <Form.Control
               type="text"
               placeholder="Search by name, origin, or region..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </InputGroup>
+          </ResponsiveInputGroup>
         </Col>
       </Row>
 
       {/* Coffee Beans Table */}
-      <Card className="shadow-sm">
-        <Card.Body className="p-0">
-          <Table responsive hover className="mb-0">
+      <ResponsiveCard className="shadow-sm">
+        <ResponsiveCard.Body className="p-0">
+          <ResponsiveTable responsive hover className="mb-0">
             <thead className="table-light">
               <tr>
                 <th>Image</th>
@@ -315,7 +320,7 @@ const AdminCoffeeBeans = () => {
                     <td>{bean.processing_method || 'N/A'}</td>
                     <td>{getStockBadge(bean.stock_quantity)}</td>
                     <td>
-                      <Button
+                      <ResponsiveButton
                         variant="outline-primary"
                         size="sm"
                         className="me-1"
@@ -323,7 +328,7 @@ const AdminCoffeeBeans = () => {
                       >
                         <FaEdit />
                       </Button>
-                      <Button
+                      <ResponsiveButton
                         variant="outline-danger"
                         size="sm"
                         onClick={() => handleDelete(bean.id)}
@@ -508,10 +513,10 @@ const AdminCoffeeBeans = () => {
             </Row>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
+            <ResponsiveButton variant="secondary" onClick={handleCloseModal}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit">
+            <ResponsiveButton variant="primary" type="submit">
               {editingBean ? 'Update Bean' : 'Add Bean'}
             </Button>
           </Modal.Footer>

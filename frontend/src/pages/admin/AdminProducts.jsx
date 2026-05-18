@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Alert } from 'react-bootstrap';
 import { FaPlus, FaBoxOpen, FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaLayerGroup } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS, resolveMediaUrl } from '../../config/api';
@@ -7,6 +6,11 @@ import ProductFormModal from './components/ProductFormModal';
 import ProductTable from './components/ProductTable';
 import BatchActionModal from './components/BatchActionModal';
 import PageShell from '../../components/layout/PageShell';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveCard from '../../components/responsive/Card';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveModal from '../../components/responsive/Modal';
+import ResponsiveTable from '../../components/responsive/Table';
 import './AdminProducts.css';
 
 const AdminProducts = () => {
@@ -346,61 +350,48 @@ const AdminProducts = () => {
       headerRight={
         <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
           {selectedProducts.length > 0 && (
-            <button className="ap-batch-btn" onClick={() => setShowBatchModal(true)}>
+            <ResponsiveButton variant="outline-secondary" size="sm" onClick={() => setShowBatchModal(true)}>
               <FaLayerGroup size={13} />
               Batch Edit ({selectedProducts.length})
-            </button>
+            </ResponsiveButton>
           )}
-          <button className="ap-add-btn" onClick={() => handleShowModal()}>
+          <ResponsiveButton variant="primary" size="md" onClick={() => handleShowModal()}>
             <FaPlus size={13} />
             Add Product
-          </button>
+          </ResponsiveButton>
         </div>
       }
     >
       {/* Alert */}
       {alert.show && (
-        <Alert
-          variant={alert.type}
-          onClose={() => setAlert({ show: false, message: '', type: '' })}
-          dismissible
-          className="mb-4"
-        >
+        <div className={`ap-alert ap-alert-${alert.type} mb-4`} role="alert">
           {alert.message}
-        </Alert>
+        </div>
       )}
 
       {/* Stats Bar */}
       {!loading && (
         <div className="ap-stats-bar">
-          <div className="ap-stat-card">
-            <div className="ap-stat-icon blue"><FaBoxOpen /></div>
-            <div>
-              <div className="ap-stat-value">{stats.total}</div>
-              <div className="ap-stat-label">Total Products</div>
-            </div>
-          </div>
-          <div className="ap-stat-card">
-            <div className="ap-stat-icon green"><FaCheckCircle /></div>
-            <div>
-              <div className="ap-stat-value">{stats.available}</div>
-              <div className="ap-stat-label">Available</div>
-            </div>
-          </div>
-          <div className="ap-stat-card">
-            <div className="ap-stat-icon red"><FaTimesCircle /></div>
-            <div>
-              <div className="ap-stat-value">{stats.unavailable}</div>
-              <div className="ap-stat-label">Unavailable</div>
-            </div>
-          </div>
-          <div className="ap-stat-card">
-            <div className="ap-stat-icon amber"><FaExclamationTriangle /></div>
-            <div>
-              <div className="ap-stat-value">{stats.lowStock}</div>
-              <div className="ap-stat-label">Low Stock (≤10)</div>
-            </div>
-          </div>
+          <ResponsiveCard className="ap-stat-card text-center blue">
+            <FaBoxOpen className="ap-stat-icon" />
+            <div className="ap-stat-value">{stats.total}</div>
+            <div className="ap-stat-label">Total Products</div>
+          </ResponsiveCard>
+          <ResponsiveCard className="ap-stat-card text-center green">
+            <FaCheckCircle className="ap-stat-icon" />
+            <div className="ap-stat-value">{stats.available}</div>
+            <div className="ap-stat-label">Available</div>
+          </ResponsiveCard>
+          <ResponsiveCard className="ap-stat-card text-center red">
+            <FaTimesCircle className="ap-stat-icon" />
+            <div className="ap-stat-value">{stats.unavailable}</div>
+            <div className="ap-stat-label">Unavailable</div>
+          </ResponsiveCard>
+          <ResponsiveCard className="ap-stat-card text-center amber">
+            <FaExclamationTriangle className="ap-stat-icon" />
+            <div className="ap-stat-value">{stats.lowStock}</div>
+            <div className="ap-stat-label">Low Stock (≤10)</div>
+          </ResponsiveCard>
         </div>
       )}
 

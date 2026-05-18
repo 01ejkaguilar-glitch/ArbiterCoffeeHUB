@@ -1,5 +1,9 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { Modal, Alert } from 'react-bootstrap';
+import ResponsiveModal from '../../components/responsive/Modal';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveTable from '../../components/responsive/Table';
+import ResponsiveAlert from '../../components/responsive/Alert';
 import {
   FaEye, FaRedo, FaWifi, FaBell,
   FaShoppingCart, FaCheckCircle, FaClock, FaBoxOpen,
@@ -229,7 +233,9 @@ const AdminOrders = () => {
           )}
 
           {/* Refresh */}
-          <button
+          <ResponsiveButton
+            variant="outline-secondary"
+            size="sm"
             className="ao-refresh-btn"
             onClick={handleRefresh}
             disabled={refreshing}
@@ -237,62 +243,48 @@ const AdminOrders = () => {
           >
             <FaRedo size={12} className={refreshing ? 'ao-spinning' : ''} />
             Refresh
-          </button>
+          </ResponsiveButton>
         </div>
       }
     >
       {/* Error */}
       {error && (
-        <Alert variant="danger" dismissible onClose={() => setError(null)} className="mb-4">
-          {error}
-        </Alert>
+        <ResponsiveAlert show={true} onHide={() => setError(null)} message={error} type="danger" />
       )}
 
       {/* Stats Bar */}
       {!loading && (
         <div className="ao-stats-bar">
-          <div className="ao-stat-card">
-            <div className="ao-stat-icon blue"><FaShoppingCart /></div>
-            <div>
-              <div className="ao-stat-value">{stats.total}</div>
-              <div className="ao-stat-label">Total Orders</div>
-            </div>
-          </div>
-          <div className="ao-stat-card">
-            <div className="ao-stat-icon amber"><FaClock /></div>
-            <div>
-              <div className="ao-stat-value">{stats.pending}</div>
-              <div className="ao-stat-label">Pending</div>
-            </div>
-          </div>
-          <div className="ao-stat-card">
-            <div className="ao-stat-icon purple"><FaBoxOpen /></div>
-            <div>
-              <div className="ao-stat-value">{stats.preparing}</div>
-              <div className="ao-stat-label">In Progress</div>
-            </div>
-          </div>
-          <div className="ao-stat-card">
-            <div className="ao-stat-icon teal"><FaWifi /></div>
-            <div>
-              <div className="ao-stat-value">{stats.ready}</div>
-              <div className="ao-stat-label">Ready</div>
-            </div>
-          </div>
-          <div className="ao-stat-card">
-            <div className="ao-stat-icon green"><FaCheckCircle /></div>
-            <div>
-              <div className="ao-stat-value">{stats.completed}</div>
-              <div className="ao-stat-label">Completed</div>
-            </div>
-          </div>
-          <div className="ao-stat-card">
-            <div className="ao-stat-icon red"><FaTimesCircle /></div>
-            <div>
-              <div className="ao-stat-value">{stats.cancelled}</div>
-              <div className="ao-stat-label">Cancelled</div>
-            </div>
-          </div>
+          <ResponsiveCard className="ao-stat-card text-center blue">
+            <FaShoppingCart className="ao-stat-icon" />
+            <div className="ao-stat-value">{stats.total}</div>
+            <div className="ao-stat-label">Total Orders</div>
+          </ResponsiveCard>
+          <ResponsiveCard className="ao-stat-card text-center amber">
+            <FaClock className="ao-stat-icon" />
+            <div className="ao-stat-value">{stats.pending}</div>
+            <div className="ao-stat-label">Pending</div>
+          </ResponsiveCard>
+          <ResponsiveCard className="ao-stat-card text-center purple">
+            <FaBoxOpen className="ao-stat-icon" />
+            <div className="ao-stat-value">{stats.preparing}</div>
+            <div className="ao-stat-label">In Progress</div>
+          </ResponsiveCard>
+          <ResponsiveCard className="ao-stat-card text-center teal">
+            <FaWifi className="ao-stat-icon" />
+            <div className="ao-stat-value">{stats.ready}</div>
+            <div className="ao-stat-label">Ready</div>
+          </ResponsiveCard>
+          <ResponsiveCard className="ao-stat-card text-center green">
+            <FaCheckCircle className="ao-stat-icon" />
+            <div className="ao-stat-value">{stats.completed}</div>
+            <div className="ao-stat-label">Completed</div>
+          </ResponsiveCard>
+          <ResponsiveCard className="ao-stat-card text-center red">
+            <FaTimesCircle className="ao-stat-icon" />
+            <div className="ao-stat-value">{stats.cancelled}</div>
+            <div className="ao-stat-label">Cancelled</div>
+          </ResponsiveCard>
         </div>
       )}
 
@@ -392,13 +384,15 @@ const AdminOrders = () => {
                       <span className="ao-type-pill">{order.order_type || '—'}</span>
                     </td>
                     <td>
-                      <button
+                      <ResponsiveButton
+                        variant="outline-secondary"
+                        size="sm"
                         className="ao-view-btn"
                         onClick={() => handleViewOrder(order)}
                         aria-label={`View order ${order.order_number}`}
                       >
                         <FaEye size={11} /> View
-                      </button>
+                      </ResponsiveButton>
                     </td>
                   </tr>
                 ))
@@ -430,12 +424,16 @@ const AdminOrders = () => {
 
             {pageButtons.map((p, i) =>
               typeof p === 'number' ? (
-                <button
+                <ResponsiveButton
                   key={p}
+                  variant="outline-secondary"
+                  size="sm"
                   className={`ao-page-btn ${p === page ? 'active' : ''}`}
                   onClick={() => setPage(p)}
                   aria-current={p === page ? 'page' : undefined}
-                >{p}</button>
+                >
+                  {p}
+                </ResponsiveButton>
               ) : (
                 <span key={p + i} className="ao-page-ellipsis">…</span>
               )
@@ -458,7 +456,7 @@ const AdminOrders = () => {
       )}
 
       {/* ── Order Detail Modal ── */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" className="ao-modal" centered>
+      <ResponsiveModal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
         <div className="ao-modal-header">
           <h5 className="ao-modal-title">
             <span className="ao-modal-icon"><FaEye size={13} /></span>
@@ -574,19 +572,17 @@ const AdminOrders = () => {
             </div>
 
             <div className="ao-modal-footer">
-              <button className="ao-cancel-btn" onClick={() => setShowModal(false)}>Close</button>
-              <button
-                className="ao-save-btn"
-                onClick={handleStatusUpdate}
-                disabled={newStatus === selectedOrder.status}
-              >
+              <ResponsiveButton variant="outline-secondary" size="sm" className="ao-cancel-btn" onClick={() => setShowModal(false)}>
+                Close
+              </ResponsiveButton>
+              <ResponsiveButton variant="primary" size="sm" className="ao-save-btn" onClick={handleStatusUpdate} disabled={newStatus === selectedOrder.status}>
                 <FaSave size={12} />
                 Update Status
-              </button>
+              </ResponsiveButton>
             </div>
           </>
         )}
-      </Modal>
+      </ResponsiveModal>
     </PageShell>
   );
 };

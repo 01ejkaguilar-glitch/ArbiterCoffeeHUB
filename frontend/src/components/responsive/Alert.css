@@ -1,0 +1,82 @@
+.ai-alert {
+  position: relative;
+  padding: var(--spacing-3) var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--color-white);
+  background-color: var(--color-dark-green);
+  border-color: var(--color-dark-green);
+}
+
+.ai-alert-success {
+  color: var(--color-white);
+  background-color: var(--color-success-green);
+  border-color: var(--color-success-green);
+}
+
+.ai-alert-info {
+  color: var(--color-white);
+  background-color: var(--color-info-blue);
+  border-color: var(--color-info-blue);
+}
+
+.ai-alert-warning {
+  color: var(--color-white);
+  background-color: var(--color-warning-amber);
+  border-color: var(--color-warning-amber);
+}
+
+.ai-alert-danger {
+  color: var(--color-white);
+  background-color: var(--color-danger-red);
+  border-color: var(--color-danger-red);
+}
+
+.ai-alert-secondary {
+  color: var(--color-white);
+  background-color: var(--color-secondary-gray);
+  border-color: var(--color-secondary-gray);
+}
+
+.ai-alert-light {
+  color: var(--color-dark-gray);
+  background-color: var(--color-light-gray);
+  border-color: var(--color-light-gray);
+}
+
+.ai-alert-dark {
+  color: var(--color-white);
+  background-color: var(--color-dark-gray);
+  border-color: var(--color-dark-gray);
+}
+
+.ai-alert-dismissible {
+  padding-right: var(--spacing-5);
+}
+
+.ai-alert-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  padding: var(--spacing-2) var(--spacing-3);
+  color: inherit;
+  opacity: .5;
+  border: none;
+  background: transparent;
+}
+
+.ai-alert-close:hover,
+.ai-alert-close:focus {
+  color: inherit;
+  opacity: .75;
+}
+
+.fade {
+  transition: opacity .15s linear;
+}
+
+.show {
+  opacity: 1;
+}
