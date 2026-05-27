@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
   ResponsiveButton,
-  ResponsiveResponsiveContainer,
+  ResponsiveContainer,
   ResponsiveCol,
   ResponsiveRow,
   ResponsiveBadge,
@@ -84,9 +84,9 @@ const AnnouncementDetailPage = () => {
         <ResponsiveContainer className="py-5 text-center">
           <h2 className="mb-3">Announcement Not Found</h2>
           <p className="text-muted mb-4">This announcement may have been removed or is no longer available.</p>
-          <Button as={Link} to="/announcements" variant="primary">
+          <ResponsiveButton as={Link} to="/announcements" variant="primary">
             <FaArrowLeft className="me-2" /> Back to Announcements
-          </Button>
+          </ResponsiveButton>
         </ResponsiveContainer>
       </main>
     );
@@ -136,14 +136,14 @@ const AnnouncementDetailPage = () => {
         {/* Back link */}
         <Row className="mb-4">
           <Col>
-            <Button
+            <ResponsiveButton
               variant="link"
               className="p-0 text-muted d-flex align-items-center gap-2"
               onClick={() => navigate(-1)}
               style={{ textDecoration: 'none' }}
             >
               <FaArrowLeft /> Back to Announcements
-            </Button>
+            </ResponsiveButton>
           </Col>
         </Row>
 
@@ -206,9 +206,9 @@ const AnnouncementDetailPage = () => {
 
             {/* Back button */}
             <div className="mt-4 text-center">
-              <Button as={Link} to="/announcements" variant="outline-primary">
+              <ResponsiveButton as={Link} to="/announcements" variant="outline-primary">
                 <FaArrowLeft className="me-2" /> All Announcements
-              </Button>
+              </ResponsiveButton>
             </div>
           </Col>
         </Row>

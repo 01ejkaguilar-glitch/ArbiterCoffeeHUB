@@ -184,7 +184,7 @@ const AboutPage = () => {
                       )}
                     </div>
                   </article>
-                </Col>
+                </ResponsiveCol>
               ))}
             </Row>
           </ResponsiveContainer>
@@ -215,7 +215,7 @@ const AboutPage = () => {
                     </article>
                   ))}
                 </div>
-              </Col>
+              </ResponsiveCol>
             </Row>
           </ResponsiveContainer>
         </section>
@@ -238,11 +238,11 @@ const AboutPage = () => {
                         <h3 className="h5 fw-semibold mb-2" style={{ color: 'var(--color-dark-green)' }}>{val.title}</h3>
                         <p className="mb-0 text-muted">{val.text}</p>
                       </article>
-                    </Col>
+                    </ResponsiveCol>
                   ))}
                 </Row>
               </div>
-            </Col>
+            </ResponsiveCol>
           </Row>
         </ResponsiveContainer>
       </section>
