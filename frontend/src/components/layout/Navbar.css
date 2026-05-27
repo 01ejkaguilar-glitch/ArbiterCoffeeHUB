@@ -182,7 +182,8 @@
   margin-left: auto;
 }
 
-/* ── Responsive breakpoint: xl = 1200px ─────────────── */
+/* ── Responsive breakpoints ─────────────────────────── */
+/* Small screens and up - introduce side drawer for navigation */
 @media (max-width: 1199px) {
   .app-navbar-desktop-links,
   .app-navbar-desktop-actions {
@@ -191,6 +192,231 @@
 
   .app-navbar-mobile-actions {
     display: flex;
+  }
+}
+
+/* Extra small screens - hamburger menu visible */
+@media (max-width: 639px) {
+  .app-navbar-hamburger {
+    display: flex;
+  }
+
+  .app-navbar-desktop-links,
+  .app-navbar-desktop-actions {
+    display: none;
+  }
+
+  .app-navbar-mobile-actions {
+    display: flex;
+  }
+}
+
+/* Small screens - hamburger menu hidden, show nav links */
+@media (min-width: 640px) and (max-width: 1199px) {
+  .app-navbar-hamburger {
+    display: none;
+  }
+
+  .app-navbar-desktop-links {
+    display: flex;
+  }
+
+  .app-navbar-desktop-actions {
+    display: flex;
+  }
+
+  .app-navbar-mobile-actions {
+    display: none;
+  }
+
+  /* Two-column layout for navbar content with luxury spacing */
+  .app-navbar-inner {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: 0 var(--spacing-3);
+  }
+
+  /* Brand and nav links on left */
+  .app-navbar-brand,
+  .app-navbar-desktop-links {
+    grid-column: 1;
+  }
+
+  /* Actions on right */
+  .app-navbar-desktop-actions,
+  .app-navbar-mobile-actions {
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  /* Luxury typography enhancements */
+  .app-navbar-brand {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.25px;
+  }
+
+  .app-navbar-brand span {
+    display: inline-block;
+    margin-left: 0.25rem;
+  }
+
+  .app-nav-link {
+    font-family: var(--font-body);
+    font-weight: 600;
+    letter-spacing: 0.25px;
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius-md);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .app-nav-link:hover,
+  .app-nav-link:focus {
+    color: var(--color-white);
+    background: rgba(255,255,255,0.12);
+    transform: translateY(-1px);
+  }
+
+  .app-nav-link:hover::after,
+  .app-nav-link:focus::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--color-luxury-gold);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+
+  .app-nav-link:hover::after,
+  .app-nav-link:focus::after {
+    transform: scaleX(1);
+  }
+
+  .app-nav-link.active {
+    color: var(--color-white);
+    background: rgba(255,255,255,0.18);
+    font-weight: 600;
+  }
+
+  .app-nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--color-luxury-gold);
+    transform: scaleX(1);
+  }
+
+  /* Luxury icon button enhancements */
+  .app-nav-icon-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(var(--color-text-on-dark-rgb), 0.8);
+    padding: var(--spacing-2);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    -webkit-tap-highlight-color: transparent;
+    border: none;
+    background: transparent;
+    font-size: 1.1rem;
+  }
+
+  .app-nav-icon-btn:visited {
+    color: rgba(255,255,255,0.8);
+  }
+
+  .app-nav-icon-btn:hover,
+  .app-nav-icon-btn:focus {
+    color: #fff;
+    background: rgba(255,255,255,0.12);
+    transform: translateY(-2px) scale(1.05);
+    text-decoration: none;
+  }
+
+  .app-nav-icon-btn:hover::after,
+  .app-nav-icon-btn:focus::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(212,175,55,0.1) 0%, transparent 70%);
+    animation: shine 1.5s ease-out;
+  }
+
+  /* Enhanced cart badge */
+  .app-nav-cart-badge {
+    position: absolute;
+    top: -1px;
+    right: -2px;
+    min-width: 20px;
+    height: 20px;
+    font-size: 0.65rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border-radius: 50%;
+    font-weight: 700;
+    border: 2px solid var(--color-white);
+  }
+
+  /* Ensure touch targets are at least 48x48px */
+  .app-nav-link,
+  .app-nav-icon-btn {
+    min-height: 48px;
+    min-width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Landscape mode adjustments for tablets */
+@media (max-height: 500px) and (orientation: landscape) and (min-width: 640px) {
+  .app-navbar {
+    height: 48px;
+  }
+
+  .app-navbar-inner {
+    height: 100%;
+    padding: 0 var(--spacing-2);
+  }
+
+  .app-navbar-brand img {
+    height: 32px;
+    width: auto;
+  }
+
+  .app-navbar-brand span {
+    display: none;
+  }
+
+  .app-navbar-desktop-links .app-nav-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .app-navbar-desktop-actions {
+    gap: 0.25rem;
+  }
+
+  .app-navbar-hamburger {
+    display: none;
   }
 }
 

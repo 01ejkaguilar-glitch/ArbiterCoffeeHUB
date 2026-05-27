@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Row, Col, Form, Button, Modal, Spinner } from 'react-bootstrap';
+import {
+  ResponsiveContainer,
+  ResponsiveRow,
+  ResponsiveCol,
+  ResponsiveForm,
+  ResponsiveButton,
+  ResponsiveModal,
+  ResponsiveSpinner
+} from '@/components/responsive';
 import {
   FaUtensils, FaShoppingBag, FaTruck, FaClock, FaMapMarkerAlt,
   FaMoneyBillWave, FaMobileAlt, FaCreditCard, FaQrcode, FaStickyNote,
@@ -175,13 +183,13 @@ const CheckoutPage = () => {
   return (
     <main role="main">
       <SEO title="Checkout" url="/checkout" />
-      <Container className="py-5">
+      <ResponsiveContainer className="py-5">
 
         {/* Header */}
         <div className="co-header">
-          <Button as={Link} to="/cart" variant="outline-primary" size="sm" className="co-back-btn">
+          <ResponsiveButton as={Link} to="/cart" variant="outline-primary" size="sm" className="co-back-btn">
             <FaArrowLeft className="me-2" /> Back to Cart
-          </Button>
+          </ResponsiveButton>
           <div>
             <h1 className="co-title">Checkout</h1>
             <p className="co-subtitle">
@@ -199,9 +207,9 @@ const CheckoutPage = () => {
           </div>
         )}
 
-        <Row className="g-4">
+        <ResponsiveRow className="g-4">
           {/* ─────── LEFT: form sections ─────── */}
-          <Col lg={8}>
+          <ResponsiveCol lg={8}>
 
             {/* 1 ── Order Type ─────────────────── */}
             <section className="co-section">
@@ -345,7 +353,7 @@ const CheckoutPage = () => {
               </h2>
               <div className="co-notes-wrap">
                 <FaStickyNote className="co-notes-icon" />
-                <Form.Control
+                <ResponsiveForm.Control
                   as="textarea"
                   rows={3}
                   className="co-notes-input"
@@ -359,7 +367,7 @@ const CheckoutPage = () => {
           </Col>
 
           {/* ─────── RIGHT: order summary ─────── */}
-          <Col lg={4}>
+          <ResponsiveCol lg={4}>
             <div className="co-summary-card">
               <h2 className="co-summary-title">Order Summary</h2>
 
@@ -409,7 +417,7 @@ const CheckoutPage = () => {
               </div>
 
               {/* Place order */}
-              <Button
+              <ResponsiveButton
                 variant="primary"
                 size="lg"
                 className="w-100 co-place-btn"
@@ -425,7 +433,7 @@ const CheckoutPage = () => {
                     Place Order &middot; ₱{fmt(total)}
                   </>
                 )}
-              </Button>
+              </ResponsiveButton>
 
               {!canOrder && orderType === 'delivery' && (
                 <p className="co-summary-warn">Please select a delivery address to continue.</p>
@@ -471,7 +479,7 @@ const CheckoutPage = () => {
           </ol>
 
           <div className="d-flex gap-3 mt-4">
-            <Button
+            <ResponsiveButton
               variant="outline-secondary"
               className="flex-grow-1"
               disabled={loading}
@@ -493,8 +501,8 @@ const CheckoutPage = () => {
               }}
             >
               Cancel Order
-            </Button>
-            <Button
+            </ResponsiveButton>
+            <ResponsiveButton
               variant="primary"
               className="flex-grow-1"
               disabled={loading}
@@ -520,7 +528,7 @@ const CheckoutPage = () => {
               }}
             >
               {loading ? <Spinner animation="border" size="sm" /> : 'Payment Completed'}
-            </Button>
+            </ResponsiveButton>
           </div>
         </Modal.Body>
       </Modal>

@@ -7,9 +7,22 @@ import {
   FaPrint, FaDownload, FaPercent, FaHistory, FaExclamationTriangle,
   FaUser, FaStickyNote, FaCheckCircle,
 } from 'react-icons/fa';
-import apiService from '../../services/api.service';
-import { API_ENDPOINTS, BACKEND_BASE_URL } from '../../config/api';
+import apiService from '@/services/api.service';
+import { API_ENDPOINTS, BACKEND_BASE_URL } from '@/config/api';
 import './PosPage.css';
+import {
+  ResponsiveContainer,
+  ResponsiveRow,
+  ResponsiveCol,
+  ResponsiveCard,
+  ResponsiveButton,
+  ResponsiveModal,
+  ResponsiveInput,
+  ResponsiveSelect,
+  ResponsiveLabel,
+  ResponsiveCheckbox,
+  ResponsiveTextarea,
+} from '@/components/responsive';
 
 /* ─── helpers ─── */
 const peso = (v) => `₱${Number(v || 0).toFixed(2)}`;
@@ -598,346 +611,336 @@ export default function PosPage() {
       ══════════════════════════════════ */}
 
       {/* ─ PAYMENT MODAL ─ */}
-      {showPayment && (
-        <div className="pos-overlay" onClick={() => setShowPayment(false)}>
-          <div className="pos-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="pos-modal-head">
-              <div className="pos-modal-title"><FaCashRegister /> Collect Payment</div>
-              <button className="pos-modal-x" onClick={() => setShowPayment(false)}><FaTimes /></button>
+      <ResponsiveModal show={showPayment} onHide={() => setShowPayment(false)}>
+        <ResponsiveModal.Header>
+          <div className="pos-modal-title"><FaCashRegister /> Collect Payment</div>
+          <button className="pos-modal-x" onClick={() => setShowPayment(false)}>&times;</button>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          <div className="pos-modal-body">
+            {/* Amount due card */}
+            <div className="pos-pay-due-card">
+              <span className="pos-pay-due-label">Amount Due</span>
+              <span className="pos-pay-due-amount">{peso(total)}</span>
+              {discountAmount > 0 && (
+                <span className="pos-pay-due-note">
+                  Includes {DISCOUNTS.find((d) => d.key === discountType)?.label} discount of {peso(discountAmount)}
+                </span>
+              )}
             </div>
-            <div className="pos-modal-body">
-              {/* Amount due card */}
-              <div className="pos-pay-due-card">
-                <span className="pos-pay-due-label">Amount Due</span>
-                <span className="pos-pay-due-amount">{peso(total)}</span>
-                {discountAmount > 0 && (
-                  <span className="pos-pay-due-note">
-                    Includes {DISCOUNTS.find((d) => d.key === discountType)?.label} discount of {peso(discountAmount)}
-                  </span>
+
+            {/* Method buttons */}
+            <div className="pos-pay-method-row">
+              {PAYMENT_METHODS.map((m) => (
+                <button
+                  key={m.key}
+                  className={`pos-pay-method-btn ${paymentMethod === m.key ? 'active' : ''}`}
+                  onClick={() => setPaymentMethod(m.key)}
+                >
+                  <m.Icon className="pos-pay-method-ico" />
+                  <span>{m.label}</span>
+                  {paymentMethod === m.key && <FaCheckCircle className="pos-pay-method-check" />}
+                </button>
+              ))}
+            </div>
+
+            {/* Cash */}
+            {paymentMethod === 'cash' && (
+              <div className="pos-pay-cash-section">
+                <label className="pos-pay-field-label">Cash Tendered</label>
+                <input
+                  type="number"
+                  className="pos-pay-field"
+                  value={amountTendered}
+                  onChange={(e) => setAmountTendered(e.target.value)}
+                  placeholder="Enter amount"
+                  autoFocus
+                  min={0}
+                  step={0.01}
+                />
+                <div className="pos-tender-grid">
+                  {QUICK_TENDERS.map((v) => (
+                    <button
+                      key={v}
+                      className={`pos-tender-btn ${Number(amountTendered) === v ? 'active' : ''}`}
+                      onClick={() => setAmountTendered(String(v))}
+                    >₱{v}</button>
+                  ))}
+                  <button
+                    className={`pos-tender-btn exact ${Number(amountTendered) === total ? 'active' : ''}`}
+                    onClick={() => setAmountTendered(String(total))}
+                  >Exact</button>
+                </div>
+                {amountTendered !== '' && Number(amountTendered) >= total && (
+                  <div className="pos-change-display">
+                    <span className="pos-change-label">Change</span>
+                    <span className="pos-change-amount">{peso(Number(amountTendered) - total)}</span>
+                  </div>
+                )}
+                {amountTendered !== '' && Number(amountTendered) < total && (
+                  <div className="pos-validation-msg">
+                    <FaExclamationTriangle /> Amount is ₱{(total - Number(amountTendered)).toFixed(2)} short
+                  </div>
                 )}
               </div>
+            )}
 
-              {/* Method buttons */}
-              <div className="pos-pay-method-row">
-                {PAYMENT_METHODS.map((m) => (
-                  <button
-                    key={m.key}
-                    className={`pos-pay-method-btn ${paymentMethod === m.key ? 'active' : ''}`}
-                    onClick={() => setPaymentMethod(m.key)}
-                  >
-                    <m.Icon className="pos-pay-method-ico" />
-                    <span>{m.label}</span>
-                    {paymentMethod === m.key && <FaCheckCircle className="pos-pay-method-check" />}
-                  </button>
-                ))}
+            {/* Digital */}
+            {paymentMethod !== 'cash' && (
+              <div className="pos-pay-digital-section">
+                <label className="pos-pay-field-label">Reference / Transaction Number</label>
+                <input
+                  type="text"
+                  className="pos-pay-field"
+                  value={referenceNumber}
+                  onChange={(e) => setReferenceNumber(e.target.value)}
+                  placeholder="e.g. 1234567890"
+                  autoFocus
+                />
               </div>
-
-              {/* Cash */}
-              {paymentMethod === 'cash' && (
-                <div className="pos-pay-cash-section">
-                  <label className="pos-pay-field-label">Cash Tendered</label>
-                  <input
-                    type="number"
-                    className="pos-pay-field"
-                    value={amountTendered}
-                    onChange={(e) => setAmountTendered(e.target.value)}
-                    placeholder="Enter amount"
-                    autoFocus
-                    min={0}
-                    step={0.01}
-                  />
-                  <div className="pos-tender-grid">
-                    {QUICK_TENDERS.map((v) => (
-                      <button
-                        key={v}
-                        className={`pos-tender-btn ${Number(amountTendered) === v ? 'active' : ''}`}
-                        onClick={() => setAmountTendered(String(v))}
-                      >₱{v}</button>
-                    ))}
-                    <button
-                      className={`pos-tender-btn exact ${Number(amountTendered) === total ? 'active' : ''}`}
-                      onClick={() => setAmountTendered(String(total))}
-                    >Exact</button>
-                  </div>
-                  {amountTendered !== '' && Number(amountTendered) >= total && (
-                    <div className="pos-change-display">
-                      <span className="pos-change-label">Change</span>
-                      <span className="pos-change-amount">{peso(Number(amountTendered) - total)}</span>
-                    </div>
-                  )}
-                  {amountTendered !== '' && Number(amountTendered) < total && (
-                    <div className="pos-validation-msg">
-                      <FaExclamationTriangle /> Amount is ₱{(total - Number(amountTendered)).toFixed(2)} short
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Digital */}
-              {paymentMethod !== 'cash' && (
-                <div className="pos-pay-digital-section">
-                  <label className="pos-pay-field-label">Reference / Transaction Number</label>
-                  <input
-                    type="text"
-                    className="pos-pay-field"
-                    value={referenceNumber}
-                    onChange={(e) => setReferenceNumber(e.target.value)}
-                    placeholder="e.g. 1234567890"
-                    autoFocus
-                  />
-                </div>
-              )}
-            </div>
-            <div className="pos-modal-foot">
-              <button className="pos-foot-btn ghost" onClick={() => setShowPayment(false)}>Cancel</button>
-              <button
-                className="pos-foot-btn primary"
-                onClick={submitOrder}
-                disabled={submitting || (paymentMethod === 'cash' && Number(amountTendered) < total)}
-              >
-                {submitting
-                  ? <><span className="pos-spinner" /> Processing…</>
-                  : <><FaCheckCircle /> Complete {peso(total)}</>
-                }
-              </button>
-            </div>
+            )}
           </div>
-        </div>
-      )}
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+          <div className="pos-modal-foot">
+            <button className="pos-foot-btn ghost" onClick={() => setShowPayment(false)}>Cancel</button>
+            <button
+              className="pos-foot-btn primary"
+              onClick={submitOrder}
+              disabled={submitting || (paymentMethod === 'cash' && Number(amountTendered) < total)}
+            >
+              {submitting
+                ? <><span className="pos-spinner" /> Processing…</>
+                : <><FaCheckCircle /> Complete {peso(total)}</>
+              }
+            </button>
+          </div>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
 
       {/* ─ RECEIPT MODAL ─ */}
-      {receipt && (
-        <div className="pos-overlay" onClick={() => setReceipt(null)}>
-          <div className="pos-modal receipt-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="pos-modal-head">
-              <div className="pos-modal-title"><FaReceipt /> Receipt</div>
-              <button className="pos-modal-x" onClick={() => setReceipt(null)}><FaTimes /></button>
+      <ResponsiveModal show={receipt} onHide={() => setReceipt(null)}>
+        <ResponsiveModal.Header>
+          <div className="pos-modal-title"><FaReceipt /> Receipt</div>
+          <button className="pos-modal-x" onClick={() => setReceipt(null)}>&times;</button>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          <div id="pos-receipt-print" className="pos-receipt-paper">
+            <div className="prec-header center">
+              <div className="prec-shop-name bold">ARBITER COFFEE SHOP</div>
+              <div className="prec-meta">Order: {receipt.order.order_number}</div>
+              <div className="prec-meta">{receipt.order.created_at}</div>
+              <div className="prec-meta">Barista: {receipt.order.barista_name}</div>
+              {receipt.order.customer_name && <div className="prec-meta">Customer: {receipt.order.customer_name}</div>}
+              <div className="prec-meta">Type: {receipt.order.order_type}</div>
             </div>
-            <div className="pos-modal-body">
-              <div id="pos-receipt-print" className="pos-receipt-paper">
-                <div className="prec-header center">
-                  <div className="prec-shop-name bold">ARBITER COFFEE SHOP</div>
-                  <div className="prec-meta">Order: {receipt.order.order_number}</div>
-                  <div className="prec-meta">{receipt.order.created_at}</div>
-                  <div className="prec-meta">Barista: {receipt.order.barista_name}</div>
-                  {receipt.order.customer_name && <div className="prec-meta">Customer: {receipt.order.customer_name}</div>}
-                  <div className="prec-meta">Type: {receipt.order.order_type}</div>
-                </div>
-                <div className="line" />
-                <table>
-                  <thead>
-                    <tr>
-                      <td className="bold">Item</td>
-                      <td className="right bold">Qty</td>
-                      <td className="right bold">Amount</td>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {receipt.order.items.map((it, idx) => (
-                      <tr key={idx}>
-                        <td>{it.product_name}</td>
-                        <td className="right">{it.quantity}</td>
-                        <td className="right">{peso(it.total)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div className="line" />
-                <div className="pos-receipt-totals">
-                  <div><span>Subtotal:</span><span>{peso(receipt.order.subtotal)}</span></div>
-                  {receipt.order.discount_amount > 0 && (
-                    <div><span>Discount:</span><span>−{peso(receipt.order.discount_amount)}</span></div>
-                  )}
-                  <div className="bold"><span>TOTAL:</span><span>{peso(receipt.order.total_amount)}</span></div>
-                  <div className="line" />
-                  <div><span>Payment:</span><span>{receipt.payment.method.toUpperCase()}</span></div>
-                  {receipt.payment.method === 'cash' && (
-                    <>
-                      <div><span>Tendered:</span><span>{peso(receipt.payment.amount_tendered)}</span></div>
-                      <div className="bold"><span>Change:</span><span>{peso(receipt.payment.change)}</span></div>
-                    </>
-                  )}
-                  {receipt.payment.method !== 'cash' && receipt.payment.reference && (
-                    <div><span>Ref#:</span><span>{receipt.payment.reference}</span></div>
-                  )}
-                </div>
-                <div className="line" />
-                <div className="center">Thank you! Please visit us again.</div>
-                <div className="center" style={{ marginTop: 4, fontSize: 11 }}>— www.arbitercoffee.com —</div>
-              </div>
+            <div className="line" />
+            <table>
+              <thead>
+                <tr>
+                  <td className="bold">Item</td>
+                  <td className="right bold">Qty</td>
+                  <td className="right bold">Amount</td>
+                </tr>
+              </thead>
+              <tbody>
+                {receipt.order.items.map((it, idx) => (
+                  <tr key={idx}>
+                    <td>{it.product_name}</td>
+                    <td className="right">{it.quantity}</td>
+                    <td className="right">{peso(it.total)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="line" />
+            <div className="pos-receipt-totals">
+              <div><span>Subtotal:</span><span>{peso(receipt.order.subtotal)}</span></div>
+              {receipt.order.discount_amount > 0 && (
+                <div><span>Discount:</span><span>−{peso(receipt.order.discount_amount)}</span></div>
+              )}
+              <div className="bold"><span>TOTAL:</span><span>{peso(receipt.order.total_amount)}</span></div>
+              <div className="line" />
+              <div><span>Payment:</span><span>{receipt.payment.method.toUpperCase()}</span></div>
+              {receipt.payment.method === 'cash' && (
+                <>
+                  <div><span>Tendered:</span><span>{peso(receipt.payment.amount_tendered)}</span></div>
+                  <div className="bold"><span>Change:</span><span>{peso(receipt.payment.change)}</span></div>
+                </>
+              )}
+              {receipt.payment.method !== 'cash' && receipt.payment.reference && (
+                <div><span>Ref#:</span><span>{receipt.payment.reference}</span></div>
+              )}
             </div>
-            <div className="pos-modal-foot">
-              <button className="pos-foot-btn ghost" onClick={() => setReceipt(null)}>Close</button>
-              <button className="pos-foot-btn secondary" onClick={downloadReceipt}><FaDownload /> Download</button>
-              <button className="pos-foot-btn primary" onClick={printReceipt}><FaPrint /> Print</button>
-            </div>
+            <div className="line" />
+            <div className="center">Thank you! Please visit us again.</div>
+            <div className="center" style={{ marginTop: 4, fontSize: 11 }}>— www.arbitercoffee.com —</div>
           </div>
-        </div>
-      )}
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+          <div className="pos-modal-foot">
+            <button className="pos-foot-btn ghost" onClick={() => setReceipt(null)}>Close</button>
+            <button className="pos-foot-btn secondary" onClick={downloadReceipt}><FaDownload /> Download</button>
+            <button className="pos-foot-btn primary" onClick={printReceipt}><FaPrint /> Print</button>
+          </div>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
 
       {/* ─ HELD ORDERS ─ */}
-      {showHeld && (
-        <div className="pos-overlay" onClick={() => setShowHeld(false)}>
-          <div className="pos-modal side-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="pos-modal-head">
-              <div className="pos-modal-title"><FaPause /> Held Orders</div>
-              <button className="pos-modal-x" onClick={() => setShowHeld(false)}><FaTimes /></button>
-            </div>
-            <div className="pos-modal-body">
-              {heldOrders.length === 0 ? (
-                <div className="pos-empty-state"><FaPause size={28} /><p>No held orders today</p></div>
-              ) : (
-                <div className="pos-held-list">
-                  {heldOrders.map((ho) => (
-                    <div key={ho.id} className="pos-held-card">
-                      <div className="pos-held-card-info">
-                        <div className="pos-held-order-num">{ho.order_number}</div>
-                        {ho.customer_name && <div className="pos-held-customer">{ho.customer_name}</div>}
-                        <div className="pos-held-meta">
-                          {ho.items.length} item{ho.items.length !== 1 ? 's' : ''} · {peso(ho.total_amount)}
-                        </div>
-                        <div className="pos-held-time">{ho.created_at}</div>
-                      </div>
-                      <button className="pos-foot-btn primary small" onClick={() => resumeHeld(ho.id)}>
-                        <FaPlay /> Resume
-                      </button>
+      <ResponsiveModal show={showHeld} onHide={() => setShowHeld(false)}>
+        <ResponsiveModal.Header>
+          <div className="pos-modal-title"><FaPause /> Held Orders</div>
+          <button className="pos-modal-x" onClick={() => setShowHeld(false)}>&times;</button>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          {heldOrders.length === 0 ? (
+            <div className="pos-empty-state"><FaPause size={28} /><p>No held orders today</p></div>
+          ) : (
+            <div className="pos-held-list">
+              {heldOrders.map((ho) => (
+                <div key={ho.id} className="pos-held-card">
+                  <div className="pos-held-card-info">
+                    <div className="pos-held-order-num">{ho.order_number}</div>
+                    {ho.customer_name && <div className="pos-held-customer">{ho.customer_name}</div>}
+                    <div className="pos-held-meta">
+                      {ho.items.length} item{ho.items.length !== 1 ? 's' : ''} · {peso(ho.total_amount)}
                     </div>
-                  ))}
+                    <div className="pos-held-time">{ho.created_at}</div>
+                  </div>
+                  <button className="pos-foot-btn primary small" onClick={() => resumeHeld(ho.id)}>
+                    <FaPlay /> Resume
+                  </button>
                 </div>
-              )}
+              ))}
             </div>
-          </div>
-        </div>
-      )}
+          )}
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
 
       {/* ─ DAILY SUMMARY ─ */}
-      {showSummary && (
-        <div className="pos-overlay" onClick={() => setShowSummary(false)}>
-          <div className="pos-modal wide-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="pos-modal-head">
-              <div className="pos-modal-title"><FaChartBar /> Today's Summary</div>
-              <button className="pos-modal-x" onClick={() => setShowSummary(false)}><FaTimes /></button>
-            </div>
-            <div className="pos-modal-body">
-              {summary ? (
-                <>
-                  <div className="pos-stat-grid">
-                    {[
-                      { label: 'Total Orders', val: summary.total_orders,       accent: false },
-                      { label: 'Total Sales',  val: peso(summary.total_sales),  accent: true  },
-                      { label: 'My Orders',    val: summary.my_orders,          accent: false },
-                      { label: 'My Sales',     val: peso(summary.my_sales),     accent: true  },
-                      { label: 'Avg Order',    val: peso(summary.average_order), accent: false },
-                      { label: 'Held',         val: summary.held_orders,        accent: false },
-                      { label: 'Voided',       val: summary.voided_orders,      accent: false },
-                    ].map((s) => (
-                      <div key={s.label} className={`pos-stat-card ${s.accent ? 'accent' : ''}`}>
-                        <div className="pos-stat-val">{s.val}</div>
-                        <div className="pos-stat-lbl">{s.label}</div>
-                      </div>
-                    ))}
+      <ResponsiveModal show={showSummary} onHide={() => setShowSummary(false)}>
+        <ResponsiveModal.Header>
+          <div className="pos-modal-title"><FaChartBar /> Today's Summary</div>
+          <button className="pos-modal-x" onClick={() => setShowSummary(false)}>&times;</button>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          {summary ? (
+            <>
+              <div className="pos-stat-grid">
+                {[
+                  { label: 'Total Orders', val: summary.total_orders,       accent: false },
+                  { label: 'Total Sales',  val: peso(summary.total_sales),  accent: true  },
+                  { label: 'My Orders',    val: summary.my_orders,          accent: false },
+                  { label: 'My Sales',     val: peso(summary.my_sales),     accent: true  },
+                  { label: 'Avg Order',    val: peso(summary.average_order), accent: false },
+                  { label: 'Held',         val: summary.held_orders,        accent: false },
+                  { label: 'Voided',       val: summary.voided_orders,      accent: false },
+                ].map((s) => (
+                  <div key={s.label} className={`pos-stat-card ${s.accent ? 'accent' : ''}`}>
+                    <div className="pos-stat-val">{s.val}</div>
+                    <div className="pos-stat-lbl">{s.label}</div>
                   </div>
-                  {summary.payment_breakdown?.length > 0 && (
-                    <div className="pos-breakdown-block">
-                      <div className="pos-breakdown-title">Payment Breakdown</div>
-                      {summary.payment_breakdown.map((pb) => (
-                        <div key={pb.method} className="pos-breakdown-row">
-                          <span className="pos-breakdown-method">{pb.method.toUpperCase()}</span>
-                          <span>{pb.count} order{pb.count !== 1 ? 's' : ''}</span>
-                          <span className="pos-breakdown-total">{peso(pb.total)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="pos-empty-state"><span className="pos-spinner large" /></div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ─ TRANSACTIONS ─ */}
-      {showTransactions && (
-        <div className="pos-overlay" onClick={() => setShowTransactions(false)}>
-          <div className="pos-modal wide-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="pos-modal-head">
-              <div className="pos-modal-title"><FaHistory /> Today's Transactions</div>
-              <button className="pos-modal-x" onClick={() => setShowTransactions(false)}><FaTimes /></button>
-            </div>
-            <div className="pos-modal-body">
-              {transactions.length === 0 ? (
-                <div className="pos-empty-state"><FaHistory size={28} /><p>No transactions yet today</p></div>
-              ) : (
-                <div className="pos-txn-list">
-                  {transactions.map((tx) => (
-                    <div key={tx.id} className={`pos-txn-row ${tx.status === 'cancelled' ? 'voided' : ''}`}>
-                      <div className="pos-txn-left">
-                        <div className="pos-txn-num">{tx.order_number}</div>
-                        <div className="pos-txn-meta">
-                          {tx.item_count} item{tx.item_count !== 1 ? 's' : ''} · {tx.payment_method.toUpperCase()}
-                        </div>
-                        <div className="pos-txn-time">{tx.created_at}</div>
-                      </div>
-                      <div className="pos-txn-right">
-                        <span className="pos-txn-amount">{peso(tx.total_amount)}</span>
-                        {tx.status === 'cancelled' ? (
-                          <span className="pos-voided-badge">VOIDED</span>
-                        ) : (
-                          <button
-                            className="pos-void-btn"
-                            onClick={() => { setVoidTarget(tx); setShowVoid(true); setVoidReason(''); }}
-                          >
-                            <FaBan /> Void
-                          </button>
-                        )}
-                      </div>
+                ))}
+              </div>
+              {summary.payment_breakdown?.length > 0 && (
+                <div className="pos-breakdown-block">
+                  <div className="pos-breakdown-title">Payment Breakdown</div>
+                  {summary.payment_breakdown.map((pb) => (
+                    <div key={pb.method} className="pos-breakdown-row">
+                      <span className="pos-breakdown-method">{pb.method.toUpperCase()}</span>
+                      <span>{pb.count} order{pb.count !== 1 ? 's' : ''}</span>
+                      <span className="pos-breakdown-total">{peso(pb.total)}</span>
                     </div>
                   ))}
                 </div>
               )}
+            </>
+          ) : (
+            <div className="pos-empty-state"><span className="pos-spinner large" /></div>
+          )}
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
+
+      {/* ─ TRANSACTIONS ─ */}
+      <ResponsiveModal show={showTransactions} onHide={() => setShowTransactions(false)}>
+        <ResponsiveModal.Header>
+          <div className="pos-modal-title"><FaHistory /> Today's Transactions</div>
+          <button className="pos-modal-x" onClick={() => setShowTransactions(false)}>&times;</button>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          {transactions.length === 0 ? (
+            <div className="pos-empty-state"><FaHistory size={28} /><p>No transactions yet today</p></div>
+          ) : (
+            <div className="pos-txn-list">
+              {transactions.map((tx) => (
+                <div key={tx.id} className={`pos-txn-row ${tx.status === 'cancelled' ? 'voided' : ''}`}>
+                  <div className="pos-txn-left">
+                    <div className="pos-txn-num">{tx.order_number}</div>
+                    <div className="pos-txn-meta">
+                      {tx.item_count} item{tx.item_count !== 1 ? 's' : ''} · {tx.payment_method.toUpperCase()}
+                    </div>
+                    <div className="pos-txn-time">{tx.created_at}</div>
+                  </div>
+                  <div className="pos-txn-right">
+                    <span className="pos-txn-amount">{peso(tx.total_amount)}</span>
+                    {tx.status === 'cancelled' ? (
+                      <span className="pos-voided-badge">VOIDED</span>
+                    ) : (
+                      <button
+                        className="pos-void-btn"
+                        onClick={() => { setVoidTarget(tx); setShowVoid(true); setVoidReason(''); }}
+                      >
+                        <FaBan /> Void
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )
             </div>
-          </div>
-        </div>
-      )}
+          )
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
 
       {/* ─ VOID CONFIRM ─ */}
-      {showVoid && voidTarget && (
-        <div className="pos-overlay" onClick={() => setShowVoid(false)}>
-          <div className="pos-modal narrow-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="pos-modal-head danger">
-              <div className="pos-modal-title"><FaBan /> Void Order</div>
-              <button className="pos-modal-x" onClick={() => setShowVoid(false)}><FaTimes /></button>
-            </div>
-            <div className="pos-modal-body">
-              <div className="pos-void-info">
-                Void <strong>{voidTarget.order_number}</strong> for <strong>{peso(voidTarget.total_amount)}</strong>?
-                This will restore stock and mark the payment as refunded.
-              </div>
-              <label className="pos-pay-field-label">Reason for voiding</label>
-              <textarea
-                className="pos-pay-field"
-                rows={3}
-                value={voidReason}
-                onChange={(e) => setVoidReason(e.target.value)}
-                placeholder="Enter reason…"
-                autoFocus
-              />
-            </div>
-            <div className="pos-modal-foot">
-              <button className="pos-foot-btn ghost" onClick={() => setShowVoid(false)}>Cancel</button>
-              <button
-                className="pos-foot-btn danger"
-                onClick={performVoid}
-                disabled={!voidReason.trim()}
-              >
-                <FaBan /> Confirm Void
-              </button>
-            </div>
+      <ResponsiveModal show={showVoid && voidTarget} onHide={() => setShowVoid(false)}>
+        <ResponsiveModal.Header danger>
+          <div className="pos-modal-title"><FaBan /> Void Order</div>
+          <button className="pos-modal-x" onClick={() => setShowVoid(false)}>&times;</button>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          <div className="pos-void-info">
+            Void <strong>{voidTarget.order_number}</strong> for <strong>{peso(voidTarget.total_amount)}</strong>?
+            This will restore stock and mark the payment as refunded.
           </div>
-        </div>
-      )}
+          <label className="pos-pay-field-label">Reason for voiding</label>
+          <textarea
+            className="pos-pay-field"
+            rows={3}
+            value={voidReason}
+            onChange={(e) => setVoidReason(e.target.value)}
+            placeholder="Enter reason…"
+            autoFocus
+          />
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+          <div className="pos-modal-foot">
+            <button className="pos-foot-btn ghost" onClick={() => setShowVoid(false)}>Cancel</button>
+            <button
+              className="pos-foot-btn danger"
+              onClick={performVoid}
+              disabled={!voidReason.trim()}
+            >
+              <FaBan /> Confirm Void
+            </button>
+          </div>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
     </div>
   );
 }

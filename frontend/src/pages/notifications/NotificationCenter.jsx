@@ -9,7 +9,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Container } from 'react-bootstrap';
+import { ResponsiveContainer } from '@/components/responsive';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaCheckDouble,
@@ -146,7 +146,7 @@ const NotificationCenter = () => {
       <SEO title="Notifications" description="View and manage your notifications" />
 
       <main className="nc-page">
-        <Container className="nc-container">
+        <ResponsiveContainer className="nc-container">
           {/* ── Header ── */}
           <header className="nc-header">
             <div className="nc-header-left">

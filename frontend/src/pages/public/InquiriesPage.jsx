@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Form, Button, Alert, Tabs, Tab } from 'react-bootstrap';
 import { FaCoffee, FaTruck } from 'react-icons/fa';
+import {
+  ResponsiveButton,
+  ResponsiveContainer,
+  ResponsiveCol,
+  ResponsiveForm,
+  ResponsiveAlert,
+  ResponsiveTabs,
+  ResponsiveTab,
+  ResponsiveRow,
+} from '@/components/responsive';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import SEO from '../../components/SEO';
@@ -145,42 +154,42 @@ const InquiriesPage = () => {
       
       {/* Hero Section */}
       <section aria-labelledby="inquiries-hero-heading" className="hero-section">
-        <Container>
-          <Row className="align-items-center">
-            <Col lg={8} className="mx-auto text-center">
+        <ResponsiveContainer>
+          <ResponsiveRow className="align-items-center">
+            <ResponsiveCol lg={8} className="mx-auto text-center">
               <h1 id="inquiries-hero-heading" className="hero-title">Special Services</h1>
               <p className="hero-subtitle">
                 Join our training program or book our mobile coffee service
               </p>
             </Col>
-          </Row>
-        </Container>
+          </ResponsiveRow>
+        </ResponsiveContainer>
       </section>
 
-      <Container className="py-5">
+      <ResponsiveContainer className="py-5">
         {baristaAlert.show && activeTab === 'barista' && (
-          <Alert 
-            variant={baristaAlert.type} 
-            onClose={() => setBaristaAlert({ show: false, type: '', message: '' })} 
+          <ResponsiveAlert
+            variant={baristaAlert.type}
+            onClose={() => setBaristaAlert({ show: false, type: '', message: '' })}
             dismissible
             className="mb-4"
           >
             {baristaAlert.message}
-          </Alert>
+          </ResponsiveAlert>
         )}
 
         {expressAlert.show && activeTab === 'express' && (
-          <Alert 
-            variant={expressAlert.type} 
-            onClose={() => setExpressAlert({ show: false, type: '', message: '' })} 
+          <ResponsiveAlert
+            variant={expressAlert.type}
+            onClose={() => setExpressAlert({ show: false, type: '', message: '' })}
             dismissible
             className="mb-4"
           >
             {expressAlert.message}
-          </Alert>
+          </ResponsiveAlert>
         )}
 
-        <Tabs
+        <ResponsiveTabs
           activeKey={activeTab}
           onSelect={(k) => setActiveTab(k)}
           className="mb-4"
@@ -205,12 +214,12 @@ const InquiriesPage = () => {
                   Interested in becoming a barista? Fill out this form and we'll get back to you with training details.
                 </p>
 
-                <Form onSubmit={handleBaristaSubmit}>
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label htmlFor="barista-name">Full Name *</Form.Label>
-                        <Form.Control
+                <ResponsiveForm onSubmit={handleBaristaSubmit}>
+                  <ResponsiveRow>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label htmlFor="barista-name">Full Name *</ResponsiveForm.Label>
+                        <ResponsiveForm.Control
                           id="barista-name"
                           type="text"
                           name="full_name"
@@ -219,12 +228,12 @@ const InquiriesPage = () => {
                           required
                           placeholder="Enter your full name"
                         />
-                      </Form.Group>
+                      </ResponsiveForm.Group>
                     </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Email Address *</Form.Label>
-                        <Form.Control
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label>Email Address *</ResponsiveForm.Label>
+                        <ResponsiveForm.Control
                           type="email"
                           name="email"
                           value={baristaForm.email}
@@ -232,15 +241,15 @@ const InquiriesPage = () => {
                           required
                           placeholder="your.email@example.com"
                         />
-                      </Form.Group>
+                      </ResponsiveForm.Group>
                     </Col>
-                  </Row>
+                  </ResponsiveRow>
 
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Phone Number *</Form.Label>
-                        <Form.Control
+                  <ResponsiveRow>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label>Phone Number *</ResponsiveForm.Label>
+                        <ResponsiveForm.Control
                           type="tel"
                           name="phone"
                           value={baristaForm.phone}
@@ -248,29 +257,29 @@ const InquiriesPage = () => {
                           required
                           placeholder="+63 917 123 4567"
                         />
-                      </Form.Group>
+                      </ResponsiveForm.Group>
                     </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Experience Level *</Form.Label>
-                        <Form.Select
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label>Experience Level *</ResponsiveForm.Label>
+                        <ResponsiveForm.Select
                           name="experience_level"
                           value={baristaForm.experience_level}
                           onChange={handleBaristaChange}
                           required
                         >
-                          <option value="">Select experience level</option>
+                          <option value="">ResponsiveForm.Select experience level</option>
                           <option value="beginner">Beginner - No experience</option>
                           <option value="intermediate">Intermediate - Some experience</option>
                           <option value="advanced">Advanced - Professional experience</option>
-                        </Form.Select>
-                      </Form.Group>
+                        </ResponsiveForm.Select>
+                      </ResponsiveForm.Group>
                     </Col>
-                  </Row>
+                  </ResponsiveRow>
 
-                  <Form.Group className="mb-3">
-                    <Form.Label>Preferred Training Schedule *</Form.Label>
-                    <Form.Control
+                  <ResponsiveForm.Group className="mb-3">
+                    <ResponsiveForm.Label>Preferred Training Schedule *</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
                       type="text"
                       name="preferred_schedule"
                       value={baristaForm.preferred_schedule}
@@ -278,11 +287,11 @@ const InquiriesPage = () => {
                       required
                       placeholder="e.g., Weekdays, Weekends, Morning, Afternoon"
                     />
-                  </Form.Group>
+                  </ResponsiveForm.Group>
 
-                  <Form.Group className="mb-3">
-                    <Form.Label>Background Information</Form.Label>
-                    <Form.Control
+                  <ResponsiveForm.Group className="mb-3">
+                    <ResponsiveForm.Label>Background Information</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
                       as="textarea"
                       rows={3}
                       name="background"
@@ -290,11 +299,11 @@ const InquiriesPage = () => {
                       onChange={handleBaristaChange}
                       placeholder="Tell us about your background and experience with coffee"
                     />
-                  </Form.Group>
+                  </ResponsiveForm.Group>
 
-                  <Form.Group className="mb-4">
-                    <Form.Label>Why do you want to become a barista?</Form.Label>
-                    <Form.Control
+                  <ResponsiveForm.Group className="mb-4">
+                    <ResponsiveForm.Label>Why do you want to become a barista?</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
                       as="textarea"
                       rows={3}
                       name="motivation"
@@ -302,9 +311,9 @@ const InquiriesPage = () => {
                       onChange={handleBaristaChange}
                       placeholder="Share your motivation and goals"
                     />
-                  </Form.Group>
+                  </ResponsiveForm.Group>
 
-                  <Button 
+                  <ResponsiveButton 
                     type="submit" 
                     variant="primary" 
                     size="lg" 
@@ -313,8 +322,8 @@ const InquiriesPage = () => {
                     aria-label="Submit barista training inquiry"
                   >
                     {baristaLoading ? 'Submitting...' : 'Submit Inquiry'}
-                  </Button>
-                </Form>
+                  </ResponsiveButton>
+                </ResponsiveForm>
             </div>
             </section>
           </Tab>
@@ -336,12 +345,12 @@ const InquiriesPage = () => {
                   Book our mobile coffee setup for your event. We bring the coffee shop experience to you!
                 </p>
 
-                <Form onSubmit={handleExpressSubmit}>
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label htmlFor="express-name">Full Name *</Form.Label>
-                        <Form.Control
+                <ResponsiveForm onSubmit={handleExpressSubmit}>
+                  <ResponsiveRow>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label htmlFor="express-name">Full Name *</ResponsiveForm.Label>
+                        <ResponsiveForm.Control
                           id="express-name"
                           type="text"
                           name="full_name"
@@ -351,12 +360,12 @@ const InquiriesPage = () => {
                           placeholder="Enter your full name"
                           aria-required="true"
                         />
-                      </Form.Group>
+                      </ResponsiveForm.Group>
                     </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label htmlFor="express-email">Email Address *</Form.Label>
-                        <Form.Control
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label htmlFor="express-email">Email Address *</ResponsiveForm.Label>
+                        <ResponsiveForm.Control
                           id="express-email"
                           type="email"
                           name="email"
@@ -365,15 +374,15 @@ const InquiriesPage = () => {
                           required
                           placeholder="your.email@example.com"
                         />
-                      </Form.Group>
+                      </ResponsiveForm.Group>
                     </Col>
-                  </Row>
+                  </ResponsiveRow>
 
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Phone Number *</Form.Label>
-                        <Form.Control
+                  <ResponsiveRow>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label>Phone Number *</ResponsiveForm.Label>
+                        <ResponsiveForm.Control
                           type="tel"
                           name="phone"
                           value={expressForm.phone}
@@ -381,12 +390,12 @@ const InquiriesPage = () => {
                           required
                           placeholder="+63 917 123 4567"
                         />
-                      </Form.Group>
+                      </ResponsiveForm.Group>
                     </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Event Date *</Form.Label>
-                        <Form.Control
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label>Event Date *</ResponsiveForm.Label>
+                        <ResponsiveForm.Control
                           type="date"
                           name="event_date"
                           value={expressForm.event_date}
@@ -394,27 +403,27 @@ const InquiriesPage = () => {
                           required
                           min={new Date().toISOString().split('T')[0]}
                         />
-                      </Form.Group>
+                      </ResponsiveForm.Group>
                     </Col>
-                  </Row>
+                  </ResponsiveRow>
 
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Event Time *</Form.Label>
-                        <Form.Control
+                  <ResponsiveRow>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label>Event Time *</ResponsiveForm.Label>
+                        <ResponsiveForm.Control
                           type="time"
                           name="event_time"
                           value={expressForm.event_time}
                           onChange={handleExpressChange}
                           required
                         />
-                      </Form.Group>
+                      </ResponsiveForm.Group>
                     </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Number of Guests *</Form.Label>
-                        <Form.Control
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label>Number of Guests *</ResponsiveForm.Label>
+                        <ResponsiveForm.Control
                           type="number"
                           name="guest_count"
                           value={expressForm.guest_count}
@@ -423,13 +432,13 @@ const InquiriesPage = () => {
                           min="1"
                           placeholder="Expected number of guests"
                         />
-                      </Form.Group>
+                      </ResponsiveForm.Group>
                     </Col>
-                  </Row>
+                  </ResponsiveRow>
 
-                  <Form.Group className="mb-3">
-                    <Form.Label>Event Location *</Form.Label>
-                    <Form.Control
+                  <ResponsiveForm.Group className="mb-3">
+                    <ResponsiveForm.Label>Event Location *</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
                       type="text"
                       name="location"
                       value={expressForm.location}
@@ -437,46 +446,46 @@ const InquiriesPage = () => {
                       required
                       placeholder="Full address or venue name"
                     />
-                  </Form.Group>
+                  </ResponsiveForm.Group>
 
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Service Type *</Form.Label>
-                        <Form.Select
+                  <ResponsiveRow>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label>Service Type *</ResponsiveForm.Label>
+                        <ResponsiveForm.Select
                           name="service_type"
                           value={expressForm.service_type}
                           onChange={handleExpressChange}
                           required
                         >
-                          <option value="">Select service type</option>
+                          <option value="">ResponsiveForm.Select service type</option>
                           <option value="basic">Basic - Coffee Bar Setup</option>
                           <option value="premium">Premium - Full Service with Barista</option>
                           <option value="custom">Custom - Tailored Package</option>
-                        </Form.Select>
-                      </Form.Group>
+                        </ResponsiveForm.Select>
+                      </ResponsiveForm.Group>
                     </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Budget Range</Form.Label>
-                        <Form.Select
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label>Budget Range</ResponsiveForm.Label>
+                        <ResponsiveForm.Select
                           name="budget_range"
                           value={expressForm.budget_range}
                           onChange={handleExpressChange}
                         >
-                          <option value="">Select budget range</option>
+                          <option value="">ResponsiveForm.Select budget range</option>
                           <option value="5000-10000">₱5,000 - ₱10,000</option>
                           <option value="10000-20000">₱10,000 - ₱20,000</option>
                           <option value="20000-50000">₱20,000 - ₱50,000</option>
                           <option value="50000+">₱50,000+</option>
-                        </Form.Select>
-                      </Form.Group>
+                        </ResponsiveForm.Select>
+                      </ResponsiveForm.Group>
                     </Col>
-                  </Row>
+                  </ResponsiveRow>
 
-                  <Form.Group className="mb-3">
-                    <Form.Label>Menu Preferences</Form.Label>
-                    <Form.Control
+                  <ResponsiveForm.Group className="mb-3">
+                    <ResponsiveForm.Label>Menu Preferences</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
                       as="textarea"
                       rows={2}
                       name="menu_preferences"
@@ -484,11 +493,11 @@ const InquiriesPage = () => {
                       onChange={handleExpressChange}
                       placeholder="Any specific coffee or menu items you'd like to include?"
                     />
-                  </Form.Group>
+                  </ResponsiveForm.Group>
 
-                  <Form.Group className="mb-4">
-                    <Form.Label>Special Requests</Form.Label>
-                    <Form.Control
+                  <ResponsiveForm.Group className="mb-4">
+                    <ResponsiveForm.Label>Special Requests</ResponsiveForm.Label>
+                    <ResponsiveForm.Control
                       as="textarea"
                       rows={3}
                       name="special_requests"
@@ -496,9 +505,9 @@ const InquiriesPage = () => {
                       onChange={handleExpressChange}
                       placeholder="Any special requirements or additional information"
                     />
-                  </Form.Group>
+                  </ResponsiveForm.Group>
 
-                  <Button 
+                  <ResponsiveButton 
                     type="submit" 
                     variant="primary" 
                     size="lg" 
@@ -507,13 +516,13 @@ const InquiriesPage = () => {
                     aria-label="Submit mobile coffee service booking request"
                   >
                     {expressLoading ? 'Submitting...' : 'Submit Booking Request'}
-                  </Button>
-                </Form>
+                  </ResponsiveButton>
+                </ResponsiveForm>
             </div>
             </section>
           </Tab>
-        </Tabs>
-      </Container>
+        </ResponsiveTabs>
+      </ResponsiveContainer>
     </main>
   );
 };

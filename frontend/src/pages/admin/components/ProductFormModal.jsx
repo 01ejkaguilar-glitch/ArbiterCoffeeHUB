@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaImage } from 'react-icons/fa';
+import { FaImage, FaTimes } from 'react-icons/fa';
 import ResponsiveModal from '../../../components/responsive/Modal';
 import ResponsiveForm from '../../../components/responsive/Form';
 import ResponsiveButton from '../../../components/responsive/Button';

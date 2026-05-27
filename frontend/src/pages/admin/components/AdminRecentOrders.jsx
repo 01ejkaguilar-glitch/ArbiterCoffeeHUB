@@ -1,13 +1,13 @@
 import React from 'react';
-import ResponsiveCard from '../../components/responsive/Card';
-import ResponsiveListGroup from '../../components/responsive/ListGroup';
+import ResponsiveCard from '../../../components/responsive/Card';
+import ResponsiveListGroup from '../../../components/responsive/ListGroup';
 
 const AdminRecentOrders = ({ orders = [] }) => {
   return (
-    <Card className="admin-card h-100">
-      <Card.Header>
+    <ResponsiveCard className="admin-card h-100">
+      <ResponsiveCard.Header>
         <h5 className="mb-0 fw-semibold">Recent Orders</h5>
-      </Card.Header>
+      </ResponsiveCard.Header>
       <ResponsiveListGroup variant="flush">
         {orders.length === 0 ? (
           <li className="list-group-item text-muted">No recent orders</li>
@@ -18,7 +18,7 @@ const AdminRecentOrders = ({ orders = [] }) => {
           </li>
         ))}
       </ResponsiveListGroup>
-    </Card>
+    </ResponsiveCard>
   );
 };
 

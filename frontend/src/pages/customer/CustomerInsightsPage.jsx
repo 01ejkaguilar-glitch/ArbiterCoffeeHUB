@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Spinner, Alert, Tabs, Tab, Button } from 'react-bootstrap';
+import {
+  ResponsiveContainer,
+  ResponsiveRow,
+  ResponsiveCol,
+  ResponsiveCard,
+  ResponsiveSpinner,
+  ResponsiveAlert,
+  ResponsiveTabs,
+  ResponsiveTab,
+  ResponsiveButton
+} from '@/components/responsive';
 import { FaChartLine, FaHeart, FaLightbulb, FaDownload } from 'react-icons/fa';
 import { CustomerInsightsCard } from '../../components/customer';
 import apiService from '../../services/api.service';
@@ -51,7 +61,7 @@ const CustomerInsightsPage = () => {
 
   if (loading) {
     return (
-      <Container className="py-5 text-center">
+      <ResponsiveContainer className="py-5 text-center">
         <Spinner animation="border" role="status" size="lg">
           <span className="visually-hidden">Loading your insights...</span>
         </Spinner>
@@ -62,7 +72,7 @@ const CustomerInsightsPage = () => {
 
   if (error) {
     return (
-      <Container className="py-5">
+      <ResponsiveContainer className="py-5">
         <Alert variant="danger">
           <Alert.Heading>Unable to Load Insights</Alert.Heading>
           <p>{error}</p>
@@ -76,9 +86,9 @@ const CustomerInsightsPage = () => {
 
   return (
     <main role="main">
-      <Container className="py-5">
+      <ResponsiveContainer className="py-5">
         <header className="mb-4">
-          <Row>
+          <ResponsiveRow>
             <Col>
               <div className="d-flex align-items-center justify-content-between">
                 <div>
@@ -105,14 +115,14 @@ const CustomerInsightsPage = () => {
         </Tab>
 
         <Tab eventKey="detailed" title="Detailed Analytics">
-          <Row className="g-4">
+          <ResponsiveRow className="g-4">
             <Col lg={6}>
-              <Card className="shadow-sm">
-                <Card.Header className="bg-primary text-white">
+              <ResponsiveCard className="shadow-sm">
+                <ResponsiveCard.Header className="bg-primary text-white">
                   <FaChartLine className="me-2" aria-hidden="true" />
                   Purchase History Analysis
                 </Card.Header>
-                <Card.Body>
+                <ResponsiveCard.Body>
                   <div className="mb-3">
                     <strong>Total Orders:</strong> {insightsData?.purchase_behavior?.total_orders || 0}
                   </div>
@@ -130,12 +140,12 @@ const CustomerInsightsPage = () => {
             </Col>
 
             <Col lg={6}>
-              <Card className="shadow-sm">
-                <Card.Header className="bg-success text-white">
+              <ResponsiveCard className="shadow-sm">
+                <ResponsiveCard.Header className="bg-success text-white">
                   <FaHeart className="me-2" aria-hidden="true" />
                   Product Preferences
                 </Card.Header>
-                <Card.Body>
+                <ResponsiveCard.Body>
                   {insightsData?.product_affinity?.favorite_products?.length > 0 ? (
                     <div>
                       <h6>Your Top Products:</h6>
@@ -157,12 +167,12 @@ const CustomerInsightsPage = () => {
         </Tab>
 
         <Tab eventKey="predictions" title="Predictions">
-          <Card className="shadow-sm">
-            <Card.Header className="bg-info text-white">
+          <ResponsiveCard className="shadow-sm">
+            <ResponsiveCard.Header className="bg-info text-white">
               <FaLightbulb className="me-2" aria-hidden="true" />
               Future Insights
             </Card.Header>
-            <Card.Body>
+            <ResponsiveCard.Body>
               {insightsData?.predictions ? (
                 <div>
                   <div className="mb-3">

@@ -4,9 +4,16 @@ import {
   FaExclamationTriangle, FaTrophy, FaCalendarAlt,
   FaTasks, FaUserClock,
 } from 'react-icons/fa';
-import { API_ENDPOINTS } from '../../config/api';
-import apiService from '../../services/api.service';
+import { API_ENDPOINTS } from '@/config/api';
+import apiService from '@/services/api.service';
 import './TrainingInsights.css';
+import {
+  ResponsiveContainer,
+  ResponsiveRow,
+  ResponsiveCol,
+  ResponsiveCard,
+  ResponsiveButton,
+} from '@/components/responsive';
 
 /* ── Helpers ─────────────────────────────────────────────────── */
 const getGrade = (rate) => {
@@ -165,124 +172,230 @@ const TrainingInsights = () => {
       </div>
 
       {/* Stat Cards */}
-      <div className="ti-stats">
+      <ResponsiveRow className="g-4 mb-4">
         {/* Grade */}
-        <div className="ti-stat-card">
-          <div className="ti-stat-icon purple"><FaTrophy /></div>
-          <div className="ti-stat-value">{grade?.grade ?? '—'}</div>
-          <div className="ti-stat-label">Performance Grade</div>
-          {grade ? (
-            <div className={`ti-stat-badge ${grade.cls}`}>{grade.label}</div>
-          ) : (
-            <div className="ti-stat-badge secondary">No Data Yet</div>
-          )}
-        </div>
+        <ResponsiveCol md=6 lg=3>
+          <ResponsiveCard className="border-0 shadow-sm h-100">
+            <ResponsiveCard.Body className="p-3">
+              <div className="d-flex align-items-center mb-2">
+                <FaTrophy className="text-purple me-2" size={20} />
+                <h5 className="mb-0">Performance Grade</h5>
+              </div>
+              <p className="fs-4 fw-bold mb-0">{grade?.grade ?? '—'}</p>
+              {grade ? (
+                <span className={`badge bg-${grade.cls}`}>{grade.label}</span>
+              ) : (
+                <span className="badge bg-secondary">No Data Yet</span>
+              )}
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
+        </ResponsiveCol>
 
         {/* Orders completed */}
-        <div className="ti-stat-card">
-          <div className="ti-stat-icon green"><FaCheckCircle /></div>
-          <div className="ti-stat-value">{perf?.orders_completed ?? 0}</div>
-          <div className="ti-stat-label">Orders Completed</div>
-          <div className="ti-stat-badge secondary">of {perf?.total_orders ?? 0} total</div>
-        </div>
+        <ResponsiveCol md=6 lg=3>
+          <ResponsiveCard className="border-0 shadow-sm h-100">
+            <ResponsiveCard.Body className="p-3">
+              <div className="d-flex align-items-center mb-2">
+                <FaCheckCircle className="text-success me-2" size={20} />
+                <h5 className="mb-0">Orders Completed</h5>
+              </div>
+              <p className="fs-4 fw-bold mb-0">{perf?.orders_completed ?? 0}</p>
+              <p className="text-muted mb-0">of {perf?.total_orders ?? 0} total</p>
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
+        </ResponsiveCol>
 
         {/* Avg prep time */}
-        <div className="ti-stat-card">
-          <div className="ti-stat-icon blue"><FaClock /></div>
-          <div className="ti-stat-value">
-            {perf?.avg_preparation_time > 0 ? `${perf.avg_preparation_time}m` : '—'}
-          </div>
-          <div className="ti-stat-label">Avg Prep Time</div>
-          {speed.label !== 'N/A' ? (
-            <div className={`ti-stat-badge ${speed.badgeCls}`}>{speed.label}</div>
-          ) : (
-            <div className="ti-stat-badge secondary">No Data</div>
-          )}
-        </div>
+        <ResponsiveCol md=6 lg=3>
+          <ResponsiveCard className="border-0 shadow-sm h-100">
+            <ResponsiveCard.Body className="p-3">
+              <div className="d-flex align-items-center mb-2">
+                <FaClock className="text-primary me-2" size={20} />
+                <h5 className="mb-0">Avg Prep Time</h5>
+              </div>
+              <p className="fs-4 fw-bold mb-0">
+                {perf?.avg_preparation_time > 0 ? `${perf.avg_preparation_time}m` : '—'}
+              </p>
+              {speed.label !== 'N/A' ? (
+                <span className={`badge bg-${speed.badgeCls}`}>{speed.label}</span>
+              ) : (
+                <span className="badge bg-secondary">No Data</span>
+              )}
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
+        </ResponsiveCol>
 
         {/* Customer rating */}
-        <div className="ti-stat-card">
-          <div className="ti-stat-icon amber"><FaStar /></div>
-          <div className="ti-stat-value">{ratings > 0 ? ratings.toFixed(1) : '—'}</div>
-          <div className="ti-stat-label">Customer Rating</div>
-          {ratings > 0 ? (
-            <div className="ti-stars">
-              {[1,2,3,4,5].map(i => (
-                <FaStar key={i} className={i <= Math.round(ratings) ? 'filled' : 'empty'} size={12} />
-              ))}
-            </div>
-          ) : (
-            <div className="ti-stat-badge secondary">No Ratings Yet</div>
-          )}
-        </div>
-      </div>
+        <ResponsiveCol md=6 lg=3>
+          <ResponsiveCard className="border-0 shadow-sm h-100">
+            <ResponsiveCard.Body className="p-3">
+              <div className="d-flex align-items-center mb-2">
+                <FaStar className="text-warning me-2" size={20} />
+                <h5 className="mb-0">Customer Rating</h5>
+              </div>
+              <p className="fs-4 fw-bold mb-0">{ratings > 0 ? ratings.toFixed(1) : '—'}</p>
+              {ratings > 0 ? (
+                <div className="text-warning mb-0">
+                  {[1,2,3,4,5].map(i => (
+                    <FaStar key={i} className={i <= Math.round(ratings) ? 'text-warning' : 'text-muted'} size={14} />
+                  ))}
+                </div>
+              ) : (
+                <span className="badge bg-secondary">No Ratings Yet</span>
+              )}
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
+        </ResponsiveCol>
+      </ResponsiveRow>
 
       {/* Body: breakdown + side column */}
-      <div className="ti-content">
+      <ResponsiveRow className="g-4">
         {/* Performance Breakdown */}
-        <div className="ti-section">
-          <div className="ti-section-hdr">
-            <FaChartLine /> Performance Breakdown
-          </div>
-          <div className="ti-section-body">
-            <div className="ti-metric">
-              <div className="ti-metric-header">
-                <span className="ti-metric-label">Order Completion Rate</span>
-                <span className="ti-metric-value">{completionRate}%</span>
+        <ResponsiveCol md={8}>
+          <ResponsiveCard className="border-0 shadow-sm h-100">
+            <ResponsiveCard.Header className="d-flex justify-content-between align-items-center">
+              <FaChartLine className="text-primary me-2" size={18} />
+              <h5 className="mb-0">Performance Breakdown</h5>
+            </ResponsiveCard.Header>
+            <ResponsiveCard.Body className="p-3">
+              <div className="mb-3">
+                <div className="d-flex justify-content-between">
+                  <span className="fw-medium">Order Completion Rate</span>
+                  <span className="fs-4 fw-bold">{completionRate}%</span>
+                </div>
+                <div className="progress" style={{ height: '10px' }}>
+                  <div className="progress-bar bg-success" style={{ width: `${completionRate}%` }}></div>
+                </div>
               </div>
-              <div className="ti-track">
-                <div className="ti-fill green" style={{ width: `${completionRate}%` }} />
-              </div>
-            </div>
 
-            <div className="ti-metric">
-              <div className="ti-metric-header">
-                <span className="ti-metric-label">Speed Efficiency</span>
-                <span className="ti-metric-value">
-                  {speed.label !== 'N/A'
-                    ? `${perf?.avg_preparation_time}m avg — ${speed.label}`
-                    : 'No data'}
-                </span>
+              <div className="mb-3">
+                <div className="d-flex justify-content-between">
+                  <span className="fw-medium">Speed Efficiency</span>
+                  <span className="fs-4 fw-bold">
+                    {speed.label !== 'N/A'
+                      ? `${perf?.avg_preparation_time}m avg — ${speed.label}`
+                      : 'No data'}
+                  </span>
+                </div>
+                <div className="progress" style={{ height: '10px' }}>
+                  <div className={`progress-bar bg-${speed.fillCls ?? 'primary'}`} style={{ width: `${speed.pct}%` }}></div>
+                </div>
               </div>
-              <div className="ti-track">
-                <div className={`ti-fill ${speed.fillCls ?? 'blue'}`} style={{ width: `${speed.pct}%` }} />
-              </div>
-            </div>
 
-            <div className="ti-metric">
-              <div className="ti-metric-header">
-                <span className="ti-metric-label">Customer Satisfaction</span>
-                <span className="ti-metric-value">
-                  {ratings > 0 ? `${((ratings / 5) * 100).toFixed(0)}%` : 'No data'}
-                </span>
+              <div className="mb-3">
+                <div className="d-flex justify-content-between">
+                  <span className="fw-medium">Customer Satisfaction</span>
+                  <span className="fs-4 fw-bold">
+                    {ratings > 0 ? `${((ratings / 5) * 100).toFixed(0)}%` : 'No data'}
+                  </span>
+                </div>
+                <div className="progress" style={{ height: '10px' }}>
+                  <div className="progress-bar bg-warning" style={{ width: ratings > 0 ? `${(ratings / 5) * 100}%` : '0%' }}></div>
+                </div>
               </div>
-              <div className="ti-track">
-                <div className="ti-fill amber" style={{ width: ratings > 0 ? `${(ratings / 5) * 100}%` : '0%' }} />
-              </div>
-            </div>
 
-            <div className="ti-metric">
-              <div className="ti-metric-header">
-                <span className="ti-metric-label">Tasks Completed Today</span>
-                <span className="ti-metric-value">
-                  {tasks.length > 0
-                    ? `${tasks.filter(t => t.status === 'completed').length} / ${tasks.length}`
-                    : 'None assigned'}
-                </span>
+              <div className="mb-3">
+                <div className="d-flex justify-content-between">
+                  <span className="fw-medium">Tasks Completed Today</span>
+                  <span className="fs-4 fw-bold">
+                    {tasks.length > 0
+                      ? `${tasks.filter(t => t.status === 'completed').length} / ${tasks.length}`
+                      : 'None assigned'}
+                  </span>
+                </div>
+                <div className="progress" style={{ height: '10px' }}>
+                  <div className="progress-bar bg-info" style={{ width: tasks.length > 0
+                    ? `${(tasks.filter(t => t.status === 'completed').length / tasks.length) * 100}%`
+                    : '0%' }}></div>
+                </div>
               </div>
-              <div className="ti-track">
-                <div
-                  className="ti-fill purple"
-                  style={{
-                    width: tasks.length > 0
-                      ? `${(tasks.filter(t => t.status === 'completed').length / tasks.length) * 100}%`
-                      : '0%'
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
+        </ResponsiveCol>
+
+        {/* Side column */}
+        <ResponsiveCol md={4}>
+          {/* Today's Tasks */}
+          <ResponsiveCard className="border-0 shadow-sm h-100">
+            <ResponsiveCard.Header className="d-flex justify-content-between align-items-center">
+              <FaTasks className="text-primary me-2" size={18} />
+              <h5 className="mb-0">Today's Tasks</h5>
+            </ResponsiveCard.Header>
+            <ResponsiveCard.Body className="p-3">
+              {tasks.length === 0 ? (
+                <div className="text-center py-4">
+                  <FaCalendarAlt className="text-muted mb-2" size={28} />
+                  <p className="mb-0">No tasks assigned for today</p>
+                </div>
+              ) : (
+                <div className="list-group list-group-flush">
+                  {tasks.map(task => {
+                    const done = task.status === 'completed';
+                    const prio = (task.priority ?? 'low').toLowerCase();
+                    return (
+                      <div key={task.id} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div className="d-flex align-items-center">
+                          <div className={`me-2 ${done ? 'text-success' : ''}`}>
+                            {done && '✓'}
+                          </div>
+                          <div className="flex-grow-1">{task.title}</div>
+                          <span className={`badge bg-${prio}`}>{prio}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
+
+          {/* Current Shift */}
+          <ResponsiveCard className="border-0 shadow-sm h-100 mt-3">
+            <ResponsiveCard.Header className="d-flex justify-content-between align-items-center">
+              <FaUserClock className="text-primary me-2" size={18} />
+              <h5 className="mb-0">Current Shift</h5>
+            </ResponsiveCard.Header>
+            <ResponsiveCard.Body className="p-3">
+              {!shift ? (
+                <p className="text-center text-muted py-4">No active shift found for today</p>
+              ) : (
+                <>
+                  <div className="mb-2">
+                    <div className="d-flex justify-content-between">
+                      <span>Position</span>
+                      <span className="text-end">{shift.position ?? '—'}</span>
+                    </div>
+                  </div>
+                  <div className="mb-2">
+                    <div className="d-flex justify-content-between">
+                      <span>Start</span>
+                      <span className="text-end">{fmtTime(shift.start_time)}</span>
+                    </div>
+                  </div>
+                  <div className="mb-2">
+                    <div className="d-flex justify-content-between">
+                      <span>End</span>
+                      <span className="text-end">{fmtTime(shift.end_time)}</span>
+                    </div>
+                  </div>
+                  <div className="mb-2">
+                    <div className="d-flex justify-content-between">
+                      <span>Hours In</span>
+                      <span className="text-end">{shift.elapsed_hours ? `${Number(shift.elapsed_hours).toFixed(1)}h` : '—'}</span>
+                    </div>
+                  </div>
+                  <div className="mb-2">
+                    <div className="d-flex justify-content-between">
+                      <span>Remaining</span>
+                      <span className="text-end">{shift.remaining_hours ? `${Number(shift.remaining_hours).toFixed(1)}h` : '—'}</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
+        </ResponsiveCol>
+      </ResponsiveRow>
 
         {/* Side column */}
         <div className="ti-side">

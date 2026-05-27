@@ -1,9 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import ResponsiveModal from '../../components/responsive/Modal';
-import ResponsiveButton from '../../components/responsive/Button';
-import ResponsiveForm from '../../components/responsive/Form';
-import ResponsiveTable from '../../components/responsive/Table';
-import ResponsiveAlert from '../../components/responsive/Alert';
+import { ResponsiveModal, ResponsiveButton, ResponsiveForm, ResponsiveTable, ResponsiveAlert, ResponsiveCard, ResponsiveRow, ResponsiveCol } from '@/components/responsive';
 import {
   FaEye, FaRedo, FaWifi, FaBell,
   FaShoppingCart, FaCheckCircle, FaClock, FaBoxOpen,
@@ -254,38 +250,50 @@ const AdminOrders = () => {
 
       {/* Stats Bar */}
       {!loading && (
-        <div className="ao-stats-bar">
-          <ResponsiveCard className="ao-stat-card text-center blue">
-            <FaShoppingCart className="ao-stat-icon" />
-            <div className="ao-stat-value">{stats.total}</div>
-            <div className="ao-stat-label">Total Orders</div>
-          </ResponsiveCard>
-          <ResponsiveCard className="ao-stat-card text-center amber">
-            <FaClock className="ao-stat-icon" />
-            <div className="ao-stat-value">{stats.pending}</div>
-            <div className="ao-stat-label">Pending</div>
-          </ResponsiveCard>
-          <ResponsiveCard className="ao-stat-card text-center purple">
-            <FaBoxOpen className="ao-stat-icon" />
-            <div className="ao-stat-value">{stats.preparing}</div>
-            <div className="ao-stat-label">In Progress</div>
-          </ResponsiveCard>
-          <ResponsiveCard className="ao-stat-card text-center teal">
-            <FaWifi className="ao-stat-icon" />
-            <div className="ao-stat-value">{stats.ready}</div>
-            <div className="ao-stat-label">Ready</div>
-          </ResponsiveCard>
-          <ResponsiveCard className="ao-stat-card text-center green">
-            <FaCheckCircle className="ao-stat-icon" />
-            <div className="ao-stat-value">{stats.completed}</div>
-            <div className="ao-stat-label">Completed</div>
-          </ResponsiveCard>
-          <ResponsiveCard className="ao-stat-card text-center red">
-            <FaTimesCircle className="ao-stat-icon" />
-            <div className="ao-stat-value">{stats.cancelled}</div>
-            <div className="ao-stat-label">Cancelled</div>
-          </ResponsiveCard>
-        </div>
+        <ResponsiveRow className="g-4">
+          <ResponsiveCol xs={12} sm={6} md={4} lg={2}>
+            <ResponsiveCard className="ao-stat-card text-center blue">
+              <FaShoppingCart className="ao-stat-icon" />
+              <div className="ao-stat-value">{stats.total}</div>
+              <div className="ao-stat-label">Total Orders</div>
+            </ResponsiveCard>
+          </ResponsiveCol>
+          <ResponsiveCol xs={12} sm={6} md={4} lg={2}>
+            <ResponsiveCard className="ao-stat-card text-center amber">
+              <FaClock className="ao-stat-icon" />
+              <div className="ao-stat-value">{stats.pending}</div>
+              <div className="ao-stat-label">Pending</div>
+            </ResponsiveCard>
+          </ResponsiveCol>
+          <ResponsiveCol xs={12} sm={6} md={4} lg={2}>
+            <ResponsiveCard className="ao-stat-card text-center purple">
+              <FaBoxOpen className="ao-stat-icon" />
+              <div className="ao-stat-value">{stats.preparing}</div>
+              <div className="ao-stat-label">In Progress</div>
+            </ResponsiveCard>
+          </ResponsiveCol>
+          <ResponsiveCol xs={12} sm={6} md={4} lg={2}>
+            <ResponsiveCard className="ao-stat-card text-center teal">
+              <FaWifi className="ao-stat-icon" />
+              <div className="ao-stat-value">{stats.ready}</div>
+              <div className="ao-stat-label">Ready</div>
+            </ResponsiveCard>
+          </ResponsiveCol>
+          <ResponsiveCol xs={12} sm={6} md={4} lg={2}>
+            <ResponsiveCard className="ao-stat-card text-center green">
+              <FaCheckCircle className="ao-stat-icon" />
+              <div className="ao-stat-value">{stats.completed}</div>
+              <div className="ao-stat-label">Completed</div>
+            </ResponsiveCard>
+          </ResponsiveCol>
+          <ResponsiveCol xs={12} sm={6} md={4} lg={2}>
+            <ResponsiveCard className="ao-stat-card text-center red">
+              <FaTimesCircle className="ao-stat-icon" />
+              <div className="ao-stat-value">{stats.cancelled}</div>
+              <div className="ao-stat-label">Cancelled</div>
+            </ResponsiveCard>
+          </ResponsiveCol>
+        </ResponsiveRow>
       )}
 
       {/* Filter Bar */}

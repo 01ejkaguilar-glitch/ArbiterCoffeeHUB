@@ -4,10 +4,11 @@ import {
   FaEye, FaClock, FaMoneyBillWave, FaSync, FaTimes,
   FaSpinner, FaChevronLeft, FaChevronRight,
 } from 'react-icons/fa';
-import { API_ENDPOINTS } from '../../config/api';
-import apiService from '../../services/api.service';
-import { useNotificationSystem } from '../../components/common/NotificationSystem';
-import './CompletedOrders.css';
+import { API_ENDPOINTS } from '@/config/api';
+import apiService from '@/services/api.service';
+import { useNotificationSystem } from '@/components/common/NotificationSystem';
+import { ResponsiveTable, ResponsiveButton, ResponsiveModal, ResponsiveCard, ResponsiveCol, ResponsiveRow, ResponsiveContainer } from '@/components/responsive';
+import '@/pages/barista/CompletedOrders.css';
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const todayStr = () => new Date().toISOString().split('T')[0];
@@ -193,7 +194,7 @@ const CompletedOrders = () => {
 
   // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
-    <div className="co-page">
+    <ResponsiveContainer className="co-page">
 
       {/* Top bar */}
       <div className="co-topbar">
@@ -274,7 +275,7 @@ const CompletedOrders = () => {
       </div>
 
       {/* Table */}
-      <div className="co-table-card">
+      <ResponsiveTable>
         <div className="co-table-head-bar">
           <h2>
             Completed Orders
@@ -367,7 +368,7 @@ const CompletedOrders = () => {
                 })}
               </tbody>
             </table>
-          </div>
+        </ResponsiveTable>
         )}
 
         {/* Pagination */}

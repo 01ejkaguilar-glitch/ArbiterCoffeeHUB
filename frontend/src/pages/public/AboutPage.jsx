@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Badge } from 'react-bootstrap';
+import {
+  ResponsiveButton,
+  ResponsiveCard,
+  ResponsiveContainer,
+  ResponsiveCol,
+  ResponsiveRow,
+} from '@/components/responsive';
 import { FaCoffee, FaAward, FaUsers, FaLeaf } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS, BACKEND_BASE_URL } from '../../config/api';
@@ -75,82 +81,82 @@ const AboutPage = () => {
       
       {/* Hero */}
       <section aria-labelledby="about-hero-heading" className="hero-section">
-        <Container>
-          <Row className="align-items-center">
-            <Col lg={8} className="mx-auto text-center">
+        <ResponsiveContainer>
+          <ResponsiveRow className="align-items-center">
+            <ResponsiveCol lg={8} className="mx-auto text-center">
               <span className="hero-eyebrow">Our Story</span>
               <h1 id="about-hero-heading" className="hero-title">About Arbiter Coffee</h1>
               <p className="hero-subtitle">
                 Crafting exceptional coffee experiences since our founding
               </p>
-            </Col>
-          </Row>
-        </Container>
+            </ResponsiveCol>
+          </ResponsiveRow>
+        </ResponsiveContainer>
       </section>
 
       {/* Story */}
       <section aria-labelledby="story-heading" className="section-modern">
-        <Container>
+        <ResponsiveContainer>
           <div className="section-header">
             <h2 id="story-heading">Our Story</h2>
             <div className="section-divider" />
           </div>
-          <Row>
-            <Col lg={8} className="mx-auto">
+          <ResponsiveRow>
+            <ResponsiveCol lg={8} className="mx-auto">
               <p className="lead text-center" style={{ lineHeight: 'var(--line-height-relaxed)' }}>
-                Arbiter Coffee began with a simple mission: to bring the finest coffee experience to 
-                our community. What started as a small passion project has grown into a thriving business 
+                Arbiter Coffee began with a simple mission: to bring the finest coffee experience to
+                our community. What started as a small passion project has grown into a thriving business
                 dedicated to sourcing, roasting, and serving exceptional coffee.
               </p>
               <p className="text-center text-muted">
-                We believe that great coffee brings people together. Every bean is carefully selected 
-                from sustainable farms around the world, roasted to perfection, and served with care. 
+                We believe that great coffee brings people together. Every bean is carefully selected
+                from sustainable farms around the world, roasted to perfection, and served with care.
                 Our commitment to quality and sustainability drives everything we do.
               </p>
-            </Col>
-          </Row>
-        </Container>
+            </ResponsiveCol>
+          </ResponsiveRow>
+        </ResponsiveContainer>
       </section>
 
       {/* Core Values Cards */}
       <section aria-labelledby="values-heading" className="section-modern" style={{ background: 'var(--color-off-white)' }}>
-        <Container>
+        <ResponsiveContainer>
           <div className="section-header">
             <h2 id="values-heading">What Drives Us</h2>
             <div className="section-divider" />
             <p>The principles behind every cup we craft</p>
           </div>
-          <Row className="g-4" role="list">
+          <ResponsiveRow className="g-4" role="list">
             {coreValues.map((val, i) => {
               const Icon = val.icon;
               return (
-                <Col md={6} lg={3} key={i} role="listitem">
-                  <article className="feature-card">
+                <ResponsiveCol md={6} lg={3} key={i} role="listitem">
+                  <ResponsiveCard>
                     <div className="feature-icon" aria-hidden="true">
                       <Icon />
                     </div>
                     <h3>{val.title}</h3>
                     <p>{val.text}</p>
-                  </article>
-                </Col>
+                  </ResponsiveCard>
+                </ResponsiveCol>
               );
             })}
-          </Row>
-        </Container>
+          </ResponsiveRow>
+        </ResponsiveContainer>
       </section>
 
       {/* Team Members */}
       {teamMembers.length > 0 && (
         <section aria-labelledby="team-heading" className="section-modern">
-          <Container>
+          <ResponsiveContainer>
             <div className="section-header">
               <h2 id="team-heading">Meet Our Team</h2>
               <div className="section-divider" />
               <p>Passionate coffee professionals dedicated to your experience</p>
             </div>
-            <Row className="g-4">
+            <ResponsiveRow className="g-4">
               {teamMembers.map((member) => (
-                <Col key={member.id} md={6} lg={4}>
+                <ResponsiveCol key={member.id} md={6} lg={4}>
                   <article className="team-card">
                     {member.photo_url && (
                       <img 
@@ -181,14 +187,14 @@ const AboutPage = () => {
                 </Col>
               ))}
             </Row>
-          </Container>
+          </ResponsiveContainer>
         </section>
       )}
 
       {/* Timeline */}
       {timeline.length > 0 && (
         <section aria-labelledby="journey-heading" className="section-modern" style={{ background: 'var(--color-off-white)' }}>
-          <Container>
+          <ResponsiveContainer>
             <div className="section-header">
               <h2 id="journey-heading">Our Journey</h2>
               <div className="section-divider" />
@@ -211,13 +217,13 @@ const AboutPage = () => {
                 </div>
               </Col>
             </Row>
-          </Container>
+          </ResponsiveContainer>
         </section>
       )}
 
       {/* Detailed Values */}
       <section aria-labelledby="detailed-values-heading" className="section-modern">
-        <Container>
+        <ResponsiveContainer>
           <Row>
             <Col lg={10} className="mx-auto">
               <div className="values-grid">
@@ -238,7 +244,7 @@ const AboutPage = () => {
               </div>
             </Col>
           </Row>
-        </Container>
+        </ResponsiveContainer>
       </section>
     </main>
   );

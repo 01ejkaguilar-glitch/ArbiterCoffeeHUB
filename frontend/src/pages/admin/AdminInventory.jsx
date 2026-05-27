@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import ResponsiveAlert from '../../components/responsive/Alert';
-import ResponsiveButton from '../../components/responsive/Button';
-import ResponsiveForm from '../../components/responsive/Form';
-import ResponsiveModal from '../../components/responsive/Modal';
-import ResponsiveProgressBar from '../../components/responsive/ProgressBar';
-import ResponsiveSpinner from '../../components/responsive/Spinner';
-import ResponsiveTable from '../../components/responsive/Table';
+import {
+  ResponsiveAlert,
+  ResponsiveButton,
+  ResponsiveCard,
+  ResponsiveForm,
+  ResponsiveModal,
+  ResponsiveProgressBar,
+  ResponsiveSpinner,
+  ResponsiveTable
+} from '@/components/responsive';
 import {
   FaPlus, FaEdit, FaTrash, FaBoxes, FaCoffee, FaUtensils, FaBox, FaSprayCan,
   FaPencilAlt, FaSort, FaSortUp, FaSortDown, FaHistory, FaLayerGroup, FaTimesCircle,
@@ -288,27 +291,35 @@ const AdminInventory = () => {
       )}
 
       {!loading && (
-        <div className="ai-stats-bar">
-          <ResponsiveCard className="ai-stat-card text-center blue">
-            <FaBoxes className="ai-stat-icon" />
-            <div className="ai-stat-value">{stats.total}</div>
-            <div className="ai-stat-label">Total Items</div>
-          </ResponsiveCard>
-          <ResponsiveCard className="ai-stat-card text-center green">
-            <FaBoxOpen className="ai-stat-icon" />
-            <div className="ai-stat-value">{stats.inStock}</div>
-            <div className="ai-stat-label">In Stock</div>
-          </ResponsiveCard>
-          <ResponsiveCard className="ai-stat-card text-center amber">
-            <FaBoxes className="ai-stat-icon" />
-            <div className="ai-stat-value">{stats.lowStock}</div>
-            <div className="ai-stat-label">Low Stock</div>
-          </ResponsiveCard>
-          <ResponsiveCard className="ai-stat-card text-center red">
-            <FaBoxes className="ai-stat-icon" />
-            <div className="ai-stat-value">{stats.outStock}</div>
-            <div className="ai-stat-label">Out of Stock</div>
-          </ResponsiveCard>
+        <div className="ai-stats-bar row g-4">
+          <div className="col-12 col-sm-6 col-md-3">
+            <ResponsiveCard className="ai-stat-card text-center blue">
+              <FaBoxes className="ai-stat-icon" />
+              <div className="ai-stat-value">{stats.total}</div>
+              <div className="ai-stat-label">Total Items</div>
+            </ResponsiveCard>
+          </div>
+          <div className="col-12 col-sm-6 col-md-3">
+            <ResponsiveCard className="ai-stat-card text-center green">
+              <FaBoxOpen className="ai-stat-icon" />
+              <div className="ai-stat-value">{stats.inStock}</div>
+              <div className="ai-stat-label">In Stock</div>
+            </ResponsiveCard>
+          </div>
+          <div className="col-12 col-sm-6 col-md-3">
+            <ResponsiveCard className="ai-stat-card text-center amber">
+              <FaBoxes className="ai-stat-icon" />
+              <div className="ai-stat-value">{stats.lowStock}</div>
+              <div className="ai-stat-label">Low Stock</div>
+            </ResponsiveCard>
+          </div>
+          <div className="col-12 col-sm-6 col-md-3">
+            <ResponsiveCard className="ai-stat-card text-center red">
+              <FaBoxes className="ai-stat-icon" />
+              <div className="ai-stat-value">{stats.outStock}</div>
+              <div className="ai-stat-label">Out of Stock</div>
+            </ResponsiveCard>
+          </div>
         </div>
       )}
 
@@ -334,24 +345,30 @@ const AdminInventory = () => {
       )}
 
       {!loading && activeTab !== 'logs' && (
-        <div className="ai-toolbar">
-          <div className="ai-search-wrap">
-            <FaSearch className="ai-search-icon" />
-            <input className="ai-search-input" type="search" placeholder="Search items..."
-              value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
+        <div className="ai-toolbar row g-3 align-items-center">
+          <div className="col-6 col-sm-4">
+            <div className="ai-search-wrap">
+              <FaSearch className="ai-search-icon" />
+              <input className="ai-search-input" type="search" placeholder="Search items..."
+                value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
+            </div>
           </div>
-          <select className="ai-filter-select" value={filterSource} onChange={e => { setFilterSource(e.target.value); setPage(1); }}>
-            <option value="">All Sources</option>
-            <option value="Wet Market">Wet Market</option>
-            <option value="Online">Online</option>
-          </select>
-          <select className="ai-filter-select" value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1); }}>
-            <option value="">All Status</option>
-            <option value="in-stock">In Stock</option>
-            <option value="low-stock">Low Stock</option>
-            <option value="out-stock">Out of Stock</option>
-          </select>
-          <div className="ai-toolbar-right">
+          <div className="col-6 col-sm-4">
+            <div className="d-flex gap-2 flex-wrap">
+              <select className="ai-filter-select" value={filterSource} onChange={e => { setFilterSource(e.target.value); setPage(1); }}>
+                <option value="">All Sources</option>
+                <option value="Wet Market">Wet Market</option>
+                <option value="Online">Online</option>
+              </select>
+              <select className="ai-filter-select" value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1); }}>
+                <option value="">All Status</option>
+                <option value="in-stock">In Stock</option>
+                <option value="low-stock">Low Stock</option>
+                <option value="out-stock">Out of Stock</option>
+              </select>
+            </div>
+          </div>
+          <div className="col-12 col-sm-4 text-sm-end">
             <span className="ai-count-badge">{filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''}</span>
           </div>
         </div>
@@ -405,13 +422,13 @@ const AdminInventory = () => {
               };
             })}
             loading={loading}
-            emptyMessage=(
+            emptyMessage={(
               <div className="ai-empty">
                 <div className="ai-empty-icon"><FaBoxOpen /></div>
                 <div className="ai-empty-text">No items found</div>
                 <div className="ai-empty-sub">Try adjusting your search or filters</div>
               </div>
-            )
+            )}
           >
             {/* Custom rendering for status column (to show StockBadge) */}
             {(columnProps) => {
@@ -453,7 +470,7 @@ const AdminInventory = () => {
       {!loading && activeTab === 'logs' && (
         <div className="ai-table-card">
           {loadingLogs
-            ? <div className="ai-empty"><Spinner animation="border" size="sm" style={{ marginRight: 8 }} /> Loading logs...</div>
+            ? <div className="ai-empty"><ResponsiveSpinner animation="border" size="sm" style={{ marginRight: 8 }} /> Loading logs...</div>
             : (
               <table className="ai-table">
                 <thead>
@@ -618,7 +635,7 @@ const AdminInventory = () => {
                   </button>
                 );
               })}
-            </div>>
+            </div>
             <div className="ai-form-row col-2" style={{ alignItems: 'end' }}>
               <div>
                 <label className="ai-form-label">
@@ -632,17 +649,17 @@ const AdminInventory = () => {
                 <input className="ai-form-input" placeholder="Reason or note..." value={adjustReason} onChange={e => setAdjustReason(e.target.value)} />
               </div>
             </div>
-          </div>
-          <div className="ai-modal-footer">
-            <ResponsiveButton variant="outline-secondary" size="sm" onClick={() => setShowAdjust(false)}>
-              Cancel
-            </ResponsiveButton>
-            <ResponsiveButton variant="primary" size="sm" type="submit" disabled={adjustSubmitting}>
-              {adjustSubmitting ? <><Spinner animation="border" size="sm" /> Saving...</> : 'Confirm Adjustment'}
-            </ResponsiveButton>
-          </div>
-        </form>
-      </Modal>
+        </ResponsiveForm>
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+          <ResponsiveButton variant="outline-secondary" size="sm" onClick={() => setShowAdjust(false)}>
+            Cancel
+          </ResponsiveButton>
+          <ResponsiveButton variant="primary" size="sm" type="submit" disabled={adjustSubmitting}>
+            {adjustSubmitting ? <><ResponsiveSpinner animation="border" size="sm" /> Saving...</> : 'Confirm Adjustment'}
+          </ResponsiveButton>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
 
       {/* Item Log Modal */}
       <ResponsiveModal show={showLogModal} onHide={() => setShowLogModal(false)} centered>
@@ -660,7 +677,7 @@ const AdminInventory = () => {
         </ResponsiveModal.Header>
         <ResponsiveModal.Body style={{ maxHeight: '60vh', overflowY: 'auto', padding: '1.25rem 1.5rem' }}>
           {loadingItemLogs
-            ? <div className="ai-empty"><Spinner animation="border" size="sm" style={{ marginRight: 8 }} /> Loading...</div>
+            ? <div className="ai-empty"><ResponsiveSpinner animation="border" size="sm" style={{ marginRight: 8 }} /> Loading...</div>
             : itemLogs.length > 0
               ? (
                 <ul className="ai-log-list">
@@ -802,12 +819,13 @@ const AdminInventory = () => {
             <div style={{ display: 'flex', gap: '.5rem' }}>
               <button type="button" className="ai-btn ai-btn-secondary" disabled={bulkSubmitting} onClick={() => setShowBulkModal(false)}>Cancel</button>
               <button type="submit" className="ai-btn ai-btn-primary" disabled={bulkSubmitting}>
-                {bulkSubmitting ? <><Spinner animation="border" size="sm" /> Saving...</> : <><FaPlus size={11} /> Submit All</>}
+                {bulkSubmitting ? <><ResponsiveSpinner animation="border" size="sm" /> Saving...</> : <><FaPlus size={11} /> Submit All</>}
               </button>
             </div>
           </div>
-        </form>
-      </Modal>
+        </ResponsiveForm>
+      </ResponsiveModal.Body>
+      </ResponsiveModal>
     </PageShell>
   );
 };

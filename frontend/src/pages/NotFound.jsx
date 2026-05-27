@@ -1,5 +1,10 @@
 import React from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import {
+  ResponsiveContainer,
+  ResponsiveRow,
+  ResponsiveCol,
+  ResponsiveCard
+} from '@/components/responsive';
 import { Link } from 'react-router-dom';
 import { FaHome, FaCoffee, FaEnvelope, FaSearch } from 'react-icons/fa';
 import SEO from '../components/SEO';
@@ -19,9 +24,9 @@ const NotFound = () => {
           type="website"
         />
         
-        <Container className="py-5">
-          <Row className="justify-content-center text-center">
-            <Col md={8} lg={6}>
+        <ResponsiveContainer className="py-5">
+          <ResponsiveRow className="justify-content-center text-center">
+            <ResponsiveCol md={8} lg={6}>
               {/* 404 Illustration */}
               <header className="mb-5">
                 <h1 className="display-1 fw-bold notfound-heading">
@@ -37,63 +42,63 @@ const NotFound = () => {
               </header>
 
             {/* Quick Actions */}
-            <Row className="g-3 mb-5">
-              <Col sm={6}>
+            <ResponsiveRow className="g-3 mb-5">
+              <ResponsiveCol sm={6}>
                 <Link to="/" className="text-decoration-none" aria-label="Go to homepage">
-                  <Card className="h-100 shadow-sm hover-shadow">
-                    <Card.Body className="d-flex flex-column align-items-center py-4">
+                  <ResponsiveCard className="h-100 shadow-sm hover-shadow">
+                    <ResponsiveCard.Body className="d-flex flex-column align-items-center py-4">
                       <FaHome size={40} className="mb-3 text-coffee" aria-hidden="true" />
                       <h5>Go Home</h5>
                       <p className="text-muted small mb-0">
                         Return to homepage
                       </p>
-                    </Card.Body>
-                  </Card>
+                    </ResponsiveCard.Body>
+                  </ResponsiveCard>
                 </Link>
-              </Col>
+              </ResponsiveCol>
 
-              <Col sm={6}>
+              <ResponsiveCol sm={6}>
                 <Link to="/products" className="text-decoration-none" aria-label="Browse coffee products">
-                  <Card className="h-100 shadow-sm hover-shadow">
-                    <Card.Body className="d-flex flex-column align-items-center py-4">
+                  <ResponsiveCard className="h-100 shadow-sm hover-shadow">
+                    <ResponsiveCard.Body className="d-flex flex-column align-items-center py-4">
                       <FaCoffee size={40} className="mb-3 text-coffee" aria-hidden="true" />
                       <h5>Browse Coffee</h5>
                       <p className="text-muted small mb-0">
                         Explore our products
                       </p>
-                    </Card.Body>
-                  </Card>
+                    </ResponsiveCard.Body>
+                  </ResponsiveCard>
                 </Link>
-              </Col>
+              </ResponsiveCol>
 
-              <Col sm={6}>
+              <ResponsiveCol sm={6}>
                 <Link to="/contact" className="text-decoration-none" aria-label="Contact us">
-                  <Card className="h-100 shadow-sm hover-shadow">
-                    <Card.Body className="d-flex flex-column align-items-center py-4">
+                  <ResponsiveCard className="h-100 shadow-sm hover-shadow">
+                    <ResponsiveCard.Body className="d-flex flex-column align-items-center py-4">
                       <FaEnvelope size={40} className="mb-3 text-coffee" aria-hidden="true" />
                       <h5>Contact Us</h5>
                       <p className="text-muted small mb-0">
                         Get in touch
                       </p>
-                    </Card.Body>
-                  </Card>
+                    </ResponsiveCard.Body>
+                  </ResponsiveCard>
                 </Link>
-              </Col>
+              </ResponsiveCol>
 
-              <Col sm={6}>
+              <ResponsiveCol sm={6}>
                 <Link to="/about" className="text-decoration-none" aria-label="Learn about us">
-                  <Card className="h-100 shadow-sm hover-shadow">
-                    <Card.Body className="d-flex flex-column align-items-center py-4">
+                  <ResponsiveCard className="h-100 shadow-sm hover-shadow">
+                    <ResponsiveCard.Body className="d-flex flex-column align-items-center py-4">
                       <FaSearch size={40} className="mb-3 text-coffee" aria-hidden="true" />
                       <h5>About Us</h5>
                       <p className="text-muted small mb-0">
                         Learn our story
                       </p>
-                    </Card.Body>
-                  </Card>
+                    </ResponsiveCard.Body>
+                  </ResponsiveCard>
                 </Link>
-              </Col>
-            </Row>
+              </ResponsiveCol>
+            </ResponsiveRow>
 
             {/* Additional Help */}
             <div className="text-muted">
@@ -108,9 +113,9 @@ const NotFound = () => {
                 if you need help finding what you're looking for.
               </p>
             </div>
-          </Col>
-        </Row>
-      </Container>
+          </ResponsiveCol>
+        </ResponsiveRow>
+      </ResponsiveContainer>
 
       <style>{`
         .not-found-page {

@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, Card, Alert, ListGroup } from 'react-bootstrap';
+import {
+  ResponsiveButton,
+  ResponsiveContainer,
+  ResponsiveCol,
+  ResponsiveForm,
+  ResponsiveCard,
+  ResponsiveAlert,
+  ResponsiveListGroup,
+  ResponsiveRow,
+} from '@/components/responsive';
 import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock, FaFacebookF, FaInstagram } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
@@ -98,7 +107,7 @@ const ContactPage = () => {
 
   return (
     <main role="main">
-    <Container className="py-5">
+    <ResponsiveContainer className="py-5">
       <SEO 
         title="Contact Us - Get in Touch"
         description="Have questions about Arbiter Coffee? Contact us for inquiries about our products, services, operating hours, or feedback. We're here to help!"
@@ -421,7 +430,7 @@ const ContactPage = () => {
           </Col>
         </Row>
       )}
-    </Container>
+    </ResponsiveContainer>
     </main>
   );
 };

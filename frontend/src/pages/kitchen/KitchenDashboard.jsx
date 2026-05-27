@@ -11,6 +11,13 @@ import { API_ENDPOINTS } from '../../config/api';
 import apiService from '../../services/api.service';
 import { useKitchenOrders } from '../../hooks/useBroadcast';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
+import {
+  ResponsiveButton,
+  ResponsiveCard,
+  ResponsiveContainer,
+  ResponsiveCol,
+  ResponsiveRow,
+} from '@/components/responsive';
 import './KitchenDashboard.css';
 
 const POLL_INTERVAL = 30000; // 30 s fallback polling
@@ -164,199 +171,263 @@ const KitchenDashboard = () => {
       {loading ? <SkeletonLoader /> : (
         <>
           {/* Stat Cards */}
-          <div className="kd-stat-grid">
-            <div className="kd-stat-card amber">
-              <div className="kd-stat-icon amber"><FaClock size={20} /></div>
-              <div className="kd-stat-info">
-                <div className="kd-stat-value">{pendingOrders}</div>
-                <p className="kd-stat-label">Pending Food Orders</p>
-              </div>
-            </div>
-            <div className="kd-stat-card blue">
-              <div className="kd-stat-icon blue"><FaUtensils size={20} /></div>
-              <div className="kd-stat-info">
-                <div className="kd-stat-value">{preparingOrders}</div>
-                <p className="kd-stat-label">Preparing</p>
-              </div>
-            </div>
-            <div className="kd-stat-card green">
-              <div className="kd-stat-icon green"><FaCheckCircle size={20} /></div>
-              <div className="kd-stat-info">
-                <div className="kd-stat-value">{completedToday}</div>
-                <p className="kd-stat-label">Completed Today</p>
-              </div>
-            </div>
-            <div className="kd-stat-card teal">
-              <div className="kd-stat-icon teal"><FaClipboardList size={20} /></div>
-              <div className="kd-stat-info">
-                <div className="kd-stat-value">{totalFoodToday}</div>
-                <p className="kd-stat-label">Total Food Orders Today</p>
-              </div>
-            </div>
-          </div>
+          <ResponsiveRow className="g-4 mb-4">
+            <ResponsiveCol md={6} lg={3}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaClock className="text-warning me-2" size={20} />
+                    <h5 className="mb-0">Pending Food Orders</h5>
+                  </div>
+                  <p className="fs-4 fw-bold mb-0">{pendingOrders}</p>
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+            <ResponsiveCol md={6} lg={3}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaUtensils className="text-primary me-2" size={20} />
+                    <h5 className="mb-0">Preparing</h5>
+                  </div>
+                  <p className="fs-4 fw-bold mb-0">{preparingOrders}</p>
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+            <ResponsiveCol md={6} lg={3}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaCheckCircle className="text-success me-2" size={20} />
+                    <h5 className="mb-0">Completed Today</h5>
+                  </div>
+                  <p className="fs-4 fw-bold mb-0">{completedToday}</p>
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+            <ResponsiveCol md={6} lg={3}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaClipboardList className="text-info me-2" size={20} />
+                    <h5 className="mb-0">Total Food Orders Today</h5>
+                  </div>
+                  <p className="fs-4 fw-bold mb-0">{totalFoodToday}</p>
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+          </ResponsiveRow>
 
           {/* KPI Metrics */}
-          <div className="kd-metrics-grid">
-            <div className="kd-metric-card">
-              <div className="kd-metric-icon blue"><FaStopwatch size={18} /></div>
-              <div className="kd-metric-info">
-                <div className="kd-metric-value">{avgPrepTime}</div>
-                <div className="kd-metric-label">Avg Prep Time</div>
-              </div>
-            </div>
-            <div className="kd-metric-card">
-              <div className="kd-metric-icon amber"><FaClipboardList size={18} /></div>
-              <div className="kd-metric-info">
-                <div className="kd-metric-value">{completedTasks} / {todaysTasks.length}</div>
-                <div className="kd-metric-label">Tasks Completed</div>
-              </div>
-            </div>
-          </div>
+          <ResponsiveRow className="g-4">
+            <ResponsiveCol md={6}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaStopwatch className="text-primary me-2" size={18} />
+                    <h5 className="mb-0">Avg Preparation Time</h5>
+                  </div>
+                  <p className="fs-5 fw-bold mb-0">{avgPrepTime}</p>
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+            <ResponsiveCol md={6}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaClipboardList className="text-success me-2" size={18} />
+                    <h5 className="mb-0">Tasks Completed</h5>
+                  </div>
+                  <p className="fs-5 fw-bold mb-0">{completedTasks} / {todaysTasks.length}</p>
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+          </ResponsiveRow>
 
           {/* Body Grid */}
-          <div className="kd-body-grid">
-
+          <ResponsiveRow className="g-4">
             {/* Left: Live Food Order Queue */}
-            <div className="kd-card">
-              <div className="kd-card-head">
-                <h2 className="kd-card-title">
-                  <FaBolt size={14} />
-                  Food Order Queue
-                  {liveQueue.length > 0 && (
-                    <span className={`kd-card-badge ${pendingOrders > 0 ? 'amber' : ''}`}>
-                      {liveQueue.length}
-                    </span>
+            <ResponsiveCol md={8}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <ResponsiveCard.Header className="d-flex justify-content-between align-items-center">
+                  <h5 className="mb-0">
+                    <FaBolt size={14} />
+                    Food Order Queue
+                    {liveQueue.length > 0 && (
+                      <span className={`ms-2 ${pendingOrders > 0 ? 'text-warning' : ''}`}>
+                        {liveQueue.length}
+                      </span>
+                    )}
+                  </h5>
+                  <Link to="/kitchen/orders" className="text-muted text-decoration-none">
+                    View all <FaChevronRight size={10} />
+                  </Link>
+                </ResponsiveCard.Header>
+                <ResponsiveCard.Body className="p-0">
+                  {liveQueue.length === 0 ? (
+                    <div className="text-center py-4">
+                      <FaCheckCircle className="text-success mb-2" size={28} />
+                      <p className="mb-0">No active food orders — queue is clear!</p>
+                    </div>
+                  ) : (
+                    <div className="list-group list-group-flush">
+                      {liveQueue.map((order) => (
+                        <div key={order.id} className="list-group-item list-group-item-action">
+                          <div className="d-flex w-100 justify-content-between">
+                            <h6 className="mb-1">#{order.order_number || order.id}</h6>
+                            <span className={`text-${order.status === 'completed' ? 'success' : order.status === 'preparing' ? 'warning' : order.status === 'pending' ? 'info' : 'secondary'}`}>
+                              {order.status}
+                            </span>
+                          </div>
+                          <p className="mb-1">
+                            <strong>{order.user?.name || order.customer_name || 'Guest'}</strong>
+                          </p>
+                          <small className="text-muted">
+                            {order.order_items?.length || order.orderItems?.length || 0} item(s)
+                          </small>
+                        </div>
+                      ))}
+                    </div>
                   )}
-                </h2>
-                <Link to="/kitchen/orders" className="kd-see-all">
-                  View all <FaChevronRight size={10} />
-                </Link>
-              </div>
-              <div className="kd-card-body">
-                {liveQueue.length === 0 ? (
-                  <div className="kd-order-empty">
-                    <FaCheckCircle size={28} style={{ color: '#16a34a', marginBottom: 8 }} />
-                    <br />No active food orders — queue is clear!
-                  </div>
-                ) : (
-                  <div className="kd-order-list">
-                    {liveQueue.map((order) => (
-                      <div key={order.id} className="kd-order-item">
-                        <span className="kd-order-num">#{order.order_number || order.id}</span>
-                        <span className="kd-order-customer">
-                          {order.user?.name || order.customer_name || 'Guest'}
-                        </span>
-                        <span className="kd-order-items">
-                          {order.order_items?.length || order.orderItems?.length || 0} item(s)
-                        </span>
-                        <span className={`kd-order-status ${order.status}`}>{order.status}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+                </ResponsiveCard.Body>
+              </ResponsiveCard>
+            </ResponsiveCol>
 
             {/* Right column */}
-            <div>
+            <ResponsiveCol md={4}>
               {/* Shift card */}
-              <div className="kd-shift-card">
-                <div className="kd-shift-header">
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <ResponsiveCard.Header className="d-flex justify-content-between align-items-center">
                   <div>
-                    <div className="kd-shift-label">Current Shift</div>
+                    <h6 className="mb-0 text-muted">Current Shift</h6>
                     {currentShift ? (
-                      <div className="kd-shift-time">
+                      <p className="mb-0 fw-medium">
                         {currentShift.start_time} – {currentShift.end_time}
-                      </div>
+                      </p>
                     ) : (
-                      <div className="kd-shift-none">No shift today</div>
+                      <p className="mb-0 text-muted">No shift today</p>
                     )}
                   </div>
-                  <div className="kd-shift-icon-wrap">
-                    <FaCalendarAlt size={18} color="var(--color-kitchen-primary)" />
+                  <FaCalendarAlt size={18} className="text-primary" />
+                </ResponsiveCard.Header>
+                <ResponsiveCard.Body className="p-3">
+                  <div className="d-flex justify-content-end gap-3">
+                    <Link to="/kitchen/attendance" className="text-decoration-none">
+                      <ResponsiveButton variant="outline-primary" size="sm" className="">
+                        <div className="d-flex justify-content-start align-items-center">
+                          <FaSignInAlt size={13} className="me-2" />
+                          <span>Clock In/Out</span>
+                        </div>
+                      </ResponsiveButton>
+                    </Link>
+                    <Link to="/kitchen/shifts" className="text-decoration-none">
+                      <ResponsiveButton variant="outline-secondary" size="sm" className="">
+                        <div className="d-flex justify-content-start align-items-center">
+                          <FaCalendarAlt size={13} className="me-2" />
+                          <span>My Shifts</span>
+                        </div>
+                      </ResponsiveButton>
+                    </Link>
                   </div>
-                </div>
-                <div className="kd-shift-actions">
-                  <Link to="/kitchen/attendance" className="kd-shift-btn primary">
-                    <FaSignInAlt size={13} /> Clock In/Out
-                  </Link>
-                  <Link to="/kitchen/shifts" className="kd-shift-btn outline">
-                    <FaCalendarAlt size={13} /> My Shifts
-                  </Link>
-                </div>
-              </div>
+                </ResponsiveCard.Body>
+              </ResponsiveCard>
 
               {/* Quick actions */}
-              <div className="kd-card">
-                <div className="kd-card-head">
-                  <h2 className="kd-card-title"><FaBolt size={14} /> Quick Actions</h2>
-                </div>
-                <div className="kd-card-body">
-                  <div className="kd-actions-grid">
-                    <Link to="/kitchen/orders" className="kd-action-item">
-                      <div className="kd-action-icon amber"><FaClock size={15} /></div>
-                      <span className="kd-action-label">Food Orders</span>
-                      {pendingOrders > 0 && (
-                        <span className="kd-card-badge amber">{pendingOrders}</span>
-                      )}
-                      <FaChevronRight size={10} className="kd-action-chevron" />
-                    </Link>
-                    <Link to="/kitchen/tasks" className="kd-action-item">
-                      <div className="kd-action-icon blue"><FaTasks size={15} /></div>
-                      <span className="kd-action-label">My Tasks</span>
-                      {todaysTasks.length > 0 && (
-                        <span className="kd-card-badge blue">{todaysTasks.length}</span>
-                      )}
-                      <FaChevronRight size={10} className="kd-action-chevron" />
-                    </Link>
-                    <Link to="/kitchen/inventory" className="kd-action-item">
-                      <div className="kd-action-icon purple"><FaBoxes size={15} /></div>
-                      <span className="kd-action-label">Inventory Check</span>
-                      <FaChevronRight size={10} className="kd-action-chevron" />
-                    </Link>
-                    <Link to="/kitchen/performance" className="kd-action-item">
-                      <div className="kd-action-icon green"><FaChartLine size={15} /></div>
-                      <span className="kd-action-label">My Performance</span>
-                      <FaChevronRight size={10} className="kd-action-chevron" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <ResponsiveCard className="border-0 shadow-sm h-100 mt-3">
+                <ResponsiveCard.Header>
+                  <h5 className="mb-0">
+                    <FaBolt size={14} />
+                    Quick Actions
+                  </h5>
+                </ResponsiveCard.Header>
+                <ResponsiveCard.Body className="p-3">
+                  <ResponsiveRow className="g-2">
+                    <ResponsiveCol md={6}>
+                      <Link to="/kitchen/orders" className="text-decoration-none">
+                        <ResponsiveButton to="/kitchen/orders" variant="outline-warning" size="sm" className="w-100">
+                          <div className="d-flex justify-content-start align-items-center">
+                            <FaClock size={15} className="me-2" />
+                            <span>Food Orders</span>
+                            {pendingOrders > 0 && (
+                              <span className="ms-auto badge bg-warning">{pendingOrders}</span>
+                            )}
+                          </div>
+                        </ResponsiveButton>
+                      </Link>
+                    </ResponsiveCol>
+                    <ResponsiveCol md={6}>
+                      <Link to="/kitchen/tasks" className="text-decoration-none">
+                        <ResponsiveButton to="/kitchen/tasks" variant="outline-primary" size="sm" className="w-100">
+                          <div className="d-flex justify-content-start align-items-center">
+                            <FaTasks size={15} className="me-2" />
+                            <span>My Tasks</span>
+                            {todaysTasks.length > 0 && (
+                              <span className="ms-auto badge bg-primary">{todaysTasks.length}</span>
+                            )}
+                          </div>
+                        </ResponsiveButton>
+                      </Link>
+                    </ResponsiveCol>
+                    <ResponsiveCol md={6}>
+                      <Link to="/kitchen/inventory" className="text-decoration-none">
+                        <ResponsiveButton to="/kitchen/inventory" variant="outline-secondary" size="sm" className="w-100">
+                          <div className="d-flex justify-content-start align-items-center">
+                            <FaBoxes size={15} className="me-2" />
+                            <span>Inventory Check</span>
+                          </div>
+                        </ResponsiveButton>
+                      </Link>
+                    </ResponsiveCol>
+                    <ResponsiveCol md={6}>
+                      <Link to="/kitchen/performance" className="text-decoration-none">
+                        <ResponsiveButton to="/kitchen/performance" variant="outline-success" size="sm" className="w-100">
+                          <div className="d-flex justify-content-start align-items-center">
+                            <FaChartLine size={15} className="me-2" />
+                            <span>My Performance</span>
+                          </div>
+                        </ResponsiveButton>
+                      </Link>
+                    </ResponsiveCol>
+                  </ResponsiveRow>
+                </ResponsiveCard.Body>
+              </ResponsiveCard>
+            </ResponsiveCol>
           </div>
 
           {/* Today's Tasks */}
-          <div className="kd-card">
-            <div className="kd-card-head">
-              <h2 className="kd-card-title">
+          <ResponsiveCard className="border-0 shadow-sm h-100">
+            <ResponsiveCard.Header className="d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">
                 <FaList size={14} />
                 Today's Tasks
                 {todaysTasks.length > 0 && (
-                  <span className="kd-card-badge">{todaysTasks.length}</span>
+                  <span className="ms-auto badge bg-primary">{todaysTasks.length}</span>
                 )}
-              </h2>
-              <Link to="/kitchen/tasks" className="kd-see-all">
+              </h5>
+              <Link to="/kitchen/tasks" className="text-muted text-decoration-none">
                 See all <FaChevronRight size={10} />
               </Link>
-            </div>
-            <div className="kd-card-body">
+            </ResponsiveCard.Header>
+            <ResponsiveCard.Body className="p-3">
               {todaysTasks.length === 0 ? (
-                <p className="kd-task-empty">No tasks assigned for today.</p>
+                <p className="text-muted text-center">No tasks assigned for today.</p>
               ) : (
-                <div className="kd-task-list">
+                <div className="list-group">
                   {todaysTasks.slice(0, 6).map((task, i) => (
-                    <div key={task.id || i} className="kd-task-item">
-                      <span className={`kd-task-status-dot ${task.status === 'in_progress' ? 'in_progress' : task.status}`} />
-                      <span className="kd-task-name">{task.title || task.name || 'Unnamed task'}</span>
-                      {task.priority && (
-                        <span className={`kd-task-priority ${task.priority}`}>{task.priority}</span>
-                      )}
+                    <div key={task.id || i} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                      <div className="d-flex align-items-center">
+                        <span className={`badge bg-${task.status === 'in_progress' ? 'primary' : task.status === 'completed' ? 'success' : 'secondary'} me-2`}></span>
+                        <span className="me-2">{task.title || task.name || 'Unnamed task'}</span>
+                        {task.priority && (
+                          <span className={`badge bg-${task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'info'} ms-auto`}>{task.priority}</span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
-            </div>
-          </div>
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
         </>
       )}
     </div>

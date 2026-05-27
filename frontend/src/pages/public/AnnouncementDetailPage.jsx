@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Badge, Button } from 'react-bootstrap';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import {
+  ResponsiveButton,
+  ResponsiveResponsiveContainer,
+  ResponsiveCol,
+  ResponsiveRow,
+  ResponsiveBadge,
+} from '@/components/responsive';
 import { FaCalendar, FaArrowLeft, FaFacebookF, FaInstagram } from 'react-icons/fa';
 import { FaTiktok } from 'react-icons/fa6';
-import { Link, useParams, useNavigate } from 'react-router-dom';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import LoadingFallback from '../../components/common/LoadingFallback';
@@ -75,13 +81,13 @@ const AnnouncementDetailPage = () => {
   if (notFound || !announcement) {
     return (
       <main role="main">
-        <Container className="py-5 text-center">
+        <ResponsiveContainer className="py-5 text-center">
           <h2 className="mb-3">Announcement Not Found</h2>
           <p className="text-muted mb-4">This announcement may have been removed or is no longer available.</p>
           <Button as={Link} to="/announcements" variant="primary">
             <FaArrowLeft className="me-2" /> Back to Announcements
           </Button>
-        </Container>
+        </ResponsiveContainer>
       </main>
     );
   }
@@ -100,7 +106,7 @@ const AnnouncementDetailPage = () => {
 
       {/* Hero */}
       <section className="hero-section" aria-labelledby="announcement-detail-heading">
-        <Container>
+        <ResponsiveContainer>
           <Row className="align-items-center">
             <Col lg={8} className="mx-auto text-center">
               <span className="hero-eyebrow">
@@ -123,10 +129,10 @@ const AnnouncementDetailPage = () => {
               </p>
             </Col>
           </Row>
-        </Container>
+        </ResponsiveContainer>
       </section>
 
-      <Container className="py-5">
+      <ResponsiveContainer className="py-5">
         {/* Back link */}
         <Row className="mb-4">
           <Col>
@@ -206,7 +212,7 @@ const AnnouncementDetailPage = () => {
             </div>
           </Col>
         </Row>
-      </Container>
+      </ResponsiveContainer>
     </main>
   );
 };

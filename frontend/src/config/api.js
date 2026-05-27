@@ -146,6 +146,7 @@ export const API_ENDPOINTS = {
     FAVORITES: `${API_BASE_URL}/customer/favorites`,
     FAVORITE_DETAIL: (id) => `${API_BASE_URL}/customer/favorites/${id}`,
     TOGGLE_FAVORITE: `${API_BASE_URL}/customer/favorites/toggle`,
+    REWARDS: `${API_BASE_URL}/customer/rewards`,
     ADDRESSES: `${API_BASE_URL}/customer/addresses`,
     ADDRESS_DETAIL: (id) => `${API_BASE_URL}/customer/addresses/${id}`,
     DEACTIVATE_ACCOUNT: `${API_BASE_URL}/customer/account`,

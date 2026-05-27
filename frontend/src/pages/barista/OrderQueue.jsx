@@ -3,14 +3,15 @@ import {
   FaClock, FaUtensils, FaBell, FaCheckCircle, FaThumbsUp,
   FaSync, FaClipboardList,
 } from 'react-icons/fa';
-import { useAuth } from '../../context/AuthContext';
-import { API_ENDPOINTS } from '../../config/api';
-import apiService from '../../services/api.service';
-import { useBaristaOrders } from '../../hooks/useBroadcast';
-import { useNotificationSystem } from '../../components/common/NotificationSystem';
-import OrderCard from './components/OrderCard';
-import OrderDetailModal from './components/OrderDetailModal';
-import './OrderQueue.css';
+import { useAuth } from '@/context/AuthContext';
+import { API_ENDPOINTS } from '@/config/api';
+import apiService from '@/services/api.service';
+import { useBaristaOrders } from '@/hooks/useBroadcast';
+import { useNotificationSystem } from '@/components/common/NotificationSystem';
+import { ResponsiveButton, ResponsiveContainer, ResponsiveRow, ResponsiveCol, ResponsiveCard } from '@/components/responsive';
+import OrderCard from '@/pages/barista/components/OrderCard';
+import OrderDetailModal from '@/pages/barista/components/OrderDetailModal';
+import '@/pages/barista/OrderQueue.css';
 
 // ─ Helpers ──────────────────────────────────────────────────────────────────────────────
 const EMPTY_QUEUE = { pending_orders: [], confirmed_orders: [], preparing_orders: [], ready_orders: [], total_queue: 0 };
@@ -191,79 +192,105 @@ const OrderQueue = () => {
     <div className="oq-page">
 
       {/* Top bar */}
-      <div className="oq-topbar">
-        <div>
-          <h1 className="oq-title">
-              <FaClipboardList style={{ marginRight: '.5rem', color: 'var(--color-dark-green)' }} />
-            Order Queue
-          </h1>
-          <p className="oq-subtitle">Monitor and advance all active orders in real time</p>
-        </div>
-        <div className="oq-topbar-actions">
-          <span className={`oq-conn-chip ${realtimeConnected ? 'online' : 'offline'}`}>
-            <span className="oq-conn-dot" />
-            {realtimeConnected ? 'Live' : 'Offline'}
-          </span>
-          <button
-            className={`oq-refresh-btn${refreshing ? ' spinning' : ''}`}
-            onClick={() => fetchOrderQueue(true)}
-            disabled={refreshing}
-          >
-            <FaSync />
-            {refreshing ? 'Refreshing…' : 'Refresh'}
-          </button>
-        </div>
-      </div>
+      <ResponsiveContainer className="py-4">
+        <ResponsiveRow className="align-items-center justify-content-between mb-4">
+          <ResponsiveCol>
+            <h1 className="display-5 fw-bold">
+              <FaClipboardList className="me-2" />
+              Order Queue
+            </h1>
+            <p className="text-muted">Monitor and advance all active orders in real time</p>
+          </ResponsiveCol>
+          <ResponsiveCol className="text-end">
+            <div className="d-flex align-items-center gap-3">
+              <span className={`rounded-pill px-3 py-1 ${realtimeConnected ? 'bg-success' : 'bg-secondary'} text-white d-inline-flex align-items-center gap-2`}>
+                <span className="oq-conn-dot bg-white rounded-circle" style={{ width: '8px', height: '8px' }}></span>
+                <span>{realtimeConnected ? 'Live' : 'Offline'}</span>
+              </span>
+              <ResponsiveButton
+                variant="outline-primary"
+                size="sm"
+                onClick={() => fetchOrderQueue(true)}
+                disabled={refreshing}
+              >
+                <FaSync className="me-2" />
+                {refreshing ? 'Refreshing…' : 'Refresh'}
+              </ResponsiveButton>
+            </div>
+          </ResponsiveCol>
+        </ResponsiveRow>
+      </ResponsiveContainer>
 
       {/* Summary pills */}
-      <div className="oq-summary">
-        {COLUMNS.map(col => (
-          <span key={col.key} className={`oq-summary-pill ${col.key}`}>
-            {col.icon}
-            {col.label}
-            <span className="oq-count">{(orders[col.ordersKey] || []).length}</span>
-          </span>
-        ))}
-        <span className="oq-summary-pill" style={{ background: '#f3f4f6', color: '#374151', borderColor: '#d1d5db' }}>
-          Total active: <span className="oq-count">{totalActive}</span>
-        </span>
-      </div>
+      <ResponsiveContainer className="mb-4">
+        <ResponsiveRow className="g-4 justify-content-center">
+          {COLUMNS.map(col => (
+            <ResponsiveCol md={3} sm={6}>
+              <div className={`text-center p-3 border rounded ${col.key === 'pending' ? 'border-warning' :
+                                col.key === 'confirmed' ? 'border-success' :
+                                col.key === 'preparing' ? 'border-info' :
+                                col.key === 'ready' ? 'border-success' : 'border-light'} `}>
+                {col.icon}
+                <h6 className="mt-3 mb-1">{col.label}</h6>
+                <span className="fs-4 fw-bold">{orders[col.ordersKey]?.length}</span>
+              </div>
+            </ResponsiveCol>
+          ))}
+          <ResponsiveCol md={3} sm={6}>
+            <div className="text-center p-3 border rounded bg-light">
+              Total active: <span className="fs-4 fw-bold">{totalActive}</span>
+            </div>
+          </ResponsiveCol>
+        </ResponsiveRow>
+      </ResponsiveContainer>
 
       {/* Kanban board */}
-      <div className="oq-board">
-        {COLUMNS.map(col => {
-          const colOrders = orders[col.ordersKey] || [];
-          return (
-            <div key={col.key} className={`oq-col ${col.key}`}>
-              <div className="oq-col-head">
-                <div className="oq-col-icon">{col.icon}</div>
-                <span className="oq-col-label">{col.label}</span>
-                <span className="oq-col-badge">{colOrders.length}</span>
-              </div>
-              <div className="oq-col-body">
-                {loading ? (
-                  <><SkeletonCard /><SkeletonCard /></>
-                ) : colOrders.length === 0 ? (
-                  <div className="oq-col-empty">
-                    <FaClipboardList />
-                    No {col.label.toLowerCase()} orders
+      <ResponsiveContainer>
+        <ResponsiveRow className="g-4">
+          {COLUMNS.map(col => {
+            const colOrders = orders[col.ordersKey] || [];
+            return (
+              <ResponsiveCol md={3} sm={6} lg={3} xl={2}>
+                <div className="h-100 border rounded shadow-sm">
+                  <div className="d-flex justify-content-between align-items-start p-3">
+                    <div className="d-flex align-items-center">
+                      {col.icon}
+                      <h6 className="ms-2 mb-0">{col.label}</h6>
+                    </div>
+                    <span className="badge bg-primary rounded-pill">{colOrders.length}</span>
                   </div>
-                ) : colOrders.map(order => (
-                  <OrderCard
-                    key={order.id}
-                    order={order}
-                    timer={orderTimers[order.id]}
-                    updatingOrder={updatingOrder}
-                    onUpdateStatus={updateOrderStatus}
-                    onViewDetail={openDetail}
-                    formatElapsedTime={formatElapsedTime}
-                  />
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                  <div className="p-3">
+                    {loading ? (
+                      <div className="d-flex justify-content-center py-5">
+                        <><SkeletonCard /><SkeletonCard /></>
+                      </div>
+                    ) : colOrders.length === 0 ? (
+                      <div className="text-center py-4">
+                        <FaClipboardList className="mb-2" />
+                        <p className="text-muted mb-0">No {col.label.toLowerCase()} orders</p>
+                      </div>
+                    ) : (
+                      <div className="list-group list-group-flush">
+                        {colOrders.map(order => (
+                          <OrderCard
+                            key={order.id}
+                            order={order}
+                            timer={orderTimers[order.id]}
+                            updatingOrder={updatingOrder}
+                            onUpdateStatus={updateOrderStatus}
+                            onViewDetail={openDetail}
+                            formatElapsedTime={formatElapsedTime}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </ResponsiveCol>
+            );
+          })}
+        </ResponsiveRow>
+      </ResponsiveContainer>
 
       {/* Detail modal */}
       <OrderDetailModal

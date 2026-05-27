@@ -591,6 +591,153 @@ class CustomerController extends BaseController
             $user->tokens()->delete();
 
             return $this->sendResponse(null, 'Account deactivated successfully');
+        }
+
+        /**
+         * Get customer rewards and loyalty points
+         *
+         * @return \Illuminate\Http\JsonResponse
+         */
+        public function rewards()
+        {
+            try {
+                $user = Auth::user();
+
+                // Calculate loyalty points based on order history
+                // 10 points per $1 spent (can be adjusted)
+                $pointsPerDollar = 10;
+                $totalSpent = Order::where('user_id', $user->id)
+                    ->where('payment_status', 'paid')
+                    ->sum('total_amount');
+                $currentPoints = floor((float) $totalSpent * $pointsPerDollar);
+
+                // Define loyalty tiers
+                $tiers = [
+                    ['name' => 'Bronze', 'min' => 0, 'max' => 499, 'percent' => 0],
+                    ['name' => 'Silver', 'min' => 500, 'max' => 1499, 'percent' => 20],
+                    ['name' => 'Gold', 'min' => 1500, 'max' => 2999, 'percent' => 50],
+                    ['name' => 'Platinum', 'min' => 3000, 'max' => null, 'percent' => 80], // No max for highest tier
+                ];
+
+                // Calculate progress to next tier
+                $currentTier = null;
+                $nextTier = null;
+                $pointsToNextTier = 0;
+                $progressPercent = 0;
+
+                foreach ($tiers as $index => $tier) {
+                    $tierMax = $tier['max'] ?? PHP_INT_MAX; // Use large number for unlimited tier
+                    if ($currentPoints >= $tier['min'] && $currentPoints <= $tierMax) {
+                        $currentTier = $tier;
+                        // Check if there's a next tier
+                        if (isset($tiers[$index + 1])) {
+                            $nextTier = $tiers[$index + 1];
+                            $tierRange = $nextTier['min'] - $tier['min'];
+                            $progressInTier = $currentPoints - $tier['min'];
+                            $progressPercent = ($progressInTier / $tierRange) * 100;
+                            $pointsToNextTier = $nextTier['min'] - $currentPoints;
+                        } else {
+                            // Already at highest tier
+                            $progressPercent = 100;
+                            $pointsToNextTier = 0;
+                        }
+                        break;
+                    }
+                }
+
+                // If no tier matched (shouldn't happen with our tiers), default to first tier
+                if (!$currentTier) {
+                    $currentTier = $tiers[0];
+                    $nextTier = $tiers[1] ?? null;
+                    $pointsToNextTier = $nextTier ? ($nextTier['min'] - $currentPoints) : 0;
+                    $progressPercent = 0;
+                }
+
+                // Define available rewards
+                $availableRewards = [
+                    [
+                        'id' => 1,
+                        'name' => 'Free Cookie',
+                        'description' => 'Enjoy a freshly baked cookie on us',
+                        'points' => 100,
+                        'image_url' => null, // Could be added later
+                    ],
+                    [
+                        'id' => 2,
+                        'name' => 'Free Pastry',
+                        'description' => 'Choose any pastry from our display case',
+                        'points' => 250,
+                        'image_url' => null,
+                    ],
+                    [
+                        'id' => 3,
+                        'name' => 'Free Coffee',
+                        'description' => 'Any regular coffee beverage (up to 16oz)',
+                        'points' => 500,
+                        'image_url' => null,
+                    ],
+                    [
+                        'id' => 4,
+                        'name' => 'Free Breakfast Sandwich',
+                        'description' => 'Your choice of breakfast sandwich',
+                        'points' => 1000,
+                        'image_url' => null,
+                    ],
+                    [
+                        'id' => 5,
+                        'name' => 'Free Lunch',
+                        'description' => 'Any sandwich or salad with drink',
+                        'points' => 2000,
+                        'image_url' => null,
+                    ],
+                ];
+
+                // Filter to only show rewards the user can afford
+                $affordableRewards = array_filter($availableRewards, fn($reward) => $currentPoints >= $reward['points']);
+
+                // Calculate expiring points (simplified: points from orders older than 10 months)
+                // In a real implementation, you'd track points expiration per transaction
+                $expiringPoints = [];
+                $tenMonthsAgo = now()->subMonths(10);
+                $oldOrders = Order::where('user_id', $user->id)
+                    ->where('payment_status', 'paid')
+                    ->where('created_at', '<', $tenMonthsAgo)
+                    ->get();
+
+                if (!$oldOrders->isEmpty()) {
+                    // Group expiring points by month for simplicity
+                    $expiringByMonth = $oldOrders->groupBy(function ($order) {
+                        return $order->created_at->format('Y-m');
+                    })->map(function ($orders, $month) {
+                        $points = floor((float) $orders->sum('total_amount') * $pointsPerDollar);
+                        return [
+                            'points' => $points,
+                            'expiresAt' => now()->subMonths(2)->format('Y-m-01'), // Expire 2 months from now for demo
+                        ];
+                    })->toArray();
+
+                    $expiringPoints = array_values($expiringByMonth);
+                }
+
+                $rewardsData = [
+                    'points' => $currentPoints,
+                    'tiers' => array_map(function ($tier) {
+                        return [
+                            'name' => $tier['name'],
+                            'percent' => ($tier['min'] / 3000) * 100, // Assuming 3000 as max for visualization
+                        ];
+                    }, $tiers),
+                    'progressPercent' => min($progressPercent, 100),
+                    'pointsToNextTier' => max($pointsToNextTier, 0),
+                    'availableRewards' => $affordableRewards,
+                    'expiringPoints' => $expiringPoints,
+                ];
+
+                return $this->sendResponse($rewardsData, 'Rewards data retrieved successfully');
+            } catch (\Exception $e) {
+                return $this->sendError('Failed to retrieve rewards data', 500, ['error' => $e->getMessage()]);
+            }
+        }
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->sendValidationError($e->errors());
         } catch (\Exception $e) {

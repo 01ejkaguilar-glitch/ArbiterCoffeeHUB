@@ -1,6 +1,9 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container } from 'react-bootstrap';
+import {
+  ResponsiveButton,
+  ResponsiveContainer,
+} from '@/components/responsive';
 import { FaShoppingCart, FaMinus, FaPlus, FaHeart, FaRegHeart, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { API_ENDPOINTS, resolveMediaUrl } from '../../config/api';
 import { useCart } from '../../context/CartContext';
@@ -133,12 +136,12 @@ const ProductDetailPage = () => {
 
   if (isError || !product) {
     return (
-      <Container className="py-5 text-center">
+      <ResponsiveContainer className="py-5 text-center">
         <h2>Product not found</h2>
-        <button className="btn btn-primary mt-3" onClick={() => navigate('/products')}>
+        <ResponsiveButton variant="primary" size="md" onClick={() => navigate('/products')}>
           Back to Products
-        </button>
-      </Container>
+        </ResponsiveButton>
+      </ResponsiveContainer>
     );
   }
 
@@ -148,7 +151,7 @@ const ProductDetailPage = () => {
 
   return (
     <main role="main">
-      <Container className="py-4 py-md-5">
+      <ResponsiveContainer className="py-4 py-md-5">
         {/* SwipeableGallery for product images (mobile) */}
         {product && product.images && product.images.length > 0 && (
           <div className="d-md-none mb-3">
@@ -294,7 +297,7 @@ const ProductDetailPage = () => {
         </div>
 
 
-      </Container>
+      </ResponsiveContainer>
     </main>
   );
 };

@@ -4,9 +4,23 @@ import {
   FaClock, FaMapMarkerAlt, FaSpinner, FaExclamationTriangle,
 } from 'react-icons/fa';
 import './TodaysOriginManagement.css';
-import { API_ENDPOINTS } from '../../config/api';
-import apiService from '../../services/api.service';
-import { useNotificationSystem } from '../../components/common/NotificationSystem';
+import { API_ENDPOINTS } from '@/config/api';
+import apiService from '@/services/api.service';
+import { useNotificationSystem } from '@/components/common/NotificationSystem';
+import {
+  ResponsiveContainer,
+  ResponsiveRow,
+  ResponsiveCol,
+  ResponsiveCard,
+  ResponsiveButton,
+  ResponsiveForm,
+  ResponsiveInput,
+  ResponsiveSelect,
+  ResponsiveModal,
+  ResponsiveLabel,
+  ResponsiveCheckbox,
+  ResponsiveTextarea,
+} from '@/components/responsive';
 
 /* ── Helpers ──────────────────────────────────────────────── */
 const todayStr = () => new Date().toISOString().split('T')[0];
@@ -34,26 +48,7 @@ const EMPTY_FORM = {
   is_active: true,
 };
 
-/* ── Reusable modal wrapper ───────────────────────────────── */
-function Modal({ open, onClose, children, size }) {
-  const ref = useRef();
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [open, onClose]);
-  if (!open) return null;
-  return (
-    <div
-      className="tom-overlay"
-      ref={ref}
-      onClick={(e) => { if (e.target === ref.current) onClose(); }}
-    >
-      <div className={`tom-dialog${size ? ` ${size}` : ''}`}>{children}</div>
-    </div>
-  );
-}
+/* Using ResponsiveModal from shared components - removed custom Modal implementation */
 
 /* ════════════════════════════════════════════════════════════
    Main component
@@ -404,157 +399,165 @@ const TodaysOriginManagement = () => {
       {/* ═══════════════════════════════════════════════════════
           Schedule / Edit modal
           ═══════════════════════════════════════════════════ */}
-      <Modal open={showFormModal} onClose={closeFormModal}>
-        <div className="tom-dialog-head">
+      <ResponsiveModal show={showFormModal} onHide={closeFormModal}>
+        <ResponsiveModal.Header>
           <h2 className="tom-dialog-title">
             {editingOrigin ? 'Edit Featured Origin' : 'Schedule New Featured Origin'}
           </h2>
-          <button className="tom-dialog-close" onClick={closeFormModal}>✕</button>
-        </div>
-        <form onSubmit={handleSubmit}>
-          <div className="tom-dialog-body">
-            <div className="tom-form-grid">
-              {/* Coffee Bean */}
-              <div className="tom-form-group span2">
-                <label className="tom-label">Coffee Bean <span>*</span></label>
-                <select
-                  className="tom-select"
-                  value={formData.coffee_bean_id}
-                  onChange={setField('coffee_bean_id')}
-                  required
-                >
-                  <option value="">Select a coffee bean…</option>
-                  {availableBeans.map(bean => (
-                    <option key={bean.id} value={bean.id}>
-                      {bean.name} – {bean.origin_country}{bean.region ? `, ${bean.region}` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <button className="tom-dialog-close" onClick={closeFormModal}>&times;</button>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          <form onSubmit={handleSubmit}>
+            <div className="tom-dialog-body">
+              <div className="tom-form-grid">
+                {/* Coffee Bean */}
+                <div className="tom-form-group span2">
+                  <label className="tom-label">Coffee Bean <span>*</span></label>
+                  <select
+                    className="tom-select"
+                    value={formData.coffee_bean_id}
+                    onChange={setField('coffee_bean_id')}
+                    required
+                  >
+                    <option value="">Select a coffee bean…</option>
+                    {availableBeans.map(bean => (
+                      <option key={bean.id} value={bean.id}>
+                        {bean.name} – {bean.origin_country}{bean.region ? `, ${bean.region}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              {/* Feature Date */}
-              <div className="tom-form-group">
-                <label className="tom-label">Feature Date <span>*</span></label>
-                <input
-                  className="tom-input"
-                  type="date"
-                  value={formData.feature_date}
-                  min={editingOrigin ? undefined : todayStr()}
-                  onChange={setField('feature_date')}
-                  required
-                />
-              </div>
-
-              {/* is_active toggle */}
-              <div className="tom-form-group" style={{ justifyContent: 'center' }}>
-                <label className="tom-label">Status</label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '.5rem', cursor: 'pointer', marginTop: '.3rem' }}>
+                {/* Feature Date */}
+                <div className="tom-form-group">
+                  <label className="tom-label">Feature Date <span>*</span></label>
                   <input
-                    type="checkbox"
-                    checked={formData.is_active}
-                    onChange={setField('is_active')}
-                    style={{ width: '16px', height: '16px' }}
+                    className="tom-input"
+                    type="date"
+                    value={formData.feature_date}
+                    min={editingOrigin ? undefined : todayStr()}
+                    onChange={setField('feature_date')}
+                    required
                   />
-                  <span style={{ fontSize: '.85rem', color: '#374151' }}>Active (visible to customers)</span>
-                </label>
-              </div>
+                </div>
 
-              {/* Start Time */}
-              <div className="tom-form-group">
-                <label className="tom-label">Start Time</label>
-                <input
-                  className="tom-input"
-                  type="time"
-                  value={formData.start_time}
-                  onChange={setField('start_time')}
-                />
-              </div>
+                {/* is_active toggle */}
+                <div className="tom-form-group" style={{ justifyContent: 'center' }}>
+                  <label className="tom-label">Status</label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '.5rem', cursor: 'pointer', marginTop: '.3rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={formData.is_active}
+                      onChange={setField('is_active')}
+                      style={{ width: '16px', height: '16px' }}
+                    />
+                    <span style={{ fontSize: '.85rem', color: '#374151' }}>Active (visible to customers)</span>
+                  </label>
+                </div>
 
-              {/* End Time */}
-              <div className="tom-form-group">
-                <label className="tom-label">End Time</label>
-                <input
-                  className="tom-input"
-                  type="time"
-                  value={formData.end_time}
-                  onChange={setField('end_time')}
-                />
-              </div>
+                {/* Start Time */}
+                <div className="tom-form-group">
+                  <label className="tom-label">Start Time</label>
+                  <input
+                    className="tom-input"
+                    type="time"
+                    value={formData.start_time}
+                    onChange={setField('start_time')}
+                  />
+                </div>
 
-              {/* Special Notes */}
-              <div className="tom-form-group span2">
-                <label className="tom-label">Special Notes</label>
-                <textarea
-                  className="tom-textarea"
-                  value={formData.special_notes}
-                  onChange={setField('special_notes')}
-                  placeholder="Any special notes about this coffee bean…"
-                />
-                <span className="tom-hint">Max 1,000 characters</span>
-              </div>
+                {/* End Time */}
+                <div className="tom-form-group">
+                  <label className="tom-label">End Time</label>
+                  <input
+                    className="tom-input"
+                    type="time"
+                    value={formData.end_time}
+                    onChange={setField('end_time')}
+                  />
+                </div>
 
-              {/* Promotion Text */}
-              <div className="tom-form-group span2">
-                <label className="tom-label">Promotion Text</label>
-                <textarea
-                  className="tom-textarea"
-                  value={formData.promotion_text}
-                  onChange={setField('promotion_text')}
-                  placeholder="Special promotion or highlight text…"
-                />
-                <span className="tom-hint">Max 500 characters (shown prominently to customers)</span>
+                {/* Special Notes */}
+                <div className="tom-form-group span2">
+                  <label className="tom-label">Special Notes</label>
+                  <textarea
+                    className="tom-textarea"
+                    value={formData.special_notes}
+                    onChange={setField('special_notes')}
+                    placeholder="Any special notes about this coffee bean…"
+                  />
+                  <span className="tom-hint">Max 1,000 characters</span>
+                </div>
+
+                {/* Promotion Text */}
+                <div className="tom-form-group span2">
+                  <label className="tom-label">Promotion Text</label>
+                  <textarea
+                    className="tom-textarea"
+                    value={formData.promotion_text}
+                    onChange={setField('promotion_text')}
+                    placeholder="Special promotion or highlight text…"
+                  />
+                  <span className="tom-hint">Max 500 characters (shown prominently to customers)</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="tom-dialog-footer">
-            <button type="button" className="tom-btn secondary" onClick={closeFormModal} disabled={saving}>
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="tom-btn primary"
-              disabled={saving || !formData.coffee_bean_id || !formData.feature_date}
-            >
-              {saving
-                ? <><FaSpinner className="tom-spin" size={12} /> Saving…</>
-                : editingOrigin ? 'Update Feature' : 'Schedule Feature'}
-            </button>
-          </div>
-        </form>
-      </Modal>
+            <div className="tom-dialog-footer">
+              <button type="button" className="tom-btn secondary" onClick={closeFormModal} disabled={saving}>
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="tom-btn primary"
+                disabled={saving || !formData.coffee_bean_id || !formData.feature_date}
+              >
+                {saving
+                  ? <><FaSpinner className="tom-spin" size={12} /> Saving…</>
+                  : editingOrigin ? 'Update Feature' : 'Schedule Feature'}
+              </button>
+            </div>
+          </form>
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
 
       {/* ═══════════════════════════════════════════════════════
           Delete confirmation modal
           ═══════════════════════════════════════════════════ */}
-      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} size="sm">
-        <div className="tom-dialog-head">
+      <ResponsiveModal show={!!deleteTarget} onHide={() => setDeleteTarget(null)} size="sm">
+        <ResponsiveModal.Header>
           <FaExclamationTriangle style={{ color: '#dc2626', flexShrink: 0 }} />
           <h2 className="tom-dialog-title">Remove Featured Origin</h2>
-          <button className="tom-dialog-close" onClick={() => setDeleteTarget(null)}>✕</button>
-        </div>
-        <div className="tom-dialog-body">
-          <p className="tom-delete-msg">
-            Are you sure you want to remove{' '}
-            <span className="tom-delete-name">
-              {deleteTarget?.coffeeBean?.name || deleteTarget?.coffee_bean?.name}
-            </span>{' '}
-            from the schedule on{' '}
-            {deleteTarget && new Date((deleteTarget.feature_date?.slice?.(0, 10) ?? deleteTarget.feature_date) + 'T00:00:00')
-              .toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}?
-          </p>
-          <p style={{ fontSize: '.8rem', color: '#9ca3af', margin: 0 }}>
-            This action cannot be undone.
-          </p>
-        </div>
-        <div className="tom-dialog-footer">
-          <button className="tom-btn secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>
-            Cancel
-          </button>
-          <button className="tom-btn danger" onClick={handleDelete} disabled={deleting}>
-            {deleting ? <><FaSpinner className="tom-spin" size={12} /> Removing…</> : 'Yes, Remove'}
-          </button>
-        </div>
-      </Modal>
+          <button className="tom-dialog-close" onClick={() => setDeleteTarget(null)}>&times;</button>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          <div className="tom-dialog-body">
+            <p className="tom-delete-msg">
+              Are you sure you want to remove{' '}
+              <span className="tom-delete-name">
+                {deleteTarget?.coffeeBean?.name || deleteTarget?.coffee_bean?.name}
+              </span>{' '}
+              from the schedule on{' '}
+              {deleteTarget && new Date((deleteTarget.feature_date?.slice?.(0, 10) ?? deleteTarget.feature_date) + 'T00:00:00')
+                .toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })}?
+            </p>
+            <p style={{ fontSize: '.8rem', color: '#9ca3af', margin: 0 }}>
+              This action cannot be undone.
+            </p>
+          </div>
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+          <div className="tom-dialog-footer">
+            <button className="tom-btn secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+              Cancel
+            </button>
+            <button className="tom-btn danger" onClick={handleDelete} disabled={deleting}>
+              {deleting ? <><FaSpinner className="tom-spin" size={12} /> Removing…</> : 'Yes, Remove'}
+            </button>
+          </div>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
     </div>
   );
 };

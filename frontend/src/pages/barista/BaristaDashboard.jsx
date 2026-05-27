@@ -11,6 +11,12 @@ import { API_ENDPOINTS } from '../../config/api';
 import apiService from '../../services/api.service';
 import { useBaristaOrders } from '../../hooks/useBroadcast';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
+import ResponsiveButton from '@/components/responsive/Button';
+import ResponsiveCard from '@/components/responsive/Card';
+import ResponsiveForm from '@/components/responsive/Form';
+import ResponsiveModal from '@/components/responsive/Modal';
+import ResponsiveRow from '@/components/responsive/Row';
+import ResponsiveCol from '@/components/responsive/Col';
 import './BaristaDashboard.css';
 
 /* ─── helpers ─────────────────────────────────────────────────── */
@@ -31,12 +37,38 @@ const fmt = (n, prefix = '') =>
     : (n || 0).toString();
 
 /* ─── Connection chip ────────────────────────────────────────── */
-const ConnChip = ({ connected }) => (
-  <span className={`bd-conn-chip ${connected ? 'live' : 'offline'}`}>
-    <span className="bd-conn-dot" />
-    {connected ? 'Live' : 'Offline'}
-  </span>
-);
+const ConnChip = ({ connected, lastUpdated }) => {
+  const [reconnecting, setReconnecting] = useState(false);
+
+  // Simulate reconnection attempts when disconnected
+  useEffect(() => {
+    if (!connected) {
+      const attemptReconnect = () => {
+        setReconnecting(true);
+        // Simulate reconnection attempt
+        setTimeout(() => {
+          // In real implementation, this would attempt to reconnect
+          setReconnecting(false);
+        }, 3000);
+      };
+
+      const interval = setInterval(attemptReconnect, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [connected]);
+
+  return (
+    <span className={`bd-conn-chip ${connected ? 'live' : 'offline'} ${reconnecting ? 'reconnecting' : ''}`}>
+      <span
+        className="bd-conn-dot"
+        style={{
+          animation: connected && !reconnecting ? 'pulse 1.5s infinite' : 'none'
+        }}
+      />
+      {connected ? 'Live' : reconnecting ? 'Reconnecting...' : 'Offline'}
+    </span>
+  );
+};
 
 /* ─── Skeleton loader ────────────────────────────────────────── */
 const SkeletonLoader = () => (
@@ -133,21 +165,23 @@ const BaristaDashboard = () => {
     <div className="bd-page">
 
       {/* Header ─────────────────────────────────────────────── */}
-      <div className="bd-header">
+      <div className="bd-header d-flex justify-content-between align-items-center">
         <div className="bd-header-left">
           <h1 className="bd-title">{getGreeting()}, {user?.name || 'Barista'}!</h1>
           <p className="bd-subtitle">{todayLabel}</p>
         </div>
-        <div className="bd-header-right">
-          <ConnChip connected={realtimeConnected} />
-          <button
+        <div className="bd-header-right d-flex align-items-center gap-3">
+          <ConnChip connected={realtimeConnected} lastUpdated={new Date().toLocaleTimeString()} />
+          <ResponsiveButton
+            variant="outline-secondary"
+            size="sm"
             className="bd-refresh-btn"
             onClick={() => fetchDashboardData(false)}
             disabled={refreshing || loading}
           >
             <FaSync className={refreshing ? 'spinning' : ''} />
             {refreshing ? 'Refreshing…' : 'Refresh'}
-          </button>
+          </ResponsiveButton>
         </div>
       </div>
 
@@ -171,199 +205,248 @@ const BaristaDashboard = () => {
       {loading ? <SkeletonLoader /> : (
         <>
           {/* ── Stat Cards ────────────────────────────────────── */}
-          <div className="bd-stat-grid">
-
-            <div className="bd-stat-card amber">
-              <div className="bd-stat-icon amber"><FaClock size={20} /></div>
-              <div className="bd-stat-info">
-                <div className="bd-stat-value">{pendingOrders}</div>
-                <p className="bd-stat-label">Pending Orders</p>
-              </div>
-            </div>
-
-            <div className="bd-stat-card blue">
-              <div className="bd-stat-icon blue"><FaUtensils size={20} /></div>
-              <div className="bd-stat-info">
-                <div className="bd-stat-value">{preparingOrders}</div>
-                <p className="bd-stat-label">Preparing</p>
-              </div>
-            </div>
-
-            <div className="bd-stat-card green">
-              <div className="bd-stat-icon green"><FaCheckCircle size={20} /></div>
-              <div className="bd-stat-info">
-                <div className="bd-stat-value">{completedToday}</div>
-                <p className="bd-stat-label">Completed Today</p>
-              </div>
-            </div>
-
-            <div className="bd-stat-card teal">
-              <div className="bd-stat-icon teal"><FaDollarSign size={20} /></div>
-              <div className="bd-stat-info">
-                <div className="bd-stat-value">{fmt(revenue, '₱')}</div>
-                <p className="bd-stat-label">Today's Revenue</p>
-              </div>
-            </div>
-
-          </div>
+          <ResponsiveRow className="g-4 mb-4">
+            <ResponsiveCol md={6} lg={3}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaClock className="text-warning me-2" size={20} />
+                    <h5 className="mb-0">Pending Orders</h5>
+                  </div>
+                  <p className="fs-4 fw-bold mb-0">{pendingOrders}</p>
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+            <ResponsiveCol md={6} lg={3}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaUtensils className="text-primary me-2" size={20} />
+                    <h5 className="mb-0">Preparing</h5>
+                  </div>
+                  <p className="fs-4 fw-bold mb-0">{preparingOrders}</p>
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+            <ResponsiveCol md={6} lg={3}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaCheckCircle className="text-success me-2" size={20} />
+                    <h5 className="mb-0">Completed Today</h5>
+                  </div>
+                  <p className="fs-4 fw-bold mb-0">{completedToday}</p>
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+            <ResponsiveCol md={6} lg={3}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaDollarSign className="text-info me-2" size={20} />
+                    <h5 className="mb-0">Today's Revenue</h5>
+                  </div>
+                  <p className="fs-4 fw-bold mb-0">{fmt(revenue, '₱')}</p>
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+          </ResponsiveRow>
 
           {/* ── KPI Metrics ───────────────────────────────────── */}
-          <div className="bd-metrics-grid">
-            <div className="bd-metric-card">
-              <div className="bd-metric-icon blue"><FaStopwatch size={18} /></div>
-              <div className="bd-metric-info">
-                <div className="bd-metric-value">{avgPrepTime}</div>
-                <div className="bd-metric-label">Avg Preparation Time</div>
-              </div>
-            </div>
-            <div className="bd-metric-card">
-              <div className="bd-metric-icon green"><FaChartLine size={18} /></div>
-              <div className="bd-metric-info">
-                <div className="bd-metric-value">{ordersPerHour}</div>
-                <div className="bd-metric-label">Orders per Hour</div>
-              </div>
-            </div>
-            <div className="bd-metric-card">
-              <div className="bd-metric-icon amber"><FaClipboardList size={18} /></div>
-              <div className="bd-metric-info">
-                <div className="bd-metric-value">{completedTasks} / {todaysTasks.length}</div>
-                <div className="bd-metric-label">Tasks Completed</div>
-              </div>
-            </div>
-          </div>
+          <ResponsiveRow className="g-4">
+            <ResponsiveCol md={4}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaStopwatch className="text-primary me-2" size={18} />
+                    <h5 className="mb-0">Avg Preparation Time</h5>
+                  </div>
+                  <p className="fs-5 fw-bold mb-0">{avgPrepTime}</p>
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+            <ResponsiveCol md={4}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaChartLine className="text-success me-2" size={18} />
+                    <h5 className="mb-0">Orders per Hour</h5>
+                  </div>
+                  <p className="fs-5 fw-bold mb-0">{ordersPerHour}</p>
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+            <ResponsiveCol md={4}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaClipboardList className="text-warning me-2" size={18} />
+                    <h5 className="mb-0">Tasks Completed</h5>
+                  </div>
+                  <p className="fs-5 fw-bold mb-0">{completedTasks} / {todaysTasks.length}</p>
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+          </ResponsiveRow>
 
           {/* ── Body Grid ─────────────────────────────────────── */}
           <div className="bd-body-grid">
 
             {/* Left: Live Order Queue ─────────────────────────── */}
-            <div className="bd-card">
-              <div className="bd-card-head">
-                <h2 className="bd-card-title">
-                  <FaBolt size={14} />
-                  Live Order Queue
-                  {liveQueue.length > 0 && (
-                    <span className={`bd-card-badge ${pendingOrders > 0 ? 'amber' : ''}`}>
-                      {liveQueue.length}
-                    </span>
+            <ResponsiveCol md={8}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <ResponsiveCard.Header className="d-flex justify-content-between align-items-center">
+                  <h5 className="mb-0">
+                    <FaBolt size={14} />
+                    Live Order Queue
+                    {liveQueue.length > 0 && (
+                      <span className={`ms-2 ${pendingOrders > 0 ? 'text-warning' : ''}`}>
+                        {liveQueue.length}
+                      </span>
+                    )}
+                  </h5>
+                  <Link to="/barista/orders" className="text-muted text-decoration-none">
+                    View all <FaChevronRight size={10} />
+                  </Link>
+                </ResponsiveCard.Header>
+                <ResponsiveCard.Body className="p-0">
+                  {liveQueue.length === 0 ? (
+                    <div className="text-center py-4">
+                      <FaCheckCircle className="text-success mb-2" size={28} />
+                      <p className="mb-0">No active orders — queue is clear!</p>
+                    </div>
+                  ) : (
+                    <div className="list-group list-group-flush">
+                      {liveQueue.map((order) => (
+                        <div key={order.id} className="list-group-item list-group-item-action">
+                          <div className="d-flex w-100 justify-content-between">
+                            <h6 className="mb-1">#{order.order_number || order.id}</h6>
+                            <small className={`text-${order.status === 'completed' ? 'success' : order.status === 'preparing' ? 'warning' : order.status === 'pending' ? 'info' : 'secondary'}`}>
+                              {order.status}
+                            </small>
+                          </div>
+                          <p className="mb-1">
+                            <strong>{order.user?.name || order.customer_name || 'Guest'}</strong>
+                          </p>
+                          <small className="text-muted">
+                            {order.order_items?.length || order.orderItems?.length || 0} item(s)
+                          </small>
+                        </div>
+                      ))}
+                    </div>
                   )}
-                </h2>
-                <Link to="/barista/orders" className="bd-see-all">
-                  View all <FaChevronRight size={10} />
-                </Link>
-              </div>
-              <div className="bd-card-body">
-                {liveQueue.length === 0 ? (
-                  <div className="bd-order-empty">
-                    <FaCheckCircle size={28} style={{ color: '#16a34a', marginBottom: 8 }} />
-                    <br />No active orders — queue is clear!
-                  </div>
-                ) : (
-                  <div className="bd-order-list">
-                    {liveQueue.map((order) => (
-                      <div key={order.id} className="bd-order-item">
-                        <span className="bd-order-num">#{order.order_number || order.id}</span>
-                        <span className="bd-order-customer">
-                          {order.user?.name || order.customer_name || 'Guest'}
-                        </span>
-                        <span className="bd-order-items">
-                          {order.order_items?.length || order.orderItems?.length || 0} item(s)
-                        </span>
-                        <span className={`bd-order-status ${order.status}`}>{order.status}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+                </ResponsiveCard.Body>
+              </ResponsiveCard>
+            </ResponsiveCol>
 
             {/* Right column ───────────────────────────────────── */}
-            <div>
+            <ResponsiveCol md={4}>
 
               {/* Shift card */}
-              <div className="bd-shift-card">
-                <div className="bd-shift-header">
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <ResponsiveCard.Header className="d-flex justify-content-between align-items-center">
                   <div>
-                    <div className="bd-shift-label">Current Shift</div>
+                    <h6 className="mb-0 text-muted">Current Shift</h6>
                     {currentShift ? (
-                      <div className="bd-shift-time">
+                      <p className="mb-0 fw-medium">
                         {currentShift.start_time} – {currentShift.end_time}
-                      </div>
+                      </p>
                     ) : (
-                      <div className="bd-shift-none">No shift today</div>
+                      <p className="mb-0 text-muted">No shift today</p>
                     )}
                     {currentShift?.shift_name && (
-                      <div className="bd-shift-name">{currentShift.shift_name}</div>
+                      <p className="mb-0 fw-medium">{currentShift.shift_name}</p>
                     )}
                   </div>
-                  <div className="bd-shift-icon-wrap">
-                    <FaCalendarAlt size={18} color="var(--color-dark-green)" />
+                  <FaCalendarAlt size={18} className="text-primary" />
+                </ResponsiveCard.Header>
+                <ResponsiveCard.Body className="p-3">
+                  <div className="d-flex justify-content-end gap-3">
+                    <ResponsiveButton to="/barista/attendance" variant="outline-primary" size="sm" className="">
+                      <div className="d-flex justify-content-start align-items-center">
+                        <FaSignInAlt size={13} className="me-2" />
+                        <span>Clock In/Out</span>
+                      </div>
+                    </ResponsiveButton>
+                    <ResponsiveButton to="/barista/shifts" variant="outline-secondary" size="sm" className="">
+                      <div className="d-flex justify-content-start align-items-center">
+                        <FaCalendarAlt size={13} className="me-2" />
+                        <span>My Shifts</span>
+                      </div>
+                    </ResponsiveButton>
                   </div>
-                </div>
-                <div className="bd-shift-actions">
-                  <Link to="/barista/attendance" className="bd-shift-btn primary">
-                    <FaSignInAlt size={13} /> Clock In/Out
-                  </Link>
-                  <Link to="/barista/shifts" className="bd-shift-btn outline">
-                    <FaCalendarAlt size={13} /> My Shifts
-                  </Link>
-                </div>
-              </div>
+                </ResponsiveCard.Body>
+              </ResponsiveCard>
 
               {/* Quick actions */}
-              <div className="bd-card">
-                <div className="bd-card-head">
-                  <h2 className="bd-card-title"><FaBolt size={14} /> Quick Actions</h2>
-                </div>
-                <div className="bd-card-body">
-                  <div className="bd-actions-grid">
+              <ResponsiveCard className="border-0 shadow-sm h-100 mt-3">
+                <ResponsiveCard.Header>
+                  <h5 className="mb-0">
+                    <FaBolt size={14} />
+                    Quick Actions
+                  </h5>
+                </ResponsiveCard.Header>
+                <ResponsiveCard.Body className="p-3">
+                  <ResponsiveRow className="g-2">
+                    <ResponsiveCol md={6}>
+                      <ResponsiveButton to="/barista/orders" variant="outline-warning" size="sm" className="w-100">
+                        <div className="d-flex justify-content-start align-items-center">
+                          <FaClock size={15} className="me-2" />
+                          <span>Order Queue</span>
+                          {pendingOrders > 0 && (
+                            <span className="ms-auto badge bg-warning">{pendingOrders}</span>
+                          )}
+                        </div>
+                      </ResponsiveButton>
+                    </ResponsiveCol>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveButton to="/barista/tasks" variant="outline-primary" size="sm" className="w-100">
+                        <div className="d-flex justify-content-start align-items-center">
+                          <FaTasks size={15} className="me-2" />
+                          <span>My Tasks</span>
+                          {todaysTasks.length > 0 && (
+                            <span className="ms-auto badge bg-primary">{todaysTasks.length}</span>
+                          )}
+                        </div>
+                      </ResponsiveButton>
+                    </ResponsiveCol>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveButton to="/barista/beans" variant="outline-success" size="sm" className="w-100">
+                        <div className="d-flex justify-content-start align-items-center">
+                          <FaCoffee size={15} className="me-2" />
+                          <span>Coffee Beans</span>
+                        </div>
+                      </ResponsiveButton>
+                    </ResponsiveCol>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveButton to="/barista/featured-origins" variant="outline-info" size="sm" className="w-100">
+                        <div className="d-flex justify-content-start align-items-center">
+                          <FaLeaf size={15} className="me-2" />
+                          <span>Today's Origin</span>
+                        </div>
+                      </ResponsiveButton>
+                    </ResponsiveCol>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveButton to="/barista/inventory" variant="outline-secondary" size="sm" className="w-100">
+                        <div className="d-flex justify-content-start align-items-center">
+                          <FaBoxes size={15} className="me-2" />
+                          <span>Inventory Check</span>
+                        </div>
+                      </ResponsiveButton>
+                    </ResponsiveCol>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveButton to="/barista/performance" variant="outline-success" size="sm" className="w-100">
+                        <div className="d-flex justify-content-start align-items-center">
+                          <FaChartLine size={15} className="me-2" />
+                          <span>My Performance</span>
+                        </div>
+                      </ResponsiveButton>
+                    </ResponsiveCol>
+                  </ResponsiveRow>
+                </ResponsiveCard.Body>
+              </ResponsiveCard>
 
-                    <Link to="/barista/orders" className="bd-action-item">
-                      <div className="bd-action-icon amber"><FaClock size={15} /></div>
-                      <span className="bd-action-label">Order Queue</span>
-                      {pendingOrders > 0 && (
-                        <span className="bd-card-badge amber">{pendingOrders}</span>
-                      )}
-                      <FaChevronRight size={10} className="bd-action-chevron" />
-                    </Link>
-
-                    <Link to="/barista/tasks" className="bd-action-item">
-                      <div className="bd-action-icon blue"><FaTasks size={15} /></div>
-                      <span className="bd-action-label">My Tasks</span>
-                      {todaysTasks.length > 0 && (
-                        <span className="bd-card-badge blue">{todaysTasks.length}</span>
-                      )}
-                      <FaChevronRight size={10} className="bd-action-chevron" />
-                    </Link>
-
-                    <Link to="/barista/beans" className="bd-action-item">
-                      <div className="bd-action-icon green"><FaCoffee size={15} /></div>
-                      <span className="bd-action-label">Coffee Beans</span>
-                      <FaChevronRight size={10} className="bd-action-chevron" />
-                    </Link>
-
-                    <Link to="/barista/featured-origins" className="bd-action-item">
-                      <div className="bd-action-icon teal"><FaLeaf size={15} /></div>
-                      <span className="bd-action-label">Today's Origin</span>
-                      <FaChevronRight size={10} className="bd-action-chevron" />
-                    </Link>
-
-                    <Link to="/barista/inventory" className="bd-action-item">
-                      <div className="bd-action-icon purple"><FaBoxes size={15} /></div>
-                      <span className="bd-action-label">Inventory Check</span>
-                      <FaChevronRight size={10} className="bd-action-chevron" />
-                    </Link>
-
-                    <Link to="/barista/performance" className="bd-action-item">
-                      <div className="bd-action-icon green"><FaChartLine size={15} /></div>
-                      <span className="bd-action-label">My Performance</span>
-                      <FaChevronRight size={10} className="bd-action-chevron" />
-                    </Link>
-
-                  </div>
-                </div>
-              </div>
-
-            </div>
+            </ResponsiveCol>
           </div>
 
           {/* ── Today's Tasks ────────────────────────────────── */}

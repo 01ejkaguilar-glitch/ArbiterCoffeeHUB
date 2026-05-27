@@ -1,0 +1,26 @@
+/* Responsive Tab Component */
+.tab {
+  padding: var(--spacing-2) var(--spacing-3);
+  cursor: pointer;
+  user-select: none;
+}
+
+.tab.active {
+  font-weight: 600;
+  color: var(--color-dark-green);
+  background-color: var(--color-white);
+  border-bottom: 2px solid var(--color-dark-green);
+}
+
+.tab.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Mobile optimizations */
+@media (max-width: 576px) {
+  .tab {
+    padding: var(--spacing-1) var(--spacing-2);
+    font-size: 0.875rem;
+  }
+}

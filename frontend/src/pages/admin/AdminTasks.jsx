@@ -6,11 +6,11 @@ import {
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
-import ResponsiveButton from '../../components/responsive/Button';
-import ResponsiveForm from '../../components/responsive/Form';
-import ResponsiveModal from '../../components/responsive/Modal';
-import ResponsiveTable from '../../components/responsive/Table';
-import ResponsiveCard from '../../components/responsive/Card';
+import ResponsiveButton from '@/components/responsive/Button';
+import ResponsiveForm from '@/components/responsive/Form';
+import ResponsiveModal from '@/components/responsive/Modal';
+import ResponsiveTable from '@/components/responsive/Table';
+import ResponsiveCard from '@/components/responsive/Card';
 import './AdminWorkforce.css';
 
 const blankForm = () => ({
@@ -190,9 +190,11 @@ const AdminTasks = () => {
           {(columnProps) => {
             if (columnProps.column.accessor === 'title') {
               return (
-                <div className="wf-td-bold">{columnProps.value}</div>
-                {columnProps.row.description && <div className="wf-td-muted" style={{ fontSize: '.75rem', marginTop: 2, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{columnProps.row.description}</div>}
-                {columnProps.row.overdue && <span style={{ fontSize: '.7rem', color: '#ef4444', fontWeight: 600 }}>OVERDUE</span>}
+                <>
+                  <div className="wf-td-bold">{columnProps.value}</div>
+                  {columnProps.row.description && <div className="wf-td-muted" style={{ fontSize: '.75rem', marginTop: 2, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{columnProps.row.description}</div>}
+                  {columnProps.row.overdue && <span style={{ fontSize: '.7rem', color: '#ef4444', fontWeight: 600 }}>OVERDUE</span>}
+                </>
               );
             }
 

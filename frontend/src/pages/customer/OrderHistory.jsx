@@ -1,6 +1,20 @@
 import PullToRefresh from '../../components/mobile/PullToRefresh';
 import React, { useState, useEffect, useMemo } from 'react';
-import { Container, Row, Col, Card, Badge, Button, Table, Spinner, Alert, Form, InputGroup, Dropdown, Pagination } from 'react-bootstrap';
+import {
+  ResponsiveContainer,
+  ResponsiveRow,
+  ResponsiveCol,
+  ResponsiveCard,
+  ResponsiveBadge,
+  ResponsiveButton,
+  ResponsiveTable,
+  ResponsiveSpinner,
+  ResponsiveAlert,
+  ResponsiveForm,
+  ResponsiveInputGroup,
+  ResponsiveDropdown,
+  ResponsivePagination
+} from '@/components/responsive';
 import { FaEye, FaRedo, FaWifi, FaExclamationTriangle, FaSearch, FaFilter, FaDownload, FaRedoAlt, FaCalendarAlt, FaTimes } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -9,7 +23,6 @@ import { useNotificationSystem } from '../../components/common/NotificationSyste
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import { TableRowSkeleton } from '../../components/animations/LoadingSkeleton';
-import StatusBadge from '../../components/common/StatusBadge';
 import { useToast } from '../../components/animations/Toast';
 
 const OrderHistory = () => {
@@ -268,23 +281,23 @@ Thank you for your business!
 
   if (loading) {
     return (
-      <Container className="py-5">
-        <Row className="justify-content-center">
-          <Col xs="auto">
-            <Spinner animation="border" role="status">
+      <ResponsiveContainer className="py-5">
+        <ResponsiveRow className="justify-content-center">
+          <ResponsiveCol xs="auto">
+            <ResponsiveSpinner animation="border" role="status">
               <span className="visually-hidden">Loading...</span>
-            </Spinner>
-          </Col>
-        </Row>
-      </Container>
+            </ResponsiveSpinner>
+          </ResponsiveCol>
+        </ResponsiveRow>
+      </ResponsiveContainer>
     );
   }
 
   return (
     <main role="main">
       <PullToRefresh onRefresh={handleRefresh}>
-        <Container className="py-5">
-      <Row className="mb-4">
+        <ResponsiveContainer className="py-5">
+      <ResponsiveRow className="mb-4">
         <Col>
           <div className="d-flex justify-content-between align-items-center">
             <div>
@@ -305,7 +318,7 @@ Thank you for your business!
               </div>
 
               {/* Refresh button */}
-              <Button
+              <ResponsiveButton
                 variant="outline-primary"
                 onClick={handleRefresh}
                 disabled={refreshing}
@@ -320,13 +333,13 @@ Thank you for your business!
       </Row>
 
       {/* Search and Filters */}
-      <Row className="mb-4">
+      <ResponsiveRow className="mb-4">
         <Col lg={6}>
           <InputGroup>
-            <InputGroup.Text>
+            <ResponsiveInputGroup.Text>
               <FaSearch />
             </InputGroup.Text>
-            <Form.Control
+            <ResponsiveForm.Control
               type="text"
               placeholder="Search by order number..."
               value={searchTerm}
@@ -335,58 +348,58 @@ Thank you for your business!
           </InputGroup>
         </Col>
         <Col lg={6} className="d-flex gap-2 justify-content-end">
-          <Dropdown>
-            <Dropdown.Toggle variant="outline-secondary" size="sm">
+          <ResponsiveDropdown>
+            <ResponsiveDropdown.Toggle variant="outline-secondary" size="sm">
               <FaFilter className="me-2" />
               Status: {statusFilter === 'all' ? 'All' : statusFilter}
             </Dropdown.Toggle>
-            <Dropdown.Menu>
-              <Dropdown.Item onClick={() => setStatusFilter('all')}>All Status</Dropdown.Item>
-              <Dropdown.Item onClick={() => setStatusFilter('pending')}>Pending</Dropdown.Item>
-              <Dropdown.Item onClick={() => setStatusFilter('confirmed')}>Confirmed</Dropdown.Item>
-              <Dropdown.Item onClick={() => setStatusFilter('preparing')}>Preparing</Dropdown.Item>
-              <Dropdown.Item onClick={() => setStatusFilter('ready')}>Ready</Dropdown.Item>
-              <Dropdown.Item onClick={() => setStatusFilter('completed')}>Completed</Dropdown.Item>
-              <Dropdown.Item onClick={() => setStatusFilter('cancelled')}>Cancelled</Dropdown.Item>
+            <ResponsiveDropdown.Menu>
+              <ResponsiveDropdown.Item onClick={() => setStatusFilter('all')}>All Status</Dropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setStatusFilter('pending')}>Pending</Dropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setStatusFilter('confirmed')}>Confirmed</Dropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setStatusFilter('preparing')}>Preparing</Dropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setStatusFilter('ready')}>Ready</Dropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setStatusFilter('completed')}>Completed</Dropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setStatusFilter('cancelled')}>Cancelled</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
 
-          <Dropdown>
-            <Dropdown.Toggle variant="outline-secondary" size="sm">
+          <ResponsiveDropdown>
+            <ResponsiveDropdown.Toggle variant="outline-secondary" size="sm">
               <FaCalendarAlt className="me-2" />
               Date: {dateFilter === 'all' ? 'All' : dateFilter}
             </Dropdown.Toggle>
-            <Dropdown.Menu>
-              <Dropdown.Item onClick={() => setDateFilter('all')}>All Time</Dropdown.Item>
-              <Dropdown.Item onClick={() => setDateFilter('today')}>Today</Dropdown.Item>
-              <Dropdown.Item onClick={() => setDateFilter('yesterday')}>Yesterday</Dropdown.Item>
-              <Dropdown.Item onClick={() => setDateFilter('week')}>Last 7 days</Dropdown.Item>
-              <Dropdown.Item onClick={() => setDateFilter('month')}>Last 30 days</Dropdown.Item>
+            <ResponsiveDropdown.Menu>
+              <ResponsiveDropdown.Item onClick={() => setDateFilter('all')}>All Time</Dropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setDateFilter('today')}>Today</Dropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setDateFilter('yesterday')}>Yesterday</Dropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setDateFilter('week')}>Last 7 days</Dropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setDateFilter('month')}>Last 30 days</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
 
-          <Dropdown>
-            <Dropdown.Toggle variant="outline-secondary" size="sm">
+          <ResponsiveDropdown>
+            <ResponsiveDropdown.Toggle variant="outline-secondary" size="sm">
               Type: {typeFilter === 'all' ? 'All' : typeFilter}
             </Dropdown.Toggle>
-            <Dropdown.Menu>
-              <Dropdown.Item onClick={() => setTypeFilter('all')}>All Types</Dropdown.Item>
-              <Dropdown.Item onClick={() => setTypeFilter('dine-in')}>Dine In</Dropdown.Item>
-              <Dropdown.Item onClick={() => setTypeFilter('take-out')}>Take Out</Dropdown.Item>
-              <Dropdown.Item onClick={() => setTypeFilter('delivery')}>Delivery</Dropdown.Item>
+            <ResponsiveDropdown.Menu>
+              <ResponsiveDropdown.Item onClick={() => setTypeFilter('all')}>All Types</Dropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setTypeFilter('dine-in')}>Dine In</Dropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setTypeFilter('take-out')}>Take Out</Dropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setTypeFilter('delivery')}>Delivery</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
 
-          <Button variant="outline-secondary" size="sm" onClick={clearFilters}>
+          <ResponsiveButton variant="outline-secondary" size="sm" onClick={clearFilters}>
             Clear
           </Button>
         </Col>
       </Row>
 
       {/* Results Summary */}
-      <Row className="mb-3">
+      <ResponsiveRow className="mb-3">
         <Col>
-          <Alert variant="light" className="py-2">
+          <ResponsiveAlert variant="light" className="py-2">
             <small>
               Showing {paginatedOrders.length} of {filteredAndSortedOrders.length} orders
               {searchTerm && ` matching "${searchTerm}"`}
@@ -397,9 +410,9 @@ Thank you for your business!
 
       {/* Last update indicator */}
       {lastUpdate && (
-        <Row className="mb-3">
+        <ResponsiveRow className="mb-3">
           <Col>
-            <Alert variant="info" className="py-2">
+            <ResponsiveAlert variant="info" className="py-2">
               <small>
                 Last updated: {lastUpdate.toLocaleTimeString()}
               </small>
@@ -410,39 +423,39 @@ Thank you for your business!
 
       {/* Error message */}
       {error && (
-        <Row className="mb-3">
+        <ResponsiveRow className="mb-3">
           <Col>
-            <Alert variant="danger" dismissible onClose={() => setError(null)}>
+            <ResponsiveAlert variant="danger" dismissible onClose={() => setError(null)}>
               {error}
             </Alert>
           </Col>
         </Row>
       )}
 
-      <Row>
+      <ResponsiveRow>
         <Col>
           {orders.length === 0 ? (
-            <Card className="shadow-sm">
-              <Card.Body className="text-center py-5">
+            <ResponsiveCard className="shadow-sm">
+              <ResponsiveCard.Body className="text-center py-5">
                 <p className="text-muted mb-3">No orders yet</p>
-                <Button variant="primary" href="/products">
+                <ResponsiveButton variant="primary" href="/products">
                   Start Shopping
                 </Button>
               </Card.Body>
             </Card>
           ) : filteredAndSortedOrders.length === 0 ? (
-            <Card className="shadow-sm">
-              <Card.Body className="text-center py-5">
+            <ResponsiveCard className="shadow-sm">
+              <ResponsiveCard.Body className="text-center py-5">
                 <p className="text-muted mb-3">No orders match your filters</p>
-                <Button variant="outline-primary" onClick={clearFilters}>
+                <ResponsiveButton variant="outline-primary" onClick={clearFilters}>
                   Clear Filters
                 </Button>
               </Card.Body>
             </Card>
           ) : (
-            <Card className="shadow-sm">
-              <Card.Body>
-                <Table responsive hover>
+            <ResponsiveCard className="shadow-sm">
+              <ResponsiveCard.Body>
+                <ResponsiveTable responsive hover>
                   <thead>
                     <tr>
                       <th>Order #</th>
@@ -466,16 +479,16 @@ Thank you for your business!
                           <strong>{order.order_number}</strong>
                         </td>
                         <td>{formatDate(order.created_at)}</td>
-                        <td><StatusBadge type="order" status={order.status} /></td>
+                        <td><ResponsiveBadge variant="secondary">{order.status?.toUpperCase() || ''}</ResponsiveBadge></td>
                         <td>₱{parseFloat(order.total_amount).toFixed(2)}</td>
                         <td>
-                          <Badge bg="light" text="dark">
+                          <ResponsiveBadge variant="light">
                             {order.order_type}
-                          </Badge>
+                          </ResponsiveBadge>
                         </td>
                         <td>
                           <div className="d-flex gap-1">
-                            <Button
+                            <ResponsiveButton
                               variant="outline-primary"
                               size="sm"
                               onClick={() => navigate(`/orders/${order.id}`)}
@@ -483,7 +496,7 @@ Thank you for your business!
                             >
                               <FaEye />
                             </Button>
-                            <Button
+                            <ResponsiveButton
                               variant="outline-success"
                               size="sm"
                               onClick={() => handleReorder(order.id)}
@@ -496,7 +509,7 @@ Thank you for your business!
                                 <FaRedoAlt />
                               )}
                             </Button>
-                            <Button
+                            <ResponsiveButton
                               variant="outline-info"
                               size="sm"
                               onClick={() => handleDownloadReceipt(order.id)}
@@ -506,7 +519,7 @@ Thank you for your business!
                             </Button>
                             {/* Cancel button - only show for pending or confirmed orders */}
                             {(order.status === 'pending' || order.status === 'confirmed') && (
-                              <Button
+                              <ResponsiveButton
                                 variant="outline-danger"
                                 size="sm"
                                 onClick={() => handleCancelRequest(order.id)}
@@ -517,7 +530,7 @@ Thank you for your business!
                             )}
                             {/* Show info if cancellation requested */}
                             {order.status === 'cancellation_requested' && (
-                              <Button
+                              <ResponsiveButton
                                 variant="secondary"
                                 size="sm"
                                 disabled
@@ -537,38 +550,53 @@ Thank you for your business!
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="d-flex justify-content-center mt-4">
-                    <Pagination>
-                      <Pagination.First
-                        onClick={() => setCurrentPage(1)}
-                        disabled={currentPage === 1}
-                      />
-                      <Pagination.Prev
-                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentPage === 1}
-                      />
+                    <ResponsiveButton
+                      variant="outline-secondary"
+                      size="sm"
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                    >
+                      « First
+                    </ResponsiveButton>
+                    <ResponsiveButton
+                      variant="outline-secondary"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      ‹ Prev
+                    </ResponsiveButton>
 
-                      {[...Array(Math.min(5, totalPages))].map((_, idx) => {
-                        const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + idx;
-                        return (
-                          <Pagination.Item
-                            key={pageNum}
-                            active={pageNum === currentPage}
-                            onClick={() => setCurrentPage(pageNum)}
-                          >
-                            {pageNum}
-                          </Pagination.Item>
-                        );
-                      })}
+                    {[...Array(Math.min(5, totalPages))].map((_, idx) => {
+                      const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + idx;
+                      return (
+                        <ResponsiveButton
+                          key={pageNum}
+                          variant={pageNum === currentPage ? 'primary' : 'outline-secondary'}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNum)}
+                        >
+                          {pageNum}
+                        </ResponsiveButton>
+                      );
+                    })}
 
-                      <Pagination.Next
-                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                        disabled={currentPage === totalPages}
-                      />
-                      <Pagination.Last
-                        onClick={() => setCurrentPage(totalPages)}
-                        disabled={currentPage === totalPages}
-                      />
-                    </Pagination>
+                    <ResponsiveButton
+                      variant="outline-secondary"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next ›
+                    </ResponsiveButton>
+                    <ResponsiveButton
+                      variant="outline-secondary"
+                      size="sm"
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Last »
+                    </ResponsiveButton>
                   </div>
                 )}
               </Card.Body>

@@ -340,6 +340,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/customer/analytics', [CustomerController::class, 'getOrderAnalytics']);
             Route::put('/customer/notifications', [CustomerController::class, 'updateNotificationPreferences']);
             Route::put('/customer/change-password', [CustomerController::class, 'changePassword']);
+            Route::get('/customer/rewards', [CustomerController::class, 'rewards']);
             Route::delete('/customer/account', [CustomerController::class, 'deactivateAccount']);
 
             // Customer Taste Preferences

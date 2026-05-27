@@ -1,0 +1,129 @@
+.alert {
+  position: relative;
+  padding: var(--spacing-4) var(--spacing-6);
+  margin-bottom: var(--spacing-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Color variants */
+.alert-primary {
+  color: var(--color-dark-green);
+  background-color: rgba(0, 104, 55, 0.1);
+  border-color: rgba(0, 104, 55, 0.2);
+}
+
+.alert-secondary {
+  color: var(--color-medium-green);
+  background-color: rgba(0, 146, 69, 0.1);
+  border-color: rgba(0, 146, 69, 0.2);
+}
+
+.alert-success {
+  color: var(--color-success);
+  background-color: rgba(40, 167, 69, 0.1);
+  border-color: rgba(40, 167, 69, 0.2);
+}
+
+.alert-danger {
+  color: var(--color-danger);
+  background-color: rgba(196, 30, 58, 0.1);
+  border-color: rgba(196, 30, 58, 0.2);
+}
+
+.alert-warning {
+  color: var(--color-warning);
+  background-color: rgba(155, 107, 0, 0.1);
+  border-color: rgba(155, 107, 0, 0.2);
+}
+
+.alert-info {
+  color: var(--color-info);
+  background-color: rgba(13, 95, 143, 0.1);
+  border-color: rgba(13, 95, 143, 0.2);
+}
+
+.alert-light {
+  color: var(--color-on-surface);
+  background-color: var(--color-background);
+  border-color: var(--color-border);
+}
+
+.alert-dark {
+  color: var(--color-white);
+  background-color: var(--color-on-surface);
+  border-color: var(--color-on-surface);
+}
+
+/* Dismissible alert close button */
+.alert .btn-close {
+  position: absolute;
+  top: var(--spacing-2);
+  right: var(--spacing-3);
+  padding: var(--spacing-1) var(--spacing-2);
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: inherit;
+  opacity: 0.7;
+  border: none;
+  background: transparent;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.alert .btn-close:hover {
+  opacity: 1;
+}
+
+/* Icon support */
+.alert-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: var(--spacing-3);
+  font-size: var(--font-size-lg);
+}
+
+.alert-message {
+  flex: 1 1 auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .alert {
+    padding: var(--spacing-3) var(--spacing-4);
+    margin-bottom: var(--spacing-3);
+  }
+
+  .alert-icon {
+    margin-right: var(--spacing-2);
+    font-size: var(--font-size-base);
+  }
+
+  .alert .btn-close {
+    top: var(--spacing-1);
+    right: var(--spacing-2);
+    padding: var(--spacing-0-5) var(--spacing-1);
+  }
+}
+
+/* Animation for dismissing */
+.alert-fade {
+  animation: alertFade 0.3s ease-out forwards;
+}
+
+@keyframes alertFade {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+}

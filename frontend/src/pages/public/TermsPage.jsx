@@ -1,5 +1,9 @@
 import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
+import {
+  ResponsiveContainer,
+  ResponsiveRow,
+  ResponsiveCol,
+} from '@/components/responsive';
 import { FaFileContract, FaShoppingCart, FaUserCog, FaUndoAlt, FaBan, FaGavel } from 'react-icons/fa';
 import SEO from '../../components/SEO';
 import { BreadcrumbSchema } from '../../components/StructuredData';
@@ -50,19 +54,19 @@ function TermsPage() {
       <BreadcrumbSchema items={[{ name: 'Home', url: '/' }, { name: 'Terms of Service', url: '/terms' }]} />
 
       <div className="page-header-modern">
-        <Container>
+        <ResponsiveContainer>
           <h1>Terms of Service</h1>
           <p>Please read these terms carefully before using the Arbiter Coffee Shop platform.</p>
-        </Container>
+        </ResponsiveContainer>
       </div>
 
       <section className="section-modern">
-        <Container>
-          <Row className="g-4">
+        <ResponsiveContainer>
+          <ResponsiveRow className="g-4">
             {sections.map((s, i) => {
               const Icon = s.icon;
               return (
-                <Col md={6} key={i}>
+                <ResponsiveCol md={6} key={i}>
                   <div className="feature-card h-100" style={{ textAlign: 'left' }}>
                     <div className="feature-icon" aria-hidden="true" style={{ margin: '0 0 var(--spacing-4)' }}>
                       <Icon />
@@ -70,14 +74,14 @@ function TermsPage() {
                     <h3 className="h5 fw-semibold mb-2">{s.title}</h3>
                     <p className="mb-0 text-muted" style={{ fontSize: 'var(--font-size-sm)' }}>{s.content}</p>
                   </div>
-                </Col>
+                </ResponsiveCol>
               );
             })}
-          </Row>
+          </ResponsiveRow>
           <p className="text-center text-muted mt-5" style={{ fontSize: 'var(--font-size-sm)' }}>
             Last updated: January 2026
           </p>
-        </Container>
+        </ResponsiveContainer>
       </section>
     </main>
   );

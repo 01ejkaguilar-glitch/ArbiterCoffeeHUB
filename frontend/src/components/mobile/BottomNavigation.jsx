@@ -31,7 +31,7 @@ const BottomNavigation = () => {
       return false;
     }
 
-    return window.matchMedia('(max-width: 768px)').matches;
+    return window.matchMedia('(max-width: 639px)').matches;
   });
 
   useEffect(() => {

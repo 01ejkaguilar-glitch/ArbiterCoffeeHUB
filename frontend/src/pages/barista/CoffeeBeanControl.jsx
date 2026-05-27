@@ -5,10 +5,24 @@ import {
   FaPlus, FaMapMarkerAlt, FaSync, FaArchive,
   FaTimes, FaSpinner, FaLeaf,
 } from 'react-icons/fa';
-import { API_ENDPOINTS } from '../../config/api';
-import apiService from '../../services/api.service';
-import { useNotificationSystem } from '../../components/common/NotificationSystem';
-import './CoffeeBeanControl.css';
+import { API_ENDPOINTS } from '@/config/api';
+import apiService from '@/services/api.service';
+import { useNotificationSystem } from '@/components/common/NotificationSystem';
+import {
+  ResponsiveContainer,
+  ResponsiveRow,
+  ResponsiveCol,
+  ResponsiveCard,
+  ResponsiveButton,
+  ResponsiveForm,
+  ResponsiveInput,
+  ResponsiveSelect,
+  ResponsiveModal,
+  ResponsiveLabel,
+  ResponsiveCheckbox,
+  ResponsiveTextarea,
+} from '@/components/responsive';
+import '@/pages/barista/CoffeeBeanControl.css';
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const normalise = (responseData) => {
@@ -39,20 +53,7 @@ const EMPTY_FEATURED_FORM = {
 };
 
 // â”€â”€ Modal wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const Modal = ({ show, onClose, children, size = '' }) => {
-  useEffect(() => {
-    if (!show) return;
-    const fn = (e) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', fn);
-    return () => window.removeEventListener('keydown', fn);
-  }, [show, onClose]);
-  if (!show) return null;
-  return (
-    <div className="cbc-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className={`cbc-dialog ${size}`}>{children}</div>
-    </div>
-  );
-};
+// Using ResponsiveModal from shared components
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const CoffeeBeanControl = () => {
@@ -538,228 +539,244 @@ const CoffeeBeanControl = () => {
       {activeTab === 'inventory' ? renderInventory() : renderFeatured()}
 
       {/* â”€â”€ Stock Modal â”€â”€ */}
-      <Modal show={showStockModal} onClose={() => { setShowStockModal(false); setSelectedBean(null); setNewStock(''); }} size="sm">
-        <div className="cbc-dialog-head">
+      <ResponsiveModal show={showStockModal} onHide={() => { setShowStockModal(false); setSelectedBean(null); setNewStock(''); }} size="sm">
+        <ResponsiveModal.Header>
           <h2 className="cbc-dialog-title"><FaEdit size={15} /> Update Stock</h2>
-          <button className="cbc-dialog-close" onClick={() => { setShowStockModal(false); setSelectedBean(null); setNewStock(''); }}>✕</button>
-        </div>
-        <div className="cbc-dialog-body">
-          <p style={{ fontWeight: 700, marginBottom: '.75rem', color: '#1A1A1A' }}>{selectedBean?.name}</p>
-          <div className="cbc-form-group" style={{ marginBottom: '.75rem' }}>
-            <label className="cbc-label">Current Stock</label>
-            <input className="cbc-input readonly" readOnly value={`${selectedBean?.stock_quantity ?? 0} kg`} />
-          </div>
-          <div className="cbc-form-group">
-            <label className="cbc-label">New Stock Quantity (kg)<span>*</span></label>
-            <input
-              className="cbc-input"
-              type="number"
-              step="0.1"
-              min="0"
-              value={newStock}
-              onChange={e => setNewStock(e.target.value)}
-              placeholder="e.g. 12.5"
-              autoFocus
-            />
-            <span className="cbc-hint">Enter the new stock quantity in kilograms</span>
-          </div>
-          {newStock !== '' && (
-            <div className={`cbc-stock-indicator ${getStockStatus(parseFloat(newStock)).cls}`}>
-              <FaExclamationTriangle size={14} />
-              Will set to {parseFloat(newStock || 0).toFixed(1)} kg "” {getStockStatus(parseFloat(newStock)).label}
+          <button className="cbc-dialog-close" onClick={() => { setShowStockModal(false); setSelectedBean(null); setNewStock(''); }}>&times;</button>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          <div className="cbc-dialog-body">
+            <p style={{ fontWeight: 700, marginBottom: '.75rem', color: '#1A1A1A' }}>{selectedBean?.name}</p>
+            <div className="cbc-form-group" style={{ marginBottom: '.75rem' }}>
+              <label className="cbc-label">Current Stock</label>
+              <input className="cbc-input readonly" readOnly value={`${selectedBean?.stock_quantity ?? 0} kg`} />
             </div>
-          )}
-        </div>
-        <div className="cbc-dialog-footer">
-          <button className="cbc-btn secondary" onClick={() => { setShowStockModal(false); setSelectedBean(null); setNewStock(''); }}>Cancel</button>
-          <button
-            className="cbc-btn primary"
-            onClick={updateBeanStock}
-            disabled={updatingStock || newStock === ''}
-          >
-            {updatingStock ? <FaSpinner className="cbc-spin" size={13} /> : <FaEdit size={13} />}
-            Update Stock
-          </button>
-        </div>
-      </Modal>
+            <div className="cbc-form-group">
+              <label className="cbc-label">New Stock Quantity (kg)<span>*</span></label>
+              <input
+                className="cbc-input"
+                type="number"
+                step="0.1"
+                min="0"
+                value={newStock}
+                onChange={e => setNewStock(e.target.value)}
+                placeholder="e.g. 12.5"
+                autoFocus
+              />
+              <span className="cbc-hint">Enter the new stock quantity in kilograms</span>
+            </div>
+            {newStock !== '' && (
+              <div className={`cbc-stock-indicator ${getStockStatus(parseFloat(newStock)).cls}`}>
+                <FaExclamationTriangle size={14} />
+                Will set to {parseFloat(newStock || 0).toFixed(1)} kg "” {getStockStatus(parseFloat(newStock)).label}
+              </div>
+            )}
+          </div>
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+          <div className="cbc-dialog-footer">
+            <button className="cbc-btn secondary" onClick={() => { setShowStockModal(false); setSelectedBean(null); setNewStock(''); }}>Cancel</button>
+            <button
+              className="cbc-btn primary"
+              onClick={updateBeanStock}
+              disabled={updatingStock || newStock === ''}
+            >
+              {updatingStock ? <FaSpinner className="cbc-spin" size={13} /> : <FaEdit size={13} />}
+              Update Stock
+            </button>
+          </div>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
 
       {/* â”€â”€ Add Bean Modal â”€â”€ */}
-      <Modal show={showAddModal} onClose={() => { setShowAddModal(false); setNewBeanForm(EMPTY_BEAN_FORM); setSelectedImage(null); setImagePreview(null); }} size="lg">
-        <div className="cbc-dialog-head">
+      <ResponsiveModal show={showAddModal} onHide={() => { setShowAddModal(false); setNewBeanForm(EMPTY_BEAN_FORM); setSelectedImage(null); setImagePreview(null); }} size="lg">
+        <ResponsiveModal.Header>
           <h2 className="cbc-dialog-title"><FaPlus size={14} /> Add New Coffee Bean</h2>
-          <button className="cbc-dialog-close" onClick={() => { setShowAddModal(false); setNewBeanForm(EMPTY_BEAN_FORM); setSelectedImage(null); setImagePreview(null); }}>✕</button>
-        </div>
-        <div className="cbc-dialog-body">
-          <div className="cbc-form-grid">
-            <div className="cbc-form-group">
-              <label className="cbc-label">Bean Name<span>*</span></label>
-              <input className="cbc-input" type="text" placeholder="e.g. Ethiopian Yirgacheffe"
-                value={newBeanForm.name} onChange={e => setNewBeanForm(p => ({...p, name: e.target.value}))} />
-            </div>
-            <div className="cbc-form-group">
-              <label className="cbc-label">Origin Country<span>*</span></label>
-              <input className="cbc-input" type="text" placeholder="e.g. Ethiopia"
-                value={newBeanForm.origin_country} onChange={e => setNewBeanForm(p => ({...p, origin_country: e.target.value}))} />
-            </div>
-            <div className="cbc-form-group">
-              <label className="cbc-label">Region</label>
-              <input className="cbc-input" type="text" placeholder="e.g. Sidamo"
-                value={newBeanForm.region} onChange={e => setNewBeanForm(p => ({...p, region: e.target.value}))} />
-            </div>
-            <div className="cbc-form-group">
-              <label className="cbc-label">Elevation</label>
-              <input className="cbc-input" type="text" placeholder="e.g. 1800–2200m"
-                value={newBeanForm.elevation} onChange={e => setNewBeanForm(p => ({...p, elevation: e.target.value}))} />
-            </div>
-            <div className="cbc-form-group">
-              <label className="cbc-label">Processing Method</label>
-              <input className="cbc-input" type="text" placeholder="e.g. Washed, Natural"
-                value={newBeanForm.processing_method} onChange={e => setNewBeanForm(p => ({...p, processing_method: e.target.value}))} />
-            </div>
-            <div className="cbc-form-group">
-              <label className="cbc-label">Variety</label>
-              <input className="cbc-input" type="text" placeholder="e.g. Heirloom"
-                value={newBeanForm.variety} onChange={e => setNewBeanForm(p => ({...p, variety: e.target.value}))} />
-            </div>
-            <div className="cbc-form-group">
-              <label className="cbc-label">Producer</label>
-              <input className="cbc-input" type="text" placeholder="e.g. Local Cooperative"
-                value={newBeanForm.producer} onChange={e => setNewBeanForm(p => ({...p, producer: e.target.value}))} />
-            </div>
-            <div className="cbc-form-group">
-              <label className="cbc-label">Initial Stock (kg)<span>*</span></label>
-              <input className="cbc-input" type="number" step="0.1" min="0" placeholder="0"
-                value={newBeanForm.stock_quantity}
-                onChange={e => setNewBeanForm(p => ({...p, stock_quantity: parseFloat(e.target.value) || 0}))} />
-            </div>
-            <div className="cbc-form-group span2">
-              <label className="cbc-label">Tasting Notes</label>
-              <textarea className="cbc-textarea" rows={3} placeholder="e.g. Floral, Citrus, Bergamot"
-                value={newBeanForm.tasting_notes} onChange={e => setNewBeanForm(p => ({...p, tasting_notes: e.target.value}))} />
-            </div>
-            <div className="cbc-form-group span2">
-              <label className="cbc-label">Coffee Bean Image</label>
-              <div className="cbc-file-drop" onClick={() => fileInputRef.current?.click()}>
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} />
-                <FaCoffee size={22} style={{ color: '#9ca3af', display: 'block', margin: '0 auto .4rem' }} />
-                <p>Click to upload image (JPG, PNG "” max 2MB)</p>
+          <button className="cbc-dialog-close" onClick={() => { setShowAddModal(false); setNewBeanForm(EMPTY_BEAN_FORM); setSelectedImage(null); setImagePreview(null); }}>&times;</button>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          <div className="cbc-dialog-body">
+            <div className="cbc-form-grid">
+              <div className="cbc-form-group">
+                <label className="cbc-label">Bean Name<span>*</span></label>
+                <input className="cbc-input" type="text" placeholder="e.g. Ethiopian Yirgacheffe"
+                  value={newBeanForm.name} onChange={e => setNewBeanForm(p => ({...p, name: e.target.value}))} />
               </div>
-              {imagePreview && <img className="cbc-img-preview" src={imagePreview} alt="Preview" loading="lazy" />}
-            </div>
-            <div className="cbc-form-group span2">
-              <label className="cbc-checkbox-row">
-                <input type="checkbox" checked={newBeanForm.is_featured}
-                  onChange={e => setNewBeanForm(p => ({...p, is_featured: e.target.checked}))} />
-                Mark as Featured Bean
-              </label>
+              <div className="cbc-form-group">
+                <label className="cbc-label">Origin Country<span>*</span></label>
+                <input className="cbc-input" type="text" placeholder="e.g. Ethiopia"
+                  value={newBeanForm.origin_country} onChange={e => setNewBeanForm(p => ({...p, origin_country: e.target.value}))} />
+              </div>
+              <div className="cbc-form-group">
+                <label className="cbc-label">Region</label>
+                <input className="cbc-input" type="text" placeholder="e.g. Sidamo"
+                  value={newBeanForm.region} onChange={e => setNewBeanForm(p => ({...p, region: e.target.value}))} />
+              </div>
+              <div className="cbc-form-group">
+                <label className="cbc-label">Elevation</label>
+                <input className="cbc-input" type="text" placeholder="e.g. 1800–2200m"
+                  value={newBeanForm.elevation} onChange={e => setNewBeanForm(p => ({...p, elevation: e.target.value}))} />
+              </div>
+              <div className="cbc-form-group">
+                <label className="cbc-label">Processing Method</label>
+                <input className="cbc-input" type="text" placeholder="e.g. Washed, Natural"
+                  value={newBeanForm.processing_method} onChange={e => setNewBeanForm(p => ({...p, processing_method: e.target.value}))} />
+              </div>
+              <div className="cbc-form-group">
+                <label className="cbc-label">Variety</label>
+                <input className="cbc-input" type="text" placeholder="e.g. Heirloom"
+                  value={newBeanForm.variety} onChange={e => setNewBeanForm(p => ({...p, variety: e.target.value}))} />
+              </div>
+              <div className="cbc-form-group">
+                <label className="cbc-label">Producer</label>
+                <input className="cbc-input" type="text" placeholder="e.g. Local Cooperative"
+                  value={newBeanForm.producer} onChange={e => setNewBeanForm(p => ({...p, producer: e.target.value}))} />
+              </div>
+              <div className="cbc-form-group">
+                <label className="cbc-label">Initial Stock (kg)<span>*</span></label>
+                <input className="cbc-input" type="number" step="0.1" min="0" placeholder="0"
+                  value={newBeanForm.stock_quantity}
+                  onChange={e => setNewBeanForm(p => ({...p, stock_quantity: parseFloat(e.target.value) || 0}))} />
+              </div>
+              <div className="cbc-form-group span2">
+                <label className="cbc-label">Tasting Notes</label>
+                <textarea className="cbc-textarea" rows={3} placeholder="e.g. Floral, Citrus, Bergamot"
+                  value={newBeanForm.tasting_notes} onChange={e => setNewBeanForm(p => ({...p, tasting_notes: e.target.value}))} />
+              </div>
+              <div className="cbc-form-group span2">
+                <label className="cbc-label">Coffee Bean Image</label>
+                <div className="cbc-file-drop" onClick={() => fileInputRef.current?.click()}>
+                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} />
+                  <FaCoffee size={22} style={{ color: '#9ca3af', display: 'block', margin: '0 auto .4rem' }} />
+                  <p>Click to upload image (JPG, PNG "” max 2MB)</p>
+                </div>
+                {imagePreview && <img className="cbc-img-preview" src={imagePreview} alt="Preview" loading="lazy" />}
+              </div>
+              <div className="cbc-form-group span2">
+                <label className="cbc-checkbox-row">
+                  <input type="checkbox" checked={newBeanForm.is_featured}
+                    onChange={e => setNewBeanForm(p => ({...p, is_featured: e.target.checked}))} />
+                  Mark as Featured Bean
+                </label>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="cbc-dialog-footer">
-          <button className="cbc-btn secondary" onClick={() => { setShowAddModal(false); setNewBeanForm(EMPTY_BEAN_FORM); setSelectedImage(null); setImagePreview(null); }}>Cancel</button>
-          <button
-            className="cbc-btn success"
-            onClick={addCoffeeBean}
-            disabled={addingBean || !newBeanForm.name || !newBeanForm.origin_country}
-          >
-            {addingBean ? <FaSpinner className="cbc-spin" size={13} /> : <FaPlus size={13} />}
-            {addingBean ? 'Adding…' : 'Add Coffee Bean'}
-          </button>
-        </div>
-      </Modal>
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+          <div className="cbc-dialog-footer">
+            <button className="cbc-btn secondary" onClick={() => { setShowAddModal(false); setNewBeanForm(EMPTY_BEAN_FORM); setSelectedImage(null); setImagePreview(null); }}>Cancel</button>
+            <button
+              className="cbc-btn success"
+              onClick={addCoffeeBean}
+              disabled={addingBean || !newBeanForm.name || !newBeanForm.origin_country}
+            >
+              {addingBean ? <FaSpinner className="cbc-spin" size={13} /> : <FaPlus size={13} />}
+              {addingBean ? 'Adding…' : 'Add Coffee Bean'}
+            </button>
+          </div>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
 
       {/* â”€â”€ Archive Modal â”€â”€ */}
-      <Modal show={showArchiveModal} onClose={() => { setShowArchiveModal(false); setBeanToArchive(null); }} size="sm">
-        <div className="cbc-dialog-head">
+      <ResponsiveModal show={showArchiveModal} onHide={() => { setShowArchiveModal(false); setBeanToArchive(null); }} size="sm">
+        <ResponsiveModal.Header>
           <h2 className="cbc-dialog-title"><FaArchive size={14} /> Archive Bean</h2>
-          <button className="cbc-dialog-close" onClick={() => { setShowArchiveModal(false); setBeanToArchive(null); }}>✕</button>
-        </div>
-        <div className="cbc-dialog-body">
-          <div className="cbc-warn-box">
-            <FaExclamationTriangle size={18} />
-            <p>Are you sure you want to archive <strong>{beanToArchive?.name}</strong>? This will remove it from active inventory. It can be restored by an administrator.</p>
+          <button className="cbc-dialog-close" onClick={() => { setShowArchiveModal(false); setBeanToArchive(null); }}>&times;</button>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          <div className="cbc-dialog-body">
+            <div className="cbc-warn-box">
+              <FaExclamationTriangle size={18} />
+              <p>Are you sure you want to archive <strong>{beanToArchive?.name}</strong>? This will remove it from active inventory. It can be restored by an administrator.</p>
+            </div>
           </div>
-        </div>
-        <div className="cbc-dialog-footer">
-          <button className="cbc-btn secondary" onClick={() => { setShowArchiveModal(false); setBeanToArchive(null); }}>Cancel</button>
-          <button className="cbc-btn danger" onClick={archiveCoffeeBean} disabled={archiving}>
-            {archiving ? <FaSpinner className="cbc-spin" size={13} /> : <FaArchive size={13} />}
-            {archiving ? 'Archiving…' : 'Archive Bean'}
-          </button>
-        </div>
-      </Modal>
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+          <div className="cbc-dialog-footer">
+            <button className="cbc-btn secondary" onClick={() => { setShowArchiveModal(false); setBeanToArchive(null); }}>Cancel</button>
+            <button className="cbc-btn danger" onClick={archiveCoffeeBean} disabled={archiving}>
+              {archiving ? <FaSpinner className="cbc-spin" size={13} /> : <FaArchive size={13} />}
+              {archiving ? 'Archiving…' : 'Archive Bean'}
+            </button>
+          </div>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
 
       {/* â”€â”€ Featured Origin Modal â”€â”€ */}
-      <Modal show={showFeaturedModal} onClose={() => { setShowFeaturedModal(false); setFeaturedForm(EMPTY_FEATURED_FORM); }} size="lg">
-        <div className="cbc-dialog-head">
+      <ResponsiveModal show={showFeaturedModal} onHide={() => { setShowFeaturedModal(false); setFeaturedForm(EMPTY_FEATURED_FORM); }} size="lg">
+        <ResponsiveModal.Header>
           <h2 className="cbc-dialog-title"><FaStar size={14} /> Set Featured Origin</h2>
-          <button className="cbc-dialog-close" onClick={() => { setShowFeaturedModal(false); setFeaturedForm(EMPTY_FEATURED_FORM); }}>✕</button>
-        </div>
-        <div className="cbc-dialog-body">
-          <div className="cbc-form-grid">
-            <div className="cbc-form-group">
-              <label className="cbc-label">Coffee Bean<span>*</span></label>
-              <select className="cbc-select"
-                value={featuredForm.coffee_bean_id}
-                onChange={e => setFeaturedForm(p => ({...p, coffee_bean_id: e.target.value}))}
-              >
-                <option value="">Select a coffee bean…</option>
-                {availableBeans.map(b => (
-                  <option key={b.id} value={b.id}>{b.name} – {b.origin_country}{b.region ? `, ${b.region}` : ''}</option>
-                ))}
-              </select>
-            </div>
-            <div className="cbc-form-group">
-              <label className="cbc-label">Feature Date<span>*</span></label>
-              <input className="cbc-input" type="date" min={todayStr()}
-                value={featuredForm.feature_date}
-                onChange={e => setFeaturedForm(p => ({...p, feature_date: e.target.value}))} />
-            </div>
-            <div className="cbc-form-group">
-              <label className="cbc-label">Start Time</label>
-              <input className="cbc-input" type="time"
-                value={featuredForm.start_time}
-                onChange={e => setFeaturedForm(p => ({...p, start_time: e.target.value}))} />
-            </div>
-            <div className="cbc-form-group">
-              <label className="cbc-label">End Time</label>
-              <input className="cbc-input" type="time"
-                value={featuredForm.end_time}
-                onChange={e => setFeaturedForm(p => ({...p, end_time: e.target.value}))} />
-            </div>
-            <div className="cbc-form-group span2">
-              <label className="cbc-label">Promotion Text</label>
-              <textarea className="cbc-textarea" rows={2} placeholder="e.g. Special 20% discount today!"
-                value={featuredForm.promotion_text}
-                onChange={e => setFeaturedForm(p => ({...p, promotion_text: e.target.value}))} />
-            </div>
-            <div className="cbc-form-group span2">
-              <label className="cbc-label">Special Notes (internal)</label>
-              <textarea className="cbc-textarea" rows={2} placeholder="Internal notes about this featured origin"
-                value={featuredForm.special_notes}
-                onChange={e => setFeaturedForm(p => ({...p, special_notes: e.target.value}))} />
-            </div>
-            <div className="cbc-form-group span2">
-              <label className="cbc-checkbox-row">
-                <input type="checkbox" checked={featuredForm.is_active}
-                  onChange={e => setFeaturedForm(p => ({...p, is_active: e.target.checked}))} />
+          <button className="cbc-dialog-close" onClick={() => { setShowFeaturedModal(false); setFeaturedForm(EMPTY_FEATURED_FORM); }}>&times;</button>
+        </ResponsiveModal.Header>
+        <ResponsiveModal.Body>
+          <div className="cbc-dialog-body">
+            <div className="cbc-form-grid">
+              <div className="cbc-form-group">
+                <label className="cbc-label">Coffee Bean<span>*</span></label>
+                <select className="cbc-select"
+                  value={featuredForm.coffee_bean_id}
+                  onChange={e => setFeaturedForm(p => ({...p, coffee_bean_id: e.target.value}))}
+                >
+                  <option value="">Select a coffee bean…</option>
+                  {availableBeans.map(b => (
+                    <option key={b.id} value={b.id}>{b.name} – {b.origin_country}{b.region ? `, ${b.region}` : ''}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="cbc-form-group">
+                <label className="cbc-label">Feature Date<span>*</span></label>
+                <input className="cbc-input" type="date" min={todayStr()}
+                  value={featuredForm.feature_date}
+                  onChange={e => setFeaturedForm(p => ({...p, feature_date: e.target.value}))} />
+              </div>
+              <div className="cbc-form-group">
+                <label className="cbc-label">Start Time</label>
+                <input className="cbc-input" type="time"
+                  value={featuredForm.start_time}
+                  onChange={e => setFeaturedForm(p => ({...p, start_time: e.target.value}))} />
+              </div>
+              <div className="cbc-form-group">
+                <label className="cbc-label">End Time</label>
+                <input className="cbc-input" type="time"
+                  value={featuredForm.end_time}
+                  onChange={e => setFeaturedForm(p => ({...p, end_time: e.target.value}))} />
+              </div>
+              <div className="cbc-form-group span2">
+                <label className="cbc-label">Promotion Text</label>
+                <textarea className="cbc-textarea" rows={2} placeholder="e.g. Special 20% discount today!"
+                  value={featuredForm.promotion_text}
+                  onChange={e => setFeaturedForm(p => ({...p, promotion_text: e.target.value}))} />
+              </div>
+              <div className="cbc-form-group span2">
+                <label className="cbc-label">Special Notes (internal)</label>
+                <textarea className="cbc-textarea" rows={2} placeholder="Internal notes about this featured origin"
+                  value={featuredForm.special_notes}
+                  onChange={e => setFeaturedForm(p => ({...p, special_notes: e.target.value}))} />
+              </div>
+              <div className="cbc-form-group span2">
+                <label className="cbc-checkbox-row">
+                  <input type="checkbox" checked={featuredForm.is_active}
+                    onChange={e => setFeaturedForm(p => ({...p, is_active: e.target.checked}))} />
                 Active (visible to customers)
               </label>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="cbc-dialog-footer">
-          <button className="cbc-btn secondary" onClick={() => { setShowFeaturedModal(false); setFeaturedForm(EMPTY_FEATURED_FORM); }}>Cancel</button>
-          <button
-            className="cbc-btn amber"
-            onClick={createFeaturedOrigin}
-            disabled={creatingFeatured || !featuredForm.coffee_bean_id}
-          >
-            {creatingFeatured ? <FaSpinner className="cbc-spin" size={13} /> : <FaStar size={13} />}
-            {creatingFeatured ? 'Creating…' : 'Set as Featured'}
-          </button>
-        </div>
-      </Modal>
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+          <div className="cbc-dialog-footer">
+            <button className="cbc-btn secondary" onClick={() => { setShowFeaturedModal(false); setFeaturedForm(EMPTY_FEATURED_FORM); }}>Cancel</button>
+            <button
+              className="cbc-btn amber"
+              onClick={createFeaturedOrigin}
+              disabled={creatingFeatured || !featuredForm.coffee_bean_id}
+            >
+              {creatingFeatured ? <FaSpinner className="cbc-spin" size={13} /> : <FaStar size={13} />}
+              {creatingFeatured ? 'Creating…' : 'Set as Featured'}
+            </button>
+          </div>
+        </ResponsiveModal.Footer>
+      </ResponsiveModal>
 
     </div>
   );

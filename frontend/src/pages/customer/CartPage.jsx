@@ -1,5 +1,11 @@
 import React from 'react';
-import { Row, Col, Card, Button, Table } from 'react-bootstrap';
+import {
+  ResponsiveRow,
+  ResponsiveCol,
+  ResponsiveCard,
+  ResponsiveButton,
+  ResponsiveTable
+} from '@/components/responsive';
 import { Link } from 'react-router-dom';
 import PageShell from '../../components/layout/PageShell';
 import PullToRefresh from '../../components/mobile/PullToRefresh';
@@ -25,8 +31,8 @@ const CartPage = () => {
   return (
     <PageShell title="Shopping Cart" subtitle={`${cartCount} ${cartCount === 1 ? 'item' : 'items'} in cart`}>
       <PullToRefresh onRefresh={reloadCart}>
-        <Row>
-          <Col lg={8}>
+        <ResponsiveRow>
+          <ResponsiveCol lg={8}>
             <Card className="shadow-sm mb-4">
               <Card.Body>
                 <Table responsive aria-label="Shopping cart items">
@@ -85,7 +91,7 @@ const CartPage = () => {
               </Card.Body>
             </Card>
           </Col>
-          <Col lg={4}>
+          <ResponsiveCol lg={4}>
             <Card className="shadow-sm sticky-top" style={{ top: '100px' }}>
               <Card.Header className="bg-primary text-white">
                 <h5 className="mb-0">Order Summary</h5>

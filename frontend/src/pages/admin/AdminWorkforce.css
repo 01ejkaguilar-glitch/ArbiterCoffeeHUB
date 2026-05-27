@@ -894,6 +894,338 @@
   .wf-toolbar { flex-direction: column; align-items: stretch; }
   .wf-toolbar-right { margin-left: 0; }
 }
+@media (max-width: 639px) {
+  /* Extra small screens - prioritize vertical scrolling, enhance touch targets */
+
+  /* Stat grid - single column for better vertical flow */
+  .wf-stat-grid {
+    grid-template-columns: 1fr;
+    gap: .75rem;
+  }
+
+  /* Form rows - single column */
+  .wf-form-row.col-2, .wf-form-row.col-3, .wf-form-row.col-1-2, .wf-form-row.col-3-1, .wf-form-row.wf-2col {
+    grid-template-columns: 1fr;
+  }
+
+  /* Info grid - single column */
+  .wf-info-grid {
+    grid-template-columns: 1fr;
+    gap: .75rem;
+  }
+
+  /* Task grid - single column */
+  .wf-task-grid {
+    grid-template-columns: 1fr;
+    gap: .75rem;
+  }
+
+  /* Toolbar - stack elements vertically */
+  .wf-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .75rem;
+  }
+
+  .wf-toolbar-right {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .wf-search-wrap {
+    min-width: 0;
+    max-width: none;
+  }
+
+  .wf-select {
+    width: 100%;
+    margin-bottom: .5rem;
+  }
+
+  .wf-filter-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .5rem;
+    margin-left: 0;
+  }
+
+  .wf-filter-actions .wf-btn {
+    width: 100%;
+  }
+
+  /* Table - card-based layout for better vertical scrolling */
+  .wf-table-card {
+    overflow-x: hidden;
+  }
+
+  .wf-table {
+    min-width: 100%;
+    display: block;
+  }
+
+  .wf-table thead {
+    display: none;
+  }
+
+  .wf-table tbody {
+    display: block;
+  }
+
+  .wf-table tr {
+    display: block;
+    margin-bottom: var(--spacing-3);
+    border-radius: var(--radius-md);
+    background-color: var(--color-white);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+  }
+
+  .wf-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--border-light);
+    position: relative;
+  }
+
+  .wf-table td:last-child {
+    border-bottom: none;
+  }
+
+  .wf-table td::before {
+    content: attr(data-label);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    width: 40%;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Touch-friendly action buttons */
+  .wf-icon-btn,
+  .wf-action-btn {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Pagination - center aligned */
+  .wf-pagination {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: .75rem;
+  }
+
+  .wf-page-btn {
+    min-width: 48px;
+    height: 48px;
+  }
+
+  /* Modals - full screen for critical actions */
+  .wf-modal {
+    margin: 0;
+    width: 100%;
+    height: 100vh;
+    max-width: none !important;
+  }
+
+  .wf-modal-overlay {
+    inset: 0;
+  }
+
+  .wf-modal-dialog {
+    width: 100%;
+    max-width: none !important;
+    height: 100%;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .wf-modal-content {
+    height: 100%;
+    border-radius: 0;
+  }
+
+  .wf-modal-body {
+    overflow-y: auto;
+    padding-bottom: calc(var(--spacing-4) + env(safe-area-inset-bottom, 0));
+  }
+
+  .wf-modal-foot {
+    position: sticky;
+    bottom: 0;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  /* Employee cell - enhance for touch */
+  .wf-emp-num {
+    width: 48px;
+    height: 48px;
+  }
+
+  .wf-emp-name {
+    width: 100%;
+  }
+
+  .wf-emp-sub {
+    width: 100%;
+    text-align: left;
+  }
+
+  /* Status badges - full width */
+  .wf-badge {
+    min-width: 48px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Empty state - enhanced spacing */
+  .wf-empty {
+    gap: .75rem;
+    padding: 2.5rem;
+  }
+
+  .wf-empty-icon {
+    font-size: 3rem;
+  }
+
+  .wf-empty-text {
+    font-size: 1.1rem;
+  }
+
+  .wf-empty-sub {
+    font-size: .9rem;
+  }
+
+  /* Loading - enhanced spacing */
+  .wf-loading {
+    gap: 1rem;
+    padding: 3rem;
+  }
+
+  /* Spinner size */
+  .wf-spinner {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Week navigation - adjust for small screens */
+  .wf-week-nav {
+    flex-wrap: wrap;
+  }
+
+  .wf-week-label {
+    width: 100%;
+    text-align: left;
+    margin-bottom: .5rem;
+  }
+
+  .wf-week-col {
+    flex: 1 0 calc(20% - .2rem);
+    margin-bottom: .5rem;
+  }
+
+  .wf-week-header {
+    margin-bottom: .5rem;
+  }
+
+  .wf-week-day-num {
+    width: 100%;
+  }
+
+  /* Shift chip - touch-friendly */
+  .wf-shift-chip {
+    padding: .5rem .75rem;
+  }
+
+  .wf-shift-chip-name {
+    width: 100%;
+  }
+
+  .wf-shift-chip-time {
+    width: 100%;
+    text-align: left;
+  }
+
+  .wf-shift-chip-actions {
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+
+  .wf-shift-chip-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  /* Task card - enhanced padding */
+  .wf-task-card {
+    padding: 1rem 1.25rem;
+  }
+
+  .wf-task-head {
+    padding: .75rem 1rem;
+  }
+
+  .wf-task-body {
+    padding: .875rem 1rem;
+  }
+
+  .wf-task-foot {
+    padding: .6rem 1rem;
+  }
+
+  /* Dot menu - adjust positioning */
+  .wf-dot-dropdown {
+    min-width: 150px;
+  }
+
+  /* Confirm dialog - full screen */
+  .wf-confirm-overlay {
+    inset: 0;
+  }
+
+  .wf-confirm-box {
+    width: 100%;
+    max-width: none !important;
+    height: 100vh;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .wf-confirm-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .wf-confirm-title {
+    font-size: 1.2rem;
+  }
+
+  .wf-confirm-msg {
+    font-size: 1rem;
+  }
+
+  .wf-confirm-actions {
+    padding: var(--spacing-4);
+  }
+
+  /* Section title */
+  .wf-section-title {
+    padding: .5rem 0 .5rem .75rem;
+  }
+
+  /* Overdue chip */
+  .wf-overdue-chip {
+    padding: .2rem .6rem;
+  }
+}
 @media (max-width: 576px) {
   .wf-stat-grid { grid-template-columns: repeat(2, 1fr); gap: .6rem; }
   .wf-stat-card { padding: .65rem .75rem; gap: .6rem; }

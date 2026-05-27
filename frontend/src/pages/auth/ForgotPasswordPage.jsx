@@ -5,6 +5,12 @@ import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import { FadeIn, SlideInUp } from '../../components/animations/AnimationWrappers';
 import './Auth.css';
+import {
+  ResponsiveButton,
+  ResponsiveContainer,
+  ResponsiveForm,
+  ResponsiveAlert,
+} from '@/components/responsive';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
@@ -58,7 +64,7 @@ const ForgotPasswordPage = () => {
 
       {/* ── Form Panel ── */}
       <div className="auth-form-panel">
-        <div className="auth-form-container">
+        <ResponsiveContainer className="auth-form-container">
           <FadeIn duration={0.3}>
             {/* Mobile brand header */}
             <div className="auth-mobile-brand">
@@ -77,21 +83,13 @@ const ForgotPasswordPage = () => {
                   </header>
 
                   {error && (
-                    <div className="auth-alert auth-alert--error" role="alert">
-                      <FaExclamationCircle className="auth-alert-icon" aria-hidden="true" />
-                      <span>{error}</span>
-                      <button
-                        type="button"
-                        className="auth-alert-dismiss"
-                        onClick={() => setError('')}
-                        aria-label="Dismiss error"
-                      >
-                        <FaTimes />
-                      </button>
-                    </div>
+                    <ResponsiveAlert variant="danger" onClose={() => setError('')} dismissible>
+                      <FaExclamationCircle className="me-2" />
+                      {error}
+                    </ResponsiveAlert>
                   )}
 
-                  <form onSubmit={handleSubmit} aria-labelledby="forgot-heading" noValidate>
+                  <ResponsiveForm onSubmit={handleSubmit} aria-labelledby="forgot-heading" noValidate>
                     <div className="auth-field">
                       <label htmlFor="forgot-email" className="auth-field-label">
                         <FaEnvelope aria-hidden="true" />
@@ -111,9 +109,10 @@ const ForgotPasswordPage = () => {
                       />
                     </div>
 
-                    <button
+                    <ResponsiveButton
                       type="submit"
-                      className="auth-submit-btn"
+                      variant="primary"
+                      size="lg"
                       disabled={loading || !email}
                     >
                       {loading ? (
@@ -124,8 +123,8 @@ const ForgotPasswordPage = () => {
                       ) : (
                         'Send Reset Link'
                       )}
-                    </button>
-                  </form>
+                    </ResponsiveButton>
+                  </ResponsiveForm>
                 </>
               ) : (
                 /* ── Success State ── */
@@ -159,7 +158,7 @@ const ForgotPasswordPage = () => {
               </p>
             </SlideInUp>
           </FadeIn>
-        </div>
+        </ResponsiveContainer>
       </div>
     </main>
   );

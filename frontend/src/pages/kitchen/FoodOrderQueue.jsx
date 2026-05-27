@@ -8,6 +8,13 @@ import { API_ENDPOINTS } from '../../config/api';
 import apiService from '../../services/api.service';
 import { useKitchenOrders } from '../../hooks/useBroadcast';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
+import {
+  ResponsiveButton,
+  ResponsiveCard,
+  ResponsiveContainer,
+  ResponsiveCol,
+  ResponsiveRow,
+} from '@/components/responsive';
 import './FoodOrderQueue.css';
 
 const POLL_INTERVAL = 30000; // 30 s fallback polling
@@ -58,50 +65,62 @@ const COLUMNS = [
 // ─ Order Card ──────────────────────────────────────────────────────────────────────
 const FoodOrderCard = ({ order, timer, updatingOrder, onUpdateStatus, formatElapsedTime }) => {
   const statusActions = {
-    pending:   [{ label: 'Confirm', status: 'confirmed', cls: 'confirm' }, { label: 'Start Prep', status: 'preparing', cls: 'prepare' }],
-    confirmed: [{ label: 'Start Prep', status: 'preparing', cls: 'prepare' }],
-    preparing: [{ label: 'Mark Ready', status: 'ready', cls: 'ready' }],
-    ready:     [{ label: 'Complete', status: 'completed', cls: 'complete' }],
+    pending:   [{ label: 'Confirm', status: 'confirmed' }, { label: 'Start Prep', status: 'preparing' }],
+    confirmed: [{ label: 'Start Prep', status: 'preparing' }],
+    preparing: [{ label: 'Mark Ready', status: 'ready' }],
+    ready:     [{ label: 'Complete', status: 'completed' }],
   };
   const actions = statusActions[order.status] || [];
 
   return (
-    <div className={`foq-order-card ${order.status}`}>
-      <div className="foq-order-header">
-        <span className="foq-order-num">#{order.order_number || order.id}</span>
-        <span className={`foq-order-type ${order.order_type || 'dine_in'}`}>
-          {(order.order_type || 'dine_in').replace('_', ' ')}
-        </span>
-      </div>
-      <div className="foq-order-customer">
-        {order.user?.name || order.customer_name || 'Guest'}
-      </div>
-      <div className="foq-order-items-list">
-        {(order.order_items || order.orderItems || []).map((item, idx) => (
-          <div key={idx} className="foq-order-item-row">
-            <span className="foq-item-qty">{item.quantity}×</span>
-            <span className="foq-item-name">{item.product?.name || item.product_name || 'Item'}</span>
-          </div>
-        ))}
-      </div>
-      {timer && order.status === 'preparing' && (
-        <div className="foq-timer">
-          <FaClock size={11} /> {formatElapsedTime(timer.elapsed)}
+    <ResponsiveCard className={`border-0 shadow-sm h-100 ${order.status}`} className={`foq-order-card ${order.status}`}>
+      <ResponsiveCard.Header className="foq-order-header d-flex justify-content-between align-items-center">
+        <div className="d-flex align-items-center">
+          <span className="foq-order-num">#{order.order_number || order.id}</span>
+          <span className={`foq-order-type ${order.order_type || 'dine_in'}`}>
+            {(order.order_type || 'dine_in').replace('_', ' ')}
+          </span>
         </div>
-      )}
-      <div className="foq-order-actions">
-        {actions.map((act) => (
-          <button
-            key={act.status}
-            className={`foq-action-btn ${act.cls}`}
-            onClick={() => onUpdateStatus(order.id, act.status)}
-            disabled={updatingOrder === order.id}
-          >
-            {updatingOrder === order.id ? '…' : act.label}
-          </button>
-        ))}
-      </div>
-    </div>
+        {timer && order.status === 'preparing' && (
+          <div className="d-flex align-items-center">
+            <FaClock size={11} /> {formatElapsedTime(timer.elapsed)}
+          </div>
+        )}
+      </ResponsiveCard.Header>
+      <ResponsiveCard.Body className="p-3">
+        <div className="foq-order-customer">
+          {order.user?.name || order.customer_name || 'Guest'}
+        </div>
+        <div className="foq-order-items-list">
+          {(order.order_items || order.orderItems || []).map((item, idx) => (
+            <div key={idx} className="foq-order-item-row d-flex justify-content-between">
+              <span className="foq-item-qty">{item.quantity}×</span>
+              <span className="foq-item-name">{item.product?.name || item.product_name || 'Item'}</span>
+            </div>
+          ))}
+        </div>
+        <ResponsiveCard.Footer className="p-3 foq-order-actions">
+          <div className="d-flex gap-2">
+            {actions.map((act) => (
+              <ResponsiveButton
+                key={act.status}
+                variant={act.status === 'confirmed' ? 'success' : act.status === 'preparing' ? 'primary' : 'info'}
+                size="sm"
+                onClick={() => onUpdateStatus(order.id, act.status)}
+                disabled={updatingOrder === order.id}
+              >
+                {updatingOrder === order.id ? <><FaSync className="fa-spin" /> </> : act.label}
+              </ResponsiveButton>
+            ))}
+            {order.status !== 'completed' && order.status !== 'cancelled' && (
+              <ResponsiveButton variant="danger" size="sm" onClick={() => onUpdateStatus(order.id, 'cancelled')} disabled={updatingOrder === order.id}>
+                {updatingOrder === order.id ? <><FaSync className="fa-spin" /> </> : 'Cancel'}
+              </ResponsiveButton>
+            )}
+          </div>
+        </ResponsiveCard.Footer>
+      </ResponsiveCard.Body>
+    </ResponsiveCard>
   );
 };
 
@@ -268,53 +287,74 @@ const FoodOrderQueue = () => {
       </div>
 
       {/* Summary pills */}
-      <div className="foq-summary">
-        {COLUMNS.map(col => (
-          <span key={col.key} className={`foq-summary-pill ${col.key}`}>
-            {col.icon}
-            {col.label}
-            <span className="foq-count">{(orders[col.ordersKey] || []).length}</span>
-          </span>
-        ))}
-        <span className="foq-summary-pill" style={{ background: '#f3f4f6', color: '#374151', borderColor: '#d1d5db' }}>
-          Total active: <span className="foq-count">{totalActive}</span>
-        </span>
-      </div>
+      <ResponsiveContainer className="mb-4">
+        <ResponsiveRow className="g-4 justify-content-center">
+          {COLUMNS.map(col => (
+            <ResponsiveCol md={3} sm={6} key={col.key}>
+              <div className={`text-center p-3 border rounded ${col.key === 'pending' ? 'border-warning' :
+                                col.key === 'confirmed' ? 'border-success' :
+                                col.key === 'preparing' ? 'border-info' :
+                                col.key === 'ready' ? 'border-success' : 'border-light'} `}>
+                {col.icon}
+                <h6 className="mt-3 mb-1">{col.label}</h6>
+                <span className="fs-4 fw-bold">{orders[col.ordersKey]?.length}</span>
+              </div>
+            </ResponsiveCol>
+          ))}
+          <ResponsiveCol md={3} sm={6}>
+            <div className="text-center p-3 border rounded bg-light">
+              Total active: <span className="fs-4 fw-bold">{totalActive}</span>
+            </div>
+          </ResponsiveCol>
+        </ResponsiveRow>
+      </ResponsiveContainer>
 
       {/* Kanban board */}
-      <div className="foq-board">
-        {COLUMNS.map(col => {
-          const colOrders = orders[col.ordersKey] || [];
-          return (
-            <div key={col.key} className={`foq-col ${col.key}`}>
-              <div className="foq-col-head">
-                <div className="foq-col-icon">{col.icon}</div>
-                <span className="foq-col-label">{col.label}</span>
-                <span className="foq-col-badge">{colOrders.length}</span>
-              </div>
-              <div className="foq-col-body">
-                {loading ? (
-                  <><SkeletonCard /><SkeletonCard /></>
-                ) : colOrders.length === 0 ? (
-                  <div className="foq-col-empty">
-                    <FaClipboardList />
-                    No {col.label.toLowerCase()} orders
+      <ResponsiveContainer>
+        <ResponsiveRow className="g-4">
+          {COLUMNS.map(col => {
+            const colOrders = orders[col.ordersKey] || [];
+            return (
+              <ResponsiveCol md={3} sm={6} lg={3} xl={2} key={col.key}>
+                <div className="h-100 border rounded shadow-sm">
+                  <div className="d-flex justify-content-between align-items-start p-3">
+                    <div className="d-flex align-items-center">
+                      {col.icon}
+                      <h6 className="ms-2 mb-0">{col.label}</h6>
+                    </div>
+                    <span className="badge bg-primary rounded-pill">{colOrders.length}</span>
                   </div>
-                ) : colOrders.map(order => (
-                  <FoodOrderCard
-                    key={order.id}
-                    order={order}
-                    timer={orderTimers[order.id]}
-                    updatingOrder={updatingOrder}
-                    onUpdateStatus={updateOrderStatus}
-                    formatElapsedTime={formatElapsedTime}
-                  />
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                  <div className="p-3">
+                    {loading ? (
+                      <div className="d-flex justify-content-center py-5">
+                        <><SkeletonCard /><SkeletonCard /></>
+                      </div>
+                    ) : colOrders.length === 0 ? (
+                      <div className="text-center py-4">
+                        <FaClipboardList className="mb-2" />
+                        <p className="text-muted mb-0">No {col.label.toLowerCase()} orders</p>
+                      </div>
+                    ) : (
+                      <div className="list-group list-group-flush">
+                        {colOrders.map(order => (
+                          <FoodOrderCard
+                            key={order.id}
+                            order={order}
+                            timer={orderTimers[order.id]}
+                            updatingOrder={updatingOrder}
+                            onUpdateStatus={updateOrderStatus}
+                            formatElapsedTime={formatElapsedTime}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </ResponsiveCol>
+            );
+          })}
+        </ResponsiveRow>
+      </ResponsiveContainer>
     </div>
   );
 };

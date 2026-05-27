@@ -399,6 +399,176 @@
   .ar-export-btn  { justify-content: center; width: 100%; }
 }
 
+@media (max-width: 639px) {
+  /* Extra small screens - prioritize vertical scrolling, enhance touch targets */
+
+  /* Stat grid - single column for better vertical flow */
+  .ar-stat-grid {
+    grid-template-columns: 1fr;
+    gap: .75rem;
+  }
+
+  /* Filter bar - stack elements vertically */
+  .ar-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .75rem;
+  }
+
+  .ar-filter-group {
+    width: 100%;
+    margin-bottom: .5rem;
+  }
+
+  .ar-filter-label {
+    width: 100%;
+    text-align: left;
+  }
+
+  .ar-input,
+  .ar-select {
+    width: 100%;
+    margin-bottom: .5rem;
+  }
+
+  /* Filter actions - full width buttons */
+  .ar-filter-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .5rem;
+    margin-left: 0;
+  }
+
+  .ar-apply-btn,
+  .ar-export-btn {
+    width: 100%;
+    margin-top: .5rem;
+  }
+
+  /* Quick ranges - wrap and full width */
+  .ar-quick-ranges {
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+
+  .ar-quick-chip {
+    flex: 1 0 calc(50% - .25rem);
+    margin-bottom: .5rem;
+  }
+
+  /* Report card - full width */
+  .ar-card {
+    margin-bottom: var(--spacing-3);
+  }
+
+  /* Tab nav - full width tabs */
+  .ar-tab-nav {
+    flex-wrap: wrap;
+  }
+
+  .ar-tab-btn {
+    flex: 1 0 calc(50% - .25rem);
+    margin-bottom: .5rem;
+  }
+
+  /* Tab body - full width padding */
+  .ar-tab-body {
+    padding: .75rem;
+  }
+
+  /* KPI stat card - enhanced padding */
+  .ar-stat-card {
+    padding: 1rem 1.25rem;
+  }
+
+  /* Progress bar - full width */
+  .ar-progress-wrap {
+    width: 100%;
+    margin-bottom: .75rem;
+  }
+
+  .ar-progress-header {
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+
+  .ar-progress-label,
+  .ar-progress-value {
+    width: 100%;
+    text-align: left;
+    margin-bottom: .25rem;
+  }
+
+  .ar-progress-track {
+    height: 10px;
+  }
+
+  /* Section subtitle - full width */
+  .ar-sub-title {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* Table wrapper - enhance for vertical scrolling */
+  .ar-table-wrap {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  /* Touch-friendly status badge */
+  .ar-badge {
+    min-width: 48px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Loading - enhanced spacing */
+  .ar-loading {
+    gap: 1rem;
+    padding: 3rem;
+  }
+
+  /* Empty state - enhanced spacing */
+  .ar-empty {
+    gap: .75rem;
+    padding: 2.5rem;
+  }
+
+  .ar-empty-icon {
+    font-size: 3rem;
+  }
+
+  .ar-empty-text {
+    font-size: 1.1rem;
+  }
+
+  .ar-empty-sub {
+    font-size: .9rem;
+  }
+
+  /* Section gap - reduced for compact layout */
+  .ar-section-gap {
+    margin-top: 1rem;
+  }
+
+  /* Bean stock bar - full width */
+  .ar-stock-bar-wrap {
+    min-width: 100%;
+    margin-bottom: .75rem;
+  }
+
+  .ar-stock-bar-track {
+    height: 8px;
+  }
+
+  /* Stock bar fill - enhanced visibility */
+  .ar-stock-bar-fill {
+    border-radius: 6px;
+  }
+}
+
 @media (max-width: 400px) {
   .ar-stat-grid { grid-template-columns: repeat(2, 1fr); gap: .6rem; }
   .ar-stat-card { padding: .65rem .75rem; gap: .6rem; }

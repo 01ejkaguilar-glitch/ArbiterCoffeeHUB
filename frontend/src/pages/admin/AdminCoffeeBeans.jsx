@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import ResponsiveButton from '../../components/responsive/Button';
-import ResponsiveForm from '../../components/responsive/Form';
-import ResponsiveModal from '../../components/responsive/Modal';
-import ResponsiveAlert from '../../components/responsive/Alert';
-import ResponsiveTable from '../../components/responsive/Table';
-import ResponsiveCard from '../../components/responsive/Card';
-import ResponsiveInputGroup from '../../components/responsive/InputGroup';
-import ResponsiveBadge from '../../components/responsive/Badge';
-import ResponsiveLoadingFallback from '../../components/responsive/LoadingFallback';
+import ResponsiveButton from '@/components/responsive/Button';
+import ResponsiveForm from '@/components/responsive/Form';
+import ResponsiveModal from '@/components/responsive/Modal';
+import ResponsiveAlert from '@/components/responsive/Alert';
+import ResponsiveTable from '@/components/responsive/Table';
+import ResponsiveCard from '@/components/responsive/Card';
+import ResponsiveContainer from '@/components/responsive/Container';
+import ResponsiveInputGroup from '@/components/responsive/InputGroup';
+import ResponsiveBadge from '@/components/responsive/Badge';
+import ResponsiveLoadingFallback from '@/components/responsive/LoadingFallback';
+import ResponsiveRow from '@/components/responsive/Row';
+import ResponsiveCol from '@/components/responsive/Col';
 import { FaEdit, FaTrash, FaSearch, FaStar, FaPlus } from 'react-icons/fa';
 import { API_ENDPOINTS } from '../../config/api';
 import { BACKEND_BASE_URL } from '../../config/api';
@@ -201,7 +204,7 @@ const AdminCoffeeBeans = () => {
   }
 
   return (
-    <div className="container py-5">
+    <ResponsiveContainer className="py-5">
       <div className="row mb-4">
         <div className="col">
           <div className="d-flex justify-content-between align-items-center">
@@ -258,21 +261,21 @@ const AdminCoffeeBeans = () => {
       </div>
 
       {/* Search Bar */}
-      <Row className="mb-4">
-        <Col md={6}>
+      <ResponsiveRow className="mb-4">
+        <ResponsiveCol md={6}>
           <ResponsiveInputGroup>
             <div className="input-group-text">
               <FaSearch />
             </div>
-            <Form.Control
+            <ResponsiveForm.Control
               type="text"
               placeholder="Search by name, origin, or region..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </ResponsiveInputGroup>
-        </Col>
-      </Row>
+        </ResponsiveCol>
+      </ResponsiveRow>
 
       {/* Coffee Beans Table */}
       <ResponsiveCard className="shadow-sm">
@@ -327,14 +330,14 @@ const AdminCoffeeBeans = () => {
                         onClick={() => handleShowModal(bean)}
                       >
                         <FaEdit />
-                      </Button>
+                      </ResponsiveButton>
                       <ResponsiveButton
                         variant="outline-danger"
                         size="sm"
                         onClick={() => handleDelete(bean.id)}
                       >
                         <FaTrash />
-                      </Button>
+                      </ResponsiveButton>
                     </td>
                   </tr>
                 ))
@@ -346,73 +349,73 @@ const AdminCoffeeBeans = () => {
                 </tr>
               )}
             </tbody>
-          </Table>
-        </Card.Body>
-      </Card>
+          </ResponsiveTable>
+        </ResponsiveCard.Body>
+      </ResponsiveCard>
 
       {/* Add/Edit Modal */}
-      <Modal show={showModal} onHide={handleCloseModal} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>{editingBean ? 'Edit Coffee Bean' : 'Add Coffee Bean'}</Modal.Title>
-        </Modal.Header>
-        <Form onSubmit={handleSubmit}>
-          <Modal.Body>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Bean Name *</Form.Label>
-                  <Form.Control
+      <ResponsiveModal show={showModal} onHide={handleCloseModal} size="lg">
+        <ResponsiveModal.Header closeButton>
+          <ResponsiveModal.Title>{editingBean ? 'Edit Coffee Bean' : 'Add Coffee Bean'}</ResponsiveModal.Title>
+        </ResponsiveModal.Header>
+        <ResponsiveForm onSubmit={handleSubmit}>
+          <ResponsiveModal.Body>
+            <ResponsiveRow>
+              <ResponsiveCol md={6}>
+                <ResponsiveForm.Group className="mb-3">
+                  <ResponsiveForm.Label>Bean Name *</ResponsiveForm.Label>
+                  <ResponsiveForm.Control
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
                     required
                   />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Origin Country *</Form.Label>
-                  <Form.Control
+                </ResponsiveForm.Group>
+              </ResponsiveCol>
+              <ResponsiveCol md={6}>
+                <ResponsiveForm.Group className="mb-3">
+                  <ResponsiveForm.Label>Origin Country *</ResponsiveForm.Label>
+                  <ResponsiveForm.Control
                     type="text"
                     name="origin_country"
                     value={formData.origin_country}
                     onChange={handleChange}
                     required
                   />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Region</Form.Label>
-                  <Form.Control
+                </ResponsiveForm.Group>
+              </ResponsiveCol>
+            </ResponsiveRow>
+            <ResponsiveRow>
+              <ResponsiveCol md={6}>
+                <ResponsiveForm.Group className="mb-3">
+                  <ResponsiveForm.Label>Region</ResponsiveForm.Label>
+                  <ResponsiveForm.Control
                     type="text"
                     name="region"
                     value={formData.region}
                     onChange={handleChange}
                   />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Elevation</Form.Label>
-                  <Form.Control
+                </ResponsiveForm.Group>
+              </ResponsiveCol>
+              <ResponsiveCol md={6}>
+                <ResponsiveForm.Group className="mb-3">
+                  <ResponsiveForm.Label>Elevation</ResponsiveForm.Label>
+                  <ResponsiveForm.Control
                     type="text"
                     name="elevation"
                     value={formData.elevation}
                     onChange={handleChange}
                     placeholder="e.g., 1,800-2,200m"
                   />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Processing Method</Form.Label>
-                  <Form.Select
+                </ResponsiveForm.Group>
+              </ResponsiveCol>
+            </ResponsiveRow>
+            <ResponsiveRow>
+              <ResponsiveCol md={6}>
+                <ResponsiveForm.Group className="mb-3">
+                  <ResponsiveForm.Label>Processing Method</ResponsiveForm.Label>
+                  <ResponsiveForm.Select
                     name="processing_method"
                     value={formData.processing_method}
                     onChange={handleChange}
@@ -422,38 +425,38 @@ const AdminCoffeeBeans = () => {
                     <option value="Natural">Natural</option>
                     <option value="Honey">Honey</option>
                     <option value="Semi-Washed">Semi-Washed</option>
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Variety</Form.Label>
-                  <Form.Control
+                  </ResponsiveForm.Select>
+                </ResponsiveForm.Group>
+              </ResponsiveCol>
+              <ResponsiveCol md={6}>
+                <ResponsiveForm.Group className="mb-3">
+                  <ResponsiveForm.Label>Variety</ResponsiveForm.Label>
+                  <ResponsiveForm.Control
                     type="text"
                     name="variety"
                     value={formData.variety}
                     onChange={handleChange}
                     placeholder="e.g., Arabica, Bourbon"
                   />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Producer</Form.Label>
-                  <Form.Control
+                </ResponsiveForm.Group>
+              </ResponsiveCol>
+            </ResponsiveRow>
+            <ResponsiveRow>
+              <ResponsiveCol md={6}>
+                <ResponsiveForm.Group className="mb-3">
+                  <ResponsiveForm.Label>Producer</ResponsiveForm.Label>
+                  <ResponsiveForm.Control
                     type="text"
                     name="producer"
                     value={formData.producer}
                     onChange={handleChange}
                   />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Stock Quantity (kg) *</Form.Label>
-                  <Form.Control
+                </ResponsiveForm.Group>
+              </ResponsiveCol>
+              <ResponsiveCol md={6}>
+                <ResponsiveForm.Group className="mb-3">
+                  <ResponsiveForm.Label>Stock Quantity (kg) *</ResponsiveForm.Label>
+                  <ResponsiveForm.Control
                     type="number"
                     name="stock_quantity"
                     value={formData.stock_quantity}
@@ -462,14 +465,14 @@ const AdminCoffeeBeans = () => {
                     min="0"
                     step="0.1"
                   />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={12}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Tasting Notes</Form.Label>
-                  <Form.Control
+                </ResponsiveForm.Group>
+              </ResponsiveCol>
+            </ResponsiveRow>
+            <ResponsiveRow>
+              <ResponsiveCol md={12}>
+                <ResponsiveForm.Group className="mb-3">
+                  <ResponsiveForm.Label>Tasting Notes</ResponsiveForm.Label>
+                  <ResponsiveForm.Control
                     as="textarea"
                     rows={3}
                     name="tasting_notes"
@@ -477,52 +480,52 @@ const AdminCoffeeBeans = () => {
                     onChange={handleChange}
                     placeholder="e.g., Floral, citrus, bergamot, jasmine"
                   />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Bean Image</Form.Label>
-                  <Form.Control
+                </ResponsiveForm.Group>
+              </ResponsiveCol>
+            </ResponsiveRow>
+            <ResponsiveRow>
+              <ResponsiveCol md={6}>
+                <ResponsiveForm.Group className="mb-3">
+                  <ResponsiveForm.Label>Bean Image</ResponsiveForm.Label>
+                  <ResponsiveForm.Control
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
                   />
-                </Form.Group>
+                </ResponsiveForm.Group>
                 {imagePreview && (
                   <div>
                     <img src={imagePreview} alt="Preview" className="img-thumbnail" style={{ maxHeight: '150px' }} loading="lazy" />
                   </div>
                 )}
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Check
+              </ResponsiveCol>
+              <ResponsiveCol md={6}>
+                <ResponsiveForm.Group className="mb-3">
+                  <ResponsiveForm.Checkbox
                     type="checkbox"
                     name="is_featured"
                     label="Mark as Featured Bean"
                     checked={formData.is_featured}
                     onChange={handleChange}
                   />
-                  <Form.Text className="text-muted">
+                  <ResponsiveForm.Text className="text-muted">
                     Featured beans can be set as "Today's Featured Origin"
-                  </Form.Text>
-                </Form.Group>
-              </Col>
-            </Row>
-          </Modal.Body>
-          <Modal.Footer>
-            <ResponsiveButton variant="secondary" onClick={handleCloseModal}>
-              Cancel
-            </Button>
-            <ResponsiveButton variant="primary" type="submit">
-              {editingBean ? 'Update Bean' : 'Add Bean'}
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
-    </Container>
+                  </ResponsiveForm.Text>
+                </ResponsiveForm.Group>
+              </ResponsiveCol>
+            </ResponsiveRow>
+        </ResponsiveModal.Body>
+        <ResponsiveModal.Footer>
+          <ResponsiveButton variant="secondary" onClick={handleCloseModal}>
+            Cancel
+          </ResponsiveButton>
+          <ResponsiveButton variant="primary" type="submit">
+            {editingBean ? 'Update Bean' : 'Add Bean'}
+          </ResponsiveButton>
+        </ResponsiveModal.Footer>
+      </ResponsiveForm>
+    </ResponsiveModal>
+  </ResponsiveContainer>
   );
 };
 

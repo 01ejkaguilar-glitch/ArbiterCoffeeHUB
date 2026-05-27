@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import ResponsiveButton from '../../components/responsive/Button';
-import ResponsiveCard from '../../components/responsive/Card';
-import ResponsiveCol from '../../components/responsive/Col';
-import ResponsiveRow from '../../components/responsive/Row';
-import ResponsiveBadge from '../../components/responsive/Badge';
+import ResponsiveButton from '@/components/responsive/Button';
+import ResponsiveCard from '@/components/responsive/Card';
+import ResponsiveCol from '@/components/responsive/Col';
+import ResponsiveRow from '@/components/responsive/Row';
+import ResponsiveBadge from '@/components/responsive/Badge';
 import { Link } from 'react-router-dom';
 import { FaShoppingBag, FaUsers, FaBoxes, FaUserCheck, FaUserClock, FaDollarSign, FaBell, FaChartLine, FaArrowRight } from 'react-icons/fa';
 import apiService from '../../services/api.service';
@@ -149,7 +149,7 @@ const AdminDashboard = () => {
           {pendingOrders.length > 0 && (
             <span className="d-flex align-items-center gap-1 text-warning">
               <FaBell />
-              <Badge bg="warning" text="dark">{pendingOrders.length} pending</Badge>
+              <ResponsiveBadge bg="warning" text="dark">{pendingOrders.length} pending</ResponsiveBadge>
             </span>
           )}
         </>
@@ -171,10 +171,10 @@ const AdminDashboard = () => {
 
       {/* Operational Row: Recent Orders + Workforce */}
       <ResponsiveRow className="g-4 mb-5">
-        <ResponsiveCol lg={8}>
+        <ResponsiveCol sm={6} lg={8}>
           <AdminRecentOrders orders={recentOrders} />
         </ResponsiveCol>
-        <ResponsiveCol lg={4}>
+        <ResponsiveCol sm={6} lg={4}>
           <ResponsiveCard className="admin-card h-100">
             <ResponsiveCard.Header className="d-flex justify-content-between align-items-center">
               <div className="d-flex align-items-center gap-2">
@@ -209,8 +209,8 @@ const AdminDashboard = () => {
               </div>
             </ResponsiveCard.Body>
           </ResponsiveCard>
-        </Col>
-      </Row>
+        </ResponsiveCol>
+      </ResponsiveRow>
 
       {/* Analytics */}
       <div className="dashboard-section-label"><FaChartLine className="me-2" />Analytics</div>

@@ -8,6 +8,13 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/animations/Toast';
 import { FadeIn, SlideInUp } from '../../components/animations/AnimationWrappers';
 import './Auth.css';
+import {
+  ResponsiveButton,
+  ResponsiveContainer,
+  ResponsiveForm,
+  ResponsiveRow,
+  ResponsiveCol,
+} from '@/components/responsive';
 
 /* ── Password strength helper ── */
 const getPasswordStrength = (pw) => {
@@ -122,7 +129,7 @@ const RegisterPage = () => {
 
       {/* ── Form Panel ── */}
       <div className="auth-form-panel">
-        <div className="auth-form-container auth-form-container--wide">
+        <ResponsiveContainer className="auth-form-container auth-form-container--wide">
           <FadeIn duration={0.3}>
             {/* Mobile brand header */}
             <div className="auth-mobile-brand">
@@ -151,7 +158,7 @@ const RegisterPage = () => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} aria-labelledby="register-heading" noValidate>
+              <ResponsiveForm onSubmit={handleSubmit} aria-labelledby="register-heading" noValidate>
                 {/* Full Name */}
                 <div className="auth-field">
                   <label htmlFor="register-name" className="auth-field-label">
@@ -363,7 +370,7 @@ const RegisterPage = () => {
                     'Create Account'
                   )}
                 </button>
-              </form>
+              </ResponsiveForm>
 
               <p className="auth-footer">
                 Already have an account?{' '}
@@ -373,7 +380,7 @@ const RegisterPage = () => {
               </p>
             </SlideInUp>
           </FadeIn>
-        </div>
+        </ResponsiveContainer>
       </div>
     </main>
   );

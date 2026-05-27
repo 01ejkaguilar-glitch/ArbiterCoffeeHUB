@@ -99,6 +99,21 @@ ResponsiveForm.Checkbox.propTypes = {
   className: PropTypes.string
 };
 
+ResponsiveForm.Text = ({
+  children,
+  className = '',
+  ...props
+}) => (
+  <p className={`form-text ${className}`} {...props}>
+    {children}
+  </p>
+);
+
+ResponsiveForm.Text.propTypes = {
+  children: PropTypes.node,
+  className: PropTypes.string
+};
+
 ResponsiveForm.Button = ({
   variant = 'primary',
   size = 'md',

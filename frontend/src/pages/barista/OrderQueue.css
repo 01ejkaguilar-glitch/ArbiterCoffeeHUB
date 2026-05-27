@@ -469,6 +469,22 @@
   margin-bottom: .35rem;
 }
 
+/* Priority highlighting */
+.oq-card.priority-high {
+  border-left-color: #C41E3A !important;
+  background: #fff0f0;
+}
+
+.oq-card.priority-medium {
+  border-left-color: #f59e0b !important;
+  background: #fffbeb;
+}
+
+.oq-card.priority-low {
+  border-left-color: var(--color-medium-green) !important;
+  background: #f0faf4;
+}
+
 /* ── Detail Modal Overlay ─────────────────────────── */
 .oq-overlay {
   position: fixed;

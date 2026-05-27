@@ -6,11 +6,13 @@ import {
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
-import ResponsiveButton from '../../components/responsive/Button';
-import ResponsiveCard from '../../components/responsive/Card';
-import ResponsiveForm from '../../components/responsive/Form';
-import ResponsiveModal from '../../components/responsive/Modal';
-import ResponsiveTable from '../../components/responsive/Table';
+import {
+  ResponsiveButton,
+  ResponsiveCard,
+  ResponsiveForm,
+  ResponsiveModal,
+  ResponsiveTable
+} from '@/components/responsive';
 import './AdminWorkforce.css';
 
 const blankForm = () => ({
@@ -172,18 +174,20 @@ const AdminEmployees = () => {
       <div className="wf-page">
 
         {/* Stats */}
-        <div className="wf-stat-grid">
+        <div className="wf-stat-grid row g-4">
           {[
             { label: 'Total Employees', val: stats.total,    icon: <FaUsers />,     color: 'blue'  },
             { label: 'Active',          val: stats.active,   icon: <FaUserCheck />, color: 'green' },
             { label: 'Inactive',        val: stats.inactive, icon: <FaUserTimes />, color: 'red'   },
             { label: 'New This Month',  val: stats.new,      icon: <FaPlus />,      color: 'amber' },
-          ].map(({ label, val, icon, color }) => (
-            <ResponsiveCard key={label} className={`wf-stat-card text-center ${color}`}>
-              <div className="wf-stat-icon">{icon}</div>
-              <div className="wf-stat-val">{val}</div>
-              <div className="wf-stat-label">{label}</div>
-            </ResponsiveCard>
+          ].map(({ label, val, icon, color }, idx) => (
+            <div key={idx} className="col-12 col-sm-6">
+              <ResponsiveCard className={`wf-stat-card text-center ${color}`}>
+                <div className="wf-stat-icon">{icon}</div>
+                <div className="wf-stat-val">{val}</div>
+                <div className="wf-stat-label">{label}</div>
+              </ResponsiveCard>
+            </div>
           ))}
         </div>
 
@@ -225,9 +229,12 @@ const AdminEmployees = () => {
               status: emp.status
             }))}
             loading={loading}
-            emptyMessage=filtered.length === 0 && !loading ? (
-              <FaUsers size={28} style={{ color: '#d1d5db', display: 'block', margin: '0 auto .5rem' }} />No employees found.
-            ) : null
+            emptyMessage={filtered.length === 0 && !loading ? (
+              <>
+                <FaUsers size={28} style={{ color: '#d1d5db', display: 'block', margin: '0 auto .5rem' }} />
+                No employees found.
+              </>
+            ) : null}
           >
             {/* Custom rendering for actions column */}
             {loading ? [] : filtered.length === 0 ? [] : filtered.map((emp, index) => (

@@ -345,11 +345,32 @@ button[aria-label]:focus-visible {
 .btn,
 button,
 [role="button"] {
-  min-height: 44px;
-  min-width: 44px;
+  min-height: 48px;
+  min-width: 48px;
 }
 
-@media (max-width: 768px) {
+/* Extra small screens - minimum 48dp touch targets */
+@media (max-width: 639px) {
+  .btn,
+  button,
+  [role="button"] {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  .btn-sm {
+    min-height: 48px;
+    padding: 0.75rem 1rem;
+  }
+
+  .btn-lg {
+    min-height: 56px;
+    padding: 1rem 1.5rem;
+  }
+}
+
+/* Small screens and up */
+@media (min-width: 640px) {
   .btn {
     padding: 0.75rem 1.25rem;
     font-size: 1rem;

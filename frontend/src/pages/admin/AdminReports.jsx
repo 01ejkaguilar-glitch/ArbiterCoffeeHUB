@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import ResponsiveButton from '../../components/responsive/Button';
-import ResponsiveCard from '../../components/responsive/Card';
-import ResponsiveForm from '../../components/responsive/Form';
-import ResponsiveTable from '../../components/responsive/Table';
-import ResponsiveModal from '../../components/responsive/Modal';
-import ResponsiveAlert from '../../components/responsive/Alert';
-import ResponsiveSpinner from '../../components/responsive/Spinner';
-import ResponsiveBadge from '../../components/responsive/Badge';
-import ResponsiveContainer from '../../components/responsive/Container';
-import ResponsiveRow from '../../components/responsive/Row';
-import ResponsiveCol from '../../components/responsive/Col';
-import ResponsiveTabs from '../../components/responsive/Tabs';
-import ResponsiveTab from '../../components/responsive/Tab';
+import {
+  ResponsiveButton,
+  ResponsiveCard,
+  ResponsiveForm,
+  ResponsiveTable,
+  ResponsiveModal,
+  ResponsiveAlert,
+  ResponsiveSpinner,
+  ResponsiveBadge,
+  ResponsiveContainer
+} from '@/components/responsive';
+import ResponsiveRow from '@/components/responsive/Row';
+import ResponsiveCol from '@/components/responsive/Col';
+import ResponsiveTabs from '@/components/responsive/Tabs';
+import ResponsiveTab from '@/components/responsive/Tab';
 // Note: We're keeping Bootstrap's Tab/Tabs for now as they're primarily layout/components
 // and we don't have responsive equivalents yet
 import { FaFileDownload, FaFilter, FaCoffee, FaTasks, FaUserClock, FaBriefcase } from 'react-icons/fa';
@@ -120,40 +122,40 @@ const AdminReports = () => {
 
     return (
       <>
-        <ResponsiveRow className="mb-4 g-2 g-md-3">
-          <ResponsiveCol xs={6} md={3}>
+        <ResponsiveRow className="mb-4 g-2 g-md-3 g-lg-2">
+          <ResponsiveCol xs={12} sm={6} md={3}>
             <ResponsiveCard className="border-0 shadow-sm">
               <ResponsiveCard.Body className="p-2 p-md-3">
                 <h6 className="text-muted mb-1 small">Total Records</h6>
                 <h3 className="mb-0 fs-5 fs-md-3">{reportData.stats?.total_records || 0}</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
-          <ResponsiveCol xs={6} md={3}>
+          </ResponsiveCol>
+          <ResponsiveCol xs={12} sm={6} md={3}>
             <ResponsiveCard className="border-0 shadow-sm">
               <ResponsiveCard.Body className="p-2 p-md-3">
                 <h6 className="text-muted mb-1 small">Present</h6>
                 <h3 className="mb-0 fs-5 fs-md-3 text-success">{reportData.stats?.present_count || 0}</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
-          <ResponsiveCol xs={6} md={3}>
+          </ResponsiveCol>
+          <ResponsiveCol xs={12} sm={6} md={3}>
             <ResponsiveCard className="border-0 shadow-sm">
               <ResponsiveCard.Body className="p-2 p-md-3">
                 <h6 className="text-muted mb-1 small">Absent</h6>
                 <h3 className="mb-0 fs-5 fs-md-3 text-danger">{reportData.stats?.absent_count || 0}</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
-          <ResponsiveCol xs={6} md={3}>
+          </ResponsiveCol>
+          <ResponsiveCol xs={12} sm={6} md={3}>
             <ResponsiveCard className="border-0 shadow-sm">
               <ResponsiveCard.Body className="p-2 p-md-3">
                 <h6 className="text-muted mb-1 small">Attendance Rate</h6>
                 <h3 className="mb-0 fs-5 fs-md-3 text-info">{reportData.stats?.attendance_rate || 0}%</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
-        </Row>
+          </ResponsiveCol>
+        </ResponsiveRow>
 
         <ResponsiveTable responsive hover>
           <thead className="table-light">
@@ -180,7 +182,7 @@ const AdminReports = () => {
                       'danger'
                     }>
                       {record.status}
-                    </Badge>
+                    </ResponsiveBadge>
                   </td>
                   <td>{record.check_in_time || 'N/A'}</td>
                   <td>{record.check_out_time || 'N/A'}</td>
@@ -196,7 +198,7 @@ const AdminReports = () => {
               </tr>
             )}
           </tbody>
-        </Table>
+        </ResponsiveTable>
       </>
     );
   };
@@ -206,40 +208,40 @@ const AdminReports = () => {
 
     return (
       <>
-        <ResponsiveRow className="mb-4 g-2 g-md-3">
-          <ResponsiveCol xs={6} md={3}>
+        <ResponsiveRow className="mb-4 g-2 g-md-3 g-lg-2">
+          <ResponsiveCol xs={12} sm={6} md={3}>
             <ResponsiveCard className="border-0 shadow-sm">
               <ResponsiveCard.Body className="p-2 p-md-3">
                 <h6 className="text-muted mb-1 small">Total Leaves</h6>
                 <h3 className="mb-0 fs-5 fs-md-3">{reportData.stats?.total_leave_requests || 0}</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
-          <ResponsiveCol xs={6} md={3}>
+          </ResponsiveCol>
+          <ResponsiveCol xs={12} sm={6} md={3}>
             <ResponsiveCard className="border-0 shadow-sm">
               <ResponsiveCard.Body className="p-2 p-md-3">
                 <h6 className="text-muted mb-1 small">Approved</h6>
                 <h3 className="mb-0 fs-5 fs-md-3 text-success">{reportData.stats?.approved_leaves || 0}</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
-          <ResponsiveCol xs={6} md={3}>
+          </ResponsiveCol>
+          <ResponsiveCol xs={12} sm={6} md={3}>
             <ResponsiveCard className="border-0 shadow-sm">
               <ResponsiveCard.Body className="p-2 p-md-3">
                 <h6 className="text-muted mb-1 small">Pending</h6>
                 <h3 className="mb-0 fs-5 fs-md-3 text-warning">{reportData.stats?.pending_leaves || 0}</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
-          <ResponsiveCol xs={6} md={3}>
+          </ResponsiveCol>
+          <ResponsiveCol xs={12} sm={6} md={3}>
             <ResponsiveCard className="border-0 shadow-sm">
               <ResponsiveCard.Body className="p-2 p-md-3">
                 <h6 className="text-muted mb-1 small">Total OT Hours</h6>
                 <h3 className="mb-0 fs-5 fs-md-3 text-info">{reportData.stats?.total_overtime_hours || 0}h</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
-        </Row>
+          </ResponsiveCol>
+        </ResponsiveRow>
 
         {/* Leave Requests Table */}
         {reportData.leave_requests && reportData.leave_requests.length > 0 && (
@@ -271,12 +273,12 @@ const AdminReports = () => {
                         'danger'
                       }>
                         {leave.status}
-                      </Badge>
+                      </ResponsiveBadge>
                     </td>
                   </tr>
                 ))}
               </tbody>
-            </Table>
+            </ResponsiveTable>
           </>
         )}
 
@@ -305,7 +307,7 @@ const AdminReports = () => {
                   </tr>
                 ))}
               </tbody>
-            </Table>
+            </ResponsiveTable>
           </>
         )}
       </>
@@ -325,7 +327,7 @@ const AdminReports = () => {
                 <h3 className="mb-0 fs-5 fs-md-3">{reportData.stats?.total_tasks || 0}</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
+          </ResponsiveCol>
           <ResponsiveCol xs={6} md={3}>
             <ResponsiveCard className="border-0 shadow-sm">
               <ResponsiveCard.Body className="p-2 p-md-3">
@@ -333,7 +335,7 @@ const AdminReports = () => {
                 <h3 className="mb-0 fs-5 fs-md-3 text-success">{reportData.stats?.completed_tasks || 0}</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
+          </ResponsiveCol>
           <ResponsiveCol xs={6} md={3}>
             <ResponsiveCard className="border-0 shadow-sm">
               <ResponsiveCard.Body className="p-2 p-md-3">
@@ -341,7 +343,7 @@ const AdminReports = () => {
                 <h3 className="mb-0 fs-5 fs-md-3 text-danger">{reportData.stats?.overdue_tasks || 0}</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
+          </ResponsiveCol>
           <ResponsiveCol xs={6} md={3}>
             <ResponsiveCard className="border-0 shadow-sm">
               <ResponsiveCard.Body className="p-2 p-md-3">
@@ -349,8 +351,8 @@ const AdminReports = () => {
                 <h3 className="mb-0 fs-5 fs-md-3 text-info">{reportData.stats?.completion_rate || 0}%</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
-        </Row>
+          </ResponsiveCol>
+        </ResponsiveRow>
 
         <ResponsiveTable responsive hover>
           <thead className="table-light">
@@ -377,7 +379,7 @@ const AdminReports = () => {
                       'warning'
                     }>
                       {task.status}
-                    </Badge>
+                    </ResponsiveBadge>
                   </td>
                   <td>
                     <ResponsiveBadge bg={
@@ -386,7 +388,7 @@ const AdminReports = () => {
                       'info'
                     }>
                       {task.priority || 'normal'}
-                    </Badge>
+                    </ResponsiveBadge>
                   </td>
                   <td>{new Date(task.due_date).toLocaleDateString()}</td>
                   <td>{task.completed_at ? new Date(task.completed_at).toLocaleDateString() : 'N/A'}</td>
@@ -400,7 +402,7 @@ const AdminReports = () => {
               </tr>
             )}
           </tbody>
-        </Table>
+        </ResponsiveTable>
       </>
     );
   };
@@ -418,7 +420,7 @@ const AdminReports = () => {
                 <h3 className="mb-0 fs-5 fs-md-3">{reportData.stats?.total_beans || 0}</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
+          </ResponsiveCol>
           <ResponsiveCol xs={6} md={3}>
             <ResponsiveCard className="border-0 shadow-sm">
               <ResponsiveCard.Body className="p-2 p-md-3">
@@ -426,7 +428,7 @@ const AdminReports = () => {
                 <h3 className="mb-0 fs-5 fs-md-3 text-warning">{reportData.stats?.low_stock_beans || 0}</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
+          </ResponsiveCol>
           <ResponsiveCol xs={6} md={3}>
             <ResponsiveCard className="border-0 shadow-sm">
               <ResponsiveCard.Body className="p-2 p-md-3">
@@ -434,7 +436,7 @@ const AdminReports = () => {
                 <h3 className="mb-0 fs-5 fs-md-3 text-danger">{reportData.stats?.out_of_stock_beans || 0}</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
+          </ResponsiveCol>
           <ResponsiveCol xs={6} md={3}>
             <ResponsiveCard className="border-0 shadow-sm">
               <ResponsiveCard.Body className="p-2 p-md-3">
@@ -442,8 +444,8 @@ const AdminReports = () => {
                 <h3 className="mb-0 fs-5 fs-md-3 text-info">{reportData.stats?.total_featured_times || 0}</h3>
               </ResponsiveCard.Body>
             </ResponsiveCard>
-          </Col>
-        </Row>
+          </ResponsiveCol>
+        </ResponsiveRow>
 
         <ResponsiveTable responsive hover>
           <thead className="table-light">
@@ -470,7 +472,7 @@ const AdminReports = () => {
                   <td>
                     <ResponsiveBadge bg={bean.is_featured ? 'success' : 'secondary'}>
                       {bean.is_featured ? 'Featured' : 'Regular'}
-                    </Badge>
+                    </ResponsiveBadge>
                   </td>
                 </tr>
               ))
@@ -482,7 +484,7 @@ const AdminReports = () => {
               </tr>
             )}
           </tbody>
-        </Table>
+        </ResponsiveTable>
       </>
     );
   };
@@ -506,8 +508,8 @@ const AdminReports = () => {
               Export CSV
             </ResponsiveButton>
           </div>
-        </Col>
-      </Row>
+        </ResponsiveCol>
+      </ResponsiveRow>
 
       {alert.show && (
         <ResponsiveAlert show={alert.show} onHide={() => setAlert({ show: false, message: '', type: '' })} message={alert.message} type={alert.type} />
@@ -527,7 +529,7 @@ const AdminReports = () => {
                   onChange={handleFilterChange}
                 />
               </ResponsiveForm.Group>
-            </Col>
+            </ResponsiveCol>
             <ResponsiveCol xs={6} md={3}>
               <ResponsiveForm.Group>
                 <ResponsiveForm.Label className="small">End Date</ResponsiveForm.Label>
@@ -538,7 +540,7 @@ const AdminReports = () => {
                   onChange={handleFilterChange}
                 />
               </ResponsiveForm.Group>
-            </Col>
+            </ResponsiveCol>
             {activeTab === 'leave_ot' && (
               <ResponsiveCol xs={6} md={3}>
                 <ResponsiveForm.Group>
@@ -553,7 +555,7 @@ const AdminReports = () => {
                     <option value="overtime">Overtime Only</option>
                   </ResponsiveForm.Select>
                 </ResponsiveForm.Group>
-              </Col>
+              </ResponsiveCol>
             )}
             {activeTab === 'tasks' && (
               <ResponsiveCol xs={6} md={3}>
@@ -571,15 +573,15 @@ const AdminReports = () => {
                     <option value="cancelled">Cancelled</option>
                   </ResponsiveForm.Select>
                 </ResponsiveForm.Group>
-              </Col>
+              </ResponsiveCol>
             )}
             <ResponsiveCol xs={6} md={3} className="d-flex align-items-end">
               <ResponsiveButton variant="primary" size="md" onClick={fetchReport} disabled={loading} className="w-100">
                 <FaFilter className="me-2" />
                 {loading ? 'Loading...' : 'Apply Filters'}
               </ResponsiveButton>
-            </Col>
-          </Row>
+            </ResponsiveCol>
+          </ResponsiveRow>
         </ResponsiveCard.Body>
       </ResponsiveCard>
 
@@ -587,26 +589,26 @@ const AdminReports = () => {
       <ResponsiveCard className="shadow-sm">
         <ResponsiveCard.Header>
           <ResponsiveTabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="border-0">
-            <Tab eventKey="attendance" title={
+            <ResponsiveTab eventKey="attendance" title={
               <span><FaUserClock className="me-2" />Attendance</span>
             } />
-            <Tab eventKey="leave_ot" title={
+            <ResponsiveTab eventKey="leave_ot" title={
               <span><FaBriefcase className="me-2" />Leave & OT</span>
             } />
-            <Tab eventKey="tasks" title={
+            <ResponsiveTab eventKey="tasks" title={
               <span><FaTasks className="me-2" />Task Completion</span>
             } />
-            <Tab eventKey="beans" title={
+            <ResponsiveTab eventKey="beans" title={
               <span><FaCoffee className="me-2" />Bean Usage</span>
             } />
-          </Tabs>
+          </ResponsiveTabs>
         </ResponsiveCard.Header>
         <ResponsiveCard.Body>
           {loading ? (
             <div className="text-center py-5">
-              <Spinner animation="border" role="status">
+              <ResponsiveSpinner animation="border" role="status">
                 <span className="visually-hidden">Loading...</span>
-              </Spinner>
+              </ResponsiveSpinner>
               <p className="mt-3">Loading report...</p>
             </div>
           ) : (
@@ -619,7 +621,7 @@ const AdminReports = () => {
           )}
         </ResponsiveCard.Body>
       </ResponsiveCard>
-    </Container>
+    </ResponsiveContainer>
   );
 };
 

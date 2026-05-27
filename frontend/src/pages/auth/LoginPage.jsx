@@ -5,6 +5,13 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/animations/Toast';
 import { FadeIn, SlideInUp } from '../../components/animations/AnimationWrappers';
 import './Auth.css';
+import {
+  ResponsiveButton,
+  ResponsiveContainer,
+  ResponsiveForm,
+  ResponsiveRow,
+  ResponsiveCol,
+} from '@/components/responsive';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -92,7 +99,7 @@ const LoginPage = () => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} aria-labelledby="login-heading" noValidate>
+              <ResponsiveForm onSubmit={handleSubmit} aria-labelledby="login-heading" noValidate>
                 {/* Email */}
                 <div className="auth-field">
                   <label htmlFor="login-email" className="auth-field-label">
@@ -115,36 +122,40 @@ const LoginPage = () => {
                 </div>
 
                 {/* Password */}
-                <div className="auth-field">
-                  <label htmlFor="login-password" className="auth-field-label">
-                    <FaLock aria-hidden="true" />
-                    Password
-                    <span className="auth-field-required" aria-label="required">*</span>
-                  </label>
-                  <div className="auth-password-wrapper">
-                    <input
-                      id="login-password"
-                      type={showPassword ? 'text' : 'password'}
-                      className="auth-input"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      placeholder="Enter your password"
-                      autoComplete="current-password"
-                      aria-required="true"
-                      aria-invalid={error ? 'true' : 'false'}
-                    />
-                    <button
-                      type="button"
-                      className="auth-password-toggle"
-                      onClick={() => setShowPassword((v) => !v)}
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <FaEyeSlash /> : <FaEye />}
-                    </button>
-                  </div>
-                </div>
+                <ResponsiveRow className="g-3">
+                  <ResponsiveCol md={12}>
+                    <div className="auth-field">
+                      <label htmlFor="login-password" className="auth-field-label">
+                        <FaLock aria-hidden="true" />
+                        Password
+                        <span className="auth-field-required" aria-label="required">*</span>
+                      </label>
+                      <div className="auth-password-wrapper">
+                        <input
+                          id="login-password"
+                          type={showPassword ? 'text' : 'password'}
+                          className="auth-input"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          placeholder="Enter your password"
+                          autoComplete="current-password"
+                          aria-required="true"
+                          aria-invalid={error ? 'true' : 'false'}
+                        />
+                        <button
+                          type="button"
+                          className="auth-password-toggle"
+                          onClick={() => setShowPassword((v) => !v)}
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                          tabIndex={-1}
+                        >
+                          {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
+                    </div>
+                  </ResponsiveCol>
+                </ResponsiveRow>
 
                 {/* Remember me / Forgot */}
                 <div className="auth-options-row">
@@ -177,7 +188,7 @@ const LoginPage = () => {
                     'Sign In'
                   )}
                 </button>
-              </form>
+              </ResponsiveForm>
 
               <p className="auth-footer">
                 Don&apos;t have an account?{' '}

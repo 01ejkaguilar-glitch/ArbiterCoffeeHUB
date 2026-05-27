@@ -10,11 +10,12 @@ import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
 import { BarChart, LineChart, PieChart } from '../../components/common/Charts';
 import { exportToCSV } from '../../utils/exportUtils';
-import ResponsiveButton from '../../components/responsive/Button';
-import ResponsiveCard from '../../components/responsive/Card';
-import ResponsiveTable from '../../components/responsive/Table';
-import ResponsiveForm from '../../components/responsive/Form';
-import ResponsiveModal from '../../components/responsive/Modal';
+import ResponsiveButton from '@/components/responsive/Button';
+import ResponsiveCard from '@/components/responsive/Card';
+import ResponsiveTable from '@/components/responsive/Table';
+import ResponsiveForm from '@/components/responsive/Form';
+import ResponsiveModal from '@/components/responsive/Modal';
+import ResponsiveCol from '@/components/responsive/Col';
 import './AdminAnalytics.css';
 
 /* ── Helpers ──────────────────────────────────────────────────── */
@@ -208,38 +209,56 @@ const AdminAnalytics = () => {
     if (!salesData) return <Empty />;
     return (
       <>
-        <div className="aa-kpi-grid">
-          <KpiCard icon={<FaChartLine />}   iconClass="green"  label="Total Revenue"    value={php(salesData.totalRevenue)}      sub="All completed orders" />
-          <KpiCard icon={<FaShoppingCart />} iconClass="blue"  label="Total Orders"     value={salesData.totalOrders || 0}        sub="Across all statuses" />
-          <KpiCard icon={<FaUsers />}        iconClass="purple" label="Total Customers" value={salesData.totalCustomers || 0}    sub="Unique buyers" />
-          <KpiCard icon={<FaBoxes />}        iconClass="amber"  label="Avg Order Value" value={php(salesData.averageOrderValue)} sub="Per order" />
+        <div className="aa-kpi-grid row g-2 g-md-4 mb-3">
+          <ResponsiveCol xs={6} sm={6} md={3}>
+            <KpiCard icon={<FaChartLine />}   iconClass="green"  label="Total Revenue"    value={php(salesData.totalRevenue)}      sub="All completed orders" />
+          </ResponsiveCol>
+          <ResponsiveCol xs={6} sm={6} md={3}>
+            <KpiCard icon={<FaShoppingCart />} iconClass="blue"  label="Total Orders"     value={salesData.totalOrders || 0}        sub="Across all statuses" />
+          </ResponsiveCol>
+          <ResponsiveCol xs={6} sm={6} md={3}>
+            <KpiCard icon={<FaUsers />}        iconClass="purple" label="Total Customers" value={salesData.totalCustomers || 0}    sub="Unique buyers" />
+          </ResponsiveCol>
+          <ResponsiveCol xs={6} sm={6} md={3}>
+            <KpiCard icon={<FaBoxes />}        iconClass="amber"  label="Avg Order Value" value={php(salesData.averageOrderValue)} sub="Per order" />
+          </ResponsiveCol>
         </div>
 
-        <div className="aa-chart-grid">
-          <div className="aa-chart-wrap span2">
-            {salesCharts.daily?.length > 1
-              ? <LineChart data={salesCharts.daily} title="Daily Revenue Trend" color="#2ecc71" height={280} />
-              : <div className="aa-empty">Not enough daily data to render trend line.</div>}
-          </div>
-          <div className="aa-chart-wrap">
-            {salesCharts.statusPie?.length > 0
-              ? <PieChart data={salesCharts.statusPie} title="Orders by Status" colors={PIE_COLORS} />
-              : <div className="aa-empty">No order status data.</div>}
-          </div>
-          {salesCharts.paymentPie?.length > 0 && (
+        <div className="aa-chart-grid row g-2 g-md-4 mb-4">
+          <ResponsiveCol xs={6} sm={6} md={8}>
             <div className="aa-chart-wrap">
-              <PieChart data={salesCharts.paymentPie} title="Payment Methods" colors={PIE_COLORS} />
+              {salesCharts.daily?.length > 1
+                ? <LineChart data={salesCharts.daily} title="Daily Revenue Trend" color="#2ecc71" height={280} />
+                : <div className="aa-empty">Not enough daily data to render trend line.</div>}
             </div>
+          </ResponsiveCol>
+          <ResponsiveCol xs={6} sm={6} md={4}>
+            <div className="aa-chart-wrap">
+              {salesCharts.statusPie?.length > 0
+                ? <PieChart data={salesCharts.statusPie} title="Orders by Status" colors={PIE_COLORS} />
+                : <div className="aa-empty">No order status data.</div>}
+            </div>
+          </ResponsiveCol>
+          {salesCharts.paymentPie?.length > 0 && (
+            <ResponsiveCol xs={6} sm={6} md={6}>
+              <div className="aa-chart-wrap">
+                <PieChart data={salesCharts.paymentPie} title="Payment Methods" colors={PIE_COLORS} />
+              </div>
+            </ResponsiveCol>
           )}
           {salesCharts.orderTypePie?.length > 0 && (
-            <div className="aa-chart-wrap">
-              <PieChart data={salesCharts.orderTypePie} title="Order Types" colors={PIE_COLORS} />
-            </div>
+            <ResponsiveCol xs={6} sm={6} md={6}>
+              <div className="aa-chart-wrap">
+                <PieChart data={salesCharts.orderTypePie} title="Order Types" colors={PIE_COLORS} />
+              </div>
+            </ResponsiveCol>
           )}
           {salesCharts.topProds?.length > 0 && (
-            <div className="aa-chart-wrap span2">
-              <BarChart data={salesCharts.topProds} title="Top Products by Revenue" color="#009245" height={220} />
-            </div>
+            <ResponsiveCol xs={6} sm={6} md={12}>
+              <div className="aa-chart-wrap">
+                <BarChart data={salesCharts.topProds} title="Top Products by Revenue" color="#009245" height={220} />
+              </div>
+            </ResponsiveCol>
           )}
         </div>
 

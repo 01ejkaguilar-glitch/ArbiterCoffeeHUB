@@ -1,0 +1,43 @@
+ INFO  Accepting connections at http://localhost:5000
+ HTTP  5/17/2026 2:13:35 PM 127.0.0.1 GET /
+ HTTP  5/17/2026 2:13:35 PM 127.0.0.1 Returned 200 in 16 ms
+ HTTP  5/17/2026 2:13:54 PM ::1 GET /
+ HTTP  5/17/2026 2:13:54 PM ::1 Returned 200 in 4 ms
+ HTTP  5/17/2026 2:13:54 PM ::1 GET /static/css/9072.8efc4da6.css
+ HTTP  5/17/2026 2:13:54 PM ::1 GET /static/js/9072.b0d35909.js
+ HTTP  5/17/2026 2:13:54 PM ::1 GET /static/css/main.26bd5737.css
+ HTTP  5/17/2026 2:13:54 PM ::1 Returned 200 in 4 ms
+ HTTP  5/17/2026 2:13:54 PM ::1 Returned 200 in 7 ms
+ HTTP  5/17/2026 2:13:54 PM ::1 Returned 200 in 11 ms
+ HTTP  5/17/2026 2:13:54 PM ::1 GET /manifest.json
+ HTTP  5/17/2026 2:13:54 PM ::1 Returned 200 in 7 ms
+ HTTP  5/17/2026 2:13:54 PM ::1 GET /static/js/main.f64d5ecb.js
+ HTTP  5/17/2026 2:13:54 PM ::1 Returned 200 in 3 ms
+ HTTP  5/17/2026 2:13:56 PM ::1 GET /assets/arbiterlogo.png
+ HTTP  5/17/2026 2:13:56 PM ::1 Returned 200 in 5 ms
+ HTTP  5/17/2026 2:13:56 PM ::1 GET /assets/arbiter-logo.png
+ HTTP  5/17/2026 2:13:56 PM ::1 Returned 200 in 5 ms
+ HTTP  5/17/2026 2:13:56 PM ::1 GET /favicon.ico
+ HTTP  5/17/2026 2:13:56 PM ::1 Returned 200 in 5 ms
+ HTTP  5/17/2026 2:13:57 PM ::1 GET /logo144.png
+ HTTP  5/17/2026 2:13:57 PM ::1 Returned 200 in 4 ms
+ HTTP  5/17/2026 2:13:57 PM ::1 GET /static/css/4587.1f164a7e.chunk.css
+ HTTP  5/17/2026 2:13:57 PM ::1 GET /static/css/5356.43eb58c1.chunk.css
+ HTTP  5/17/2026 2:13:57 PM ::1 GET /static/js/4587.04ed1859.chunk.js
+ HTTP  5/17/2026 2:13:57 PM ::1 GET /static/js/5356.ca49fa59.chunk.js
+ HTTP  5/17/2026 2:13:57 PM ::1 Returned 200 in 6 ms
+ HTTP  5/17/2026 2:13:57 PM ::1 Returned 200 in 7 ms
+ HTTP  5/17/2026 2:13:57 PM ::1 Returned 200 in 7 ms
+ HTTP  5/17/2026 2:13:57 PM ::1 GET /static/css/4377.e56f5225.chunk.css
+ HTTP  5/17/2026 2:13:57 PM ::1 Returned 200 in 8 ms
+ HTTP  5/17/2026 2:13:57 PM ::1 GET /static/js/9921.f852ce03.chunk.js
+ HTTP  5/17/2026 2:13:57 PM ::1 Returned 200 in 4 ms
+ HTTP  5/17/2026 2:13:57 PM ::1 Returned 200 in 2 ms
+ HTTP  5/17/2026 2:13:57 PM ::1 GET /static/js/3156.15a9e2e2.chunk.js
+ HTTP  5/17/2026 2:13:57 PM ::1 GET /static/js/6919.18b4e08f.chunk.js
+ HTTP  5/17/2026 2:13:57 PM ::1 GET /static/js/4377.f5dd4759.chunk.js
+ HTTP  5/17/2026 2:13:57 PM ::1 Returned 200 in 4 ms
+ HTTP  5/17/2026 2:13:57 PM ::1 Returned 200 in 5 ms
+ HTTP  5/17/2026 2:13:57 PM ::1 Returned 200 in 4 ms
+ HTTP  5/17/2026 2:14:03 PM ::1 GET /assets/arbiter-logo-white.png
+ HTTP  5/17/2026 2:14:03 PM ::1 Returned 200 in 4 ms

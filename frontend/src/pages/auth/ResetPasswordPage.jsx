@@ -9,6 +9,13 @@ import { API_ENDPOINTS } from '../../config/api';
 import { useToast } from '../../components/animations/Toast';
 import { FadeIn, SlideInUp } from '../../components/animations/AnimationWrappers';
 import './Auth.css';
+import {
+  ResponsiveButton,
+  ResponsiveContainer,
+  ResponsiveForm,
+  ResponsiveRow,
+  ResponsiveCol,
+} from '@/components/responsive';
 
 /* ── Password strength helper (same as RegisterPage) ── */
 const getPasswordStrength = (pw) => {
@@ -169,7 +176,7 @@ const ResetPasswordPage = () => {
 
       {/* ── Form Panel ── */}
       <div className="auth-form-panel">
-        <div className="auth-form-container">
+        <ResponsiveContainer className="auth-form-container">
           <FadeIn duration={0.3}>
             {/* Mobile brand header */}
             <div className="auth-mobile-brand">
@@ -200,7 +207,7 @@ const ResetPasswordPage = () => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} aria-labelledby="reset-heading" noValidate>
+              <ResponsiveForm onSubmit={handleSubmit} aria-labelledby="reset-heading" noValidate>
                 {/* New Password */}
                 <div className="auth-field">
                   <label htmlFor="reset-password" className="auth-field-label">
@@ -316,7 +323,7 @@ const ResetPasswordPage = () => {
                     'Reset Password'
                   )}
                 </button>
-              </form>
+              </ResponsiveForm>
 
               <p className="auth-footer">
                 <Link to="/login" className="auth-footer-link auth-footer-link--back">
@@ -326,7 +333,7 @@ const ResetPasswordPage = () => {
               </p>
             </SlideInUp>
           </FadeIn>
-        </div>
+        </ResponsiveContainer>
       </div>
     </main>
   );

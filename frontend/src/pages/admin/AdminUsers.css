@@ -670,6 +670,262 @@
   .au-table td:nth-child(4) { display: none; } /* hide Joined on mobile */
 }
 
+/* Extra small screens - prioritize vertical scrolling, enhance touch targets */
+@media (max-width: 639px) {
+  /* Stats bar - single column for better vertical flow */
+  .au-stats-bar {
+    grid-template-columns: 1fr;
+    gap: .75rem;
+  }
+
+  /* Filter bar - stack elements vertically */
+  .au-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .75rem;
+  }
+
+  .au-search-wrap {
+    flex: 1 1 100%;
+  }
+
+  .au-search {
+    width: 100%;
+    margin-bottom: .5rem;
+  }
+
+  .au-select {
+    width: 100%;
+    margin-bottom: .5rem;
+  }
+
+  .au-count-label {
+    width: 100%;
+    text-align: left;
+    margin-bottom: .5rem;
+  }
+
+  /* Add button - full width */
+  .au-add-btn {
+    width: 100%;
+    margin-top: .5rem;
+  }
+
+  /* Table - card-based layout for better vertical scrolling */
+  .au-table-card {
+    overflow-x: hidden;
+  }
+
+  .au-table {
+    min-width: 100%;
+    display: block;
+  }
+
+  .au-table thead {
+    display: none;
+  }
+
+  .au-table tbody {
+    display: block;
+  }
+
+  .au-table tr {
+    display: block;
+    margin-bottom: var(--spacing-3);
+    border-radius: var(--radius-md);
+    background-color: var(--color-white);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+  }
+
+  .au-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--border-light);
+    position: relative;
+  }
+
+  .au-table td:last-child {
+    border-bottom: none;
+  }
+
+  .au-table td::before {
+    content: attr(data-label);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    width: 40%;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* User cell - enhance for touch */
+  .au-user-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .5rem;
+  }
+
+  .au-avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .au-user-name {
+    width: 100%;
+  }
+
+  .au-user-id {
+    width: 100%;
+    text-align: left;
+  }
+
+  /* Role badge - full width */
+  .au-role-badge {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* Status chip - touch-friendly */
+  .au-status {
+    min-width: 48px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Actions cell - stack vertically */
+  .au-actions-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .5rem;
+  }
+
+  .au-action-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  /* Pagination - center aligned */
+  .au-pagination-bar {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: .75rem;
+  }
+
+  .au-pagination {
+    gap: .5rem;
+  }
+
+  .au-page-btn {
+    min-width: 48px;
+    height: 48px;
+  }
+
+  /* Modal - full screen for critical actions */
+  .au-modal {
+    margin: 0;
+    width: 100%;
+    height: 100vh;
+    max-width: none !important;
+  }
+
+  .au-modal-header {
+    padding: var(--spacing-4);
+  }
+
+  .au-modal-body {
+    overflow-y: auto;
+    padding-bottom: calc(var(--spacing-4) + env(safe-area-inset-bottom, 0));
+  }
+
+  .au-modal-footer {
+    position: sticky;
+    bottom: 0;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  /* Detail modal */
+  .au-detail-avatar {
+    width: 96px;
+    height: 96px;
+  }
+
+  .au-detail-grid {
+    grid-template-columns: 1fr;
+    gap: .75rem;
+  }
+
+  .au-detail-field label {
+    width: 100%;
+  }
+
+  .au-detail-field .au-val {
+    width: 100%;
+  }
+
+  .au-orders-list {
+    gap: .5rem;
+  }
+
+  .au-order-row {
+    padding: .75rem;
+  }
+
+  /* Form grid - single column */
+  .au-form-grid {
+    grid-template-columns: 1fr;
+    gap: .75rem;
+  }
+
+  .au-form-group {
+    gap: .5rem;
+  }
+
+  .au-form-label {
+    width: 100%;
+  }
+
+  .au-form-input,
+  .au-form-select {
+    width: 100%;
+    margin-bottom: .5rem;
+  }
+
+  /* Confirm dialog */
+  .au-confirm-body {
+    padding: var(--spacing-4);
+  }
+
+  .au-confirm-icon {
+    font-size: 3rem;
+  }
+
+  .au-confirm-title {
+    font-size: 1.2rem;
+  }
+
+  .au-confirm-msg {
+    font-size: 1rem;
+  }
+
+  /* Empty state */
+  .au-empty {
+    gap: .75rem;
+    padding: 2.5rem;
+  }
+
+  .au-empty-icon {
+    font-size: 3rem;
+  }
+
+  .au-empty p {
+    font-size: 1.1rem;
+  }
+}
+
 @media (max-width: 400px) {
   .au-stats-bar { grid-template-columns: repeat(2, 1fr); gap: .6rem; }
   .au-stat-card { padding: .65rem .75rem; gap: .6rem; }

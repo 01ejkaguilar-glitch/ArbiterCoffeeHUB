@@ -1,8 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Container, Row, Col, Button, Form, Badge, Pagination } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import {
+  ResponsiveButton,
+  ResponsiveContainer,
+  ResponsiveCol,
+  ResponsiveRow,
+  ResponsiveForm,
+} from '@/components/responsive';
 import { FaFacebookF, FaInstagram, FaSearch, FaCalendar } from 'react-icons/fa';
 import { FaTiktok } from 'react-icons/fa6';
-import { Link } from 'react-router-dom';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import LoadingFallback from '../../components/common/LoadingFallback';
@@ -125,7 +131,7 @@ const AnnouncementsPage = () => {
       
       {/* Hero Section */}
       <section aria-labelledby="announcements-hero-heading" className="hero-section">
-        <Container>
+        <ResponsiveContainer>
           <Row className="align-items-center">
             <Col lg={8} className="mx-auto text-center">
               <span className="hero-eyebrow">Stay Updated</span>
@@ -135,15 +141,15 @@ const AnnouncementsPage = () => {
               </p>
             </Col>
           </Row>
-        </Container>
+        </ResponsiveContainer>
       </section>
 
-      <Container className="py-5">
+      <ResponsiveContainer className="py-5">
         {/* Filters and Search */}
         <Row className="mb-5">
           <Col md={6} className="mb-3">
             <Form onSubmit={handleSearch} role="search" aria-label="Search announcements">
-              <Form.Group className="d-flex">
+              <Form.Group className="d-flex w-100">
                 <Form.Control
                   type="text"
                   placeholder="Search announcements..."
@@ -152,9 +158,9 @@ const AnnouncementsPage = () => {
                   aria-label="Search announcements by keyword"
                   className="border-end-0"
                 />
-                <Button type="submit" variant="primary" aria-label="Submit search">
+                <ResponsiveButton type="submit" variant="primary" aria-label="Submit search">
                   <FaSearch aria-hidden="true" />
-                </Button>
+                </ResponsiveButton>
               </Form.Group>
             </Form>
           </Col>
@@ -209,9 +215,9 @@ const AnnouncementsPage = () => {
                         {(announcement.content || '').substring(0, 150)}...
                       </p>
                       <div className="d-flex justify-content-between align-items-center mt-auto pt-3" style={{ borderTop: '1px solid var(--color-border)' }}>
-                        <Button as={Link} to={`/announcements/${announcement.id}`} variant="outline-primary" size="sm">
+                        <ResponsiveButton as={Link} to={`/announcements/${announcement.id}`} variant="outline-primary" size="sm">
                           Read More
-                        </Button>
+                        </ResponsiveButton>
                         <div className="d-flex gap-1">
                           <button
                             className="social-share-btn"
@@ -286,7 +292,7 @@ const AnnouncementsPage = () => {
             </Row>
           )}
         </section>
-      </Container>
+      </ResponsiveContainer>
     </main>
   );
 };

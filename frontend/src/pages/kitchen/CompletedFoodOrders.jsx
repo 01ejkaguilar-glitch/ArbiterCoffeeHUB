@@ -7,6 +7,15 @@ import {
 import { API_ENDPOINTS } from '../../config/api';
 import apiService from '../../services/api.service';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
+import {
+  ResponsiveButton,
+  ResponsiveCard,
+  ResponsiveContainer,
+  ResponsiveCol,
+  ResponsiveRow,
+  ResponsiveModal,
+  ResponsiveTable,
+} from '@/components/responsive';
 import './CompletedFoodOrders.css';
 
 const todayStr = () => new Date().toISOString().split('T')[0];
@@ -118,119 +127,192 @@ const CompletedFoodOrders = () => {
           <p className="cfo-subtitle">Review completed kitchen orders</p>
         </div>
         <div className="cfo-topbar-actions">
-          <button
-            className={`cfo-refresh-btn${refreshing ? ' spinning' : ''}`}
+          <ResponsiveButton
+            variant="outline-secondary"
+            size="sm"
             onClick={() => fetchOrders(true)}
             disabled={refreshing}
           >
-            <FaSync /> {refreshing ? 'Refreshing…' : 'Refresh'}
-          </button>
+            <FaSync className={refreshing ? 'spinning' : ''} />
+            {refreshing ? 'Refreshing…' : 'Refresh'}
+          </ResponsiveButton>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="cfo-summary">
-        <div className="cfo-summary-card">
-          <div className="cfo-summary-value">{filtered.length}</div>
-          <div className="cfo-summary-label">Orders Completed</div>
-        </div>
-        <div className="cfo-summary-card">
-          <div className="cfo-summary-value">{avgPrep}</div>
-          <div className="cfo-summary-label">Avg Prep Time</div>
-        </div>
-        <div className="cfo-summary-card">
-          <div className="cfo-summary-value">{fmtCurrency(totalRevenue)}</div>
-          <div className="cfo-summary-label">Total Revenue</div>
-        </div>
-      </div>
+      <ResponsiveRow className="g-4 mb-4">
+        <ResponsiveCol md={4}>
+          <ResponsiveCard className="border-0 shadow-sm h-100">
+            <div className="p-3">
+              <div className="d-flex align-items-center mb-2">
+                <FaCheckCircle className="text-success me-2" size={20} />
+                <h5 className="mb-0">Orders Completed</h5>
+              </div>
+              <p className="fs-4 fw-bold mb-0">{filtered.length}</p>
+            </div>
+          </ResponsiveCard>
+        </ResponsiveCol>
+        <ResponsiveCol md={4}>
+          <ResponsiveCard className="border-0 shadow-sm h-100">
+            <div className="p-3">
+              <div className="d-flex align-items-center mb-2">
+                <FaClock className="text-primary me-2" size={18} />
+                <h5 className="mb-0">Avg Prep Time</h5>
+              </div>
+              <p className="fs-5 fw-bold mb-0">{avgPrep}</p>
+            </div>
+          </ResponsiveCard>
+        </ResponsiveCol>
+        <ResponsiveCol md={4}>
+          <ResponsiveCard className="border-0 shadow-sm h-100">
+            <div className="p-3">
+              <div className="d-flex align-items-center mb-2">
+                <FaMoneyBillWave className="text-info me-2" size={20} />
+                <h5 className="mb-0">Total Revenue</h5>
+              </div>
+              <p className="fs-4 fw-bold mb-0">{fmtCurrency(totalRevenue)}</p>
+            </div>
+          </ResponsiveCard>
+        </ResponsiveCol>
+      </ResponsiveRow>
 
       {/* Filters */}
-      <div className="cfo-filters">
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={e => { setSelectedDate(e.target.value); setPage(1); }}
-          className="cfo-date-input"
-        />
-        <div className="cfo-search-wrap">
-          <FaSearch className="cfo-search-icon" />
+      <ResponsiveRow className="g-3 align-items-center mb-4">
+        <ResponsiveCol md={3} sm={6}>
+          <label className="form-label">
+            <FaCalendarAlt className="me-1" />
+            Date
+          </label>
           <input
-            type="text"
-            placeholder="Search by order # or customer…"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="cfo-search-input"
+            type="date"
+            value={selectedDate}
+            onChange={e => { setSelectedDate(e.target.value); setPage(1); }}
+            className="form-control"
           />
-          {searchTerm && (
-            <button className="cfo-clear-btn" onClick={() => setSearchTerm('')}>
-              <FaTimes size={11} />
-            </button>
-          )}
-        </div>
-      </div>
+        </ResponsiveCol>
+        <ResponsiveCol md={6} sm={12}>
+          <div className="input-group">
+            <span className="input-group-text">
+              <FaSearch />
+            </span>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search by order # or customer…"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button
+                className="btn btn-outline-secondary ms-1"
+                type="button"
+                onClick={() => setSearchTerm('')}
+              >
+                <FaTimes />
+              </button>
+            )}
+          </div>
+        </ResponsiveCol>
+        <ResponsiveCol md={3} sm={6} className="d-flex justify-content-end">
+          <ResponsiveButton
+            variant="outline-secondary"
+            size="sm"
+            onClick={() => fetchOrders(true)}
+            disabled={refreshing}
+          >
+            <FaSync className={refreshing ? 'spinning' : ''} />
+            {refreshing ? 'Refreshing…' : 'Refresh'}
+          </ResponsiveButton>
+        </ResponsiveCol>
+      </ResponsiveRow>
 
       {/* Orders list */}
-      <div className="cfo-card">
-        <div className="cfo-card-head">
-          <h2 className="cfo-card-title">
-            <FaCheckCircle size={14} style={{ color: '#16a34a' }} />
-            Orders
-          </h2>
-        </div>
-        <div className="cfo-table-header">
-          <span>Order #</span>
-          <span>Customer</span>
-          <span>Total</span>
-          <span>Prep Time</span>
-          <span>Type</span>
-          <span></span>
-        </div>
-        {loading ? (
-          <div className="cfo-loading"><FaSpinner className="spinning" /> Loading orders…</div>
-        ) : filtered.length === 0 ? (
-          <div className="cfo-empty">
-            <FaCheckCircle size={32} style={{ color: '#d1d5db', display: 'block', margin: '0 auto 8px' }} />
-            <p>No completed orders found for this date.</p>
+      <ResponsiveCard className="border-0 shadow-sm">
+        <ResponsiveCard.Header>
+          <div className="d-flex justify-content-between align-items-center">
+            <h5 className="mb-0">
+              <FaCheckCircle size={14} style={{ color: '#16a34a' }} />
+              Orders
+            </h5>
           </div>
-        ) : (
-          <div className="cfo-order-list">
-            {filtered.map(order => {
-              const prep = (order.created_at && order.completed_at)
-                ? (() => {
-                    const ms = new Date(order.completed_at) - new Date(order.created_at);
-                    const m = Math.round(ms / 60000);
-                    return m >= 60 ? `${Math.floor(m/60)}h ${m%60}m` : `${m}m`;
-                  })()
-                : '—';
-              return (
-                <div key={order.id} className="cfo-order-row">
-                  <span className="cfo-order-num">#{order.order_number || order.id}</span>
-                  <span className="cfo-order-customer">{order.user?.name || order.customer_name || 'Guest'}</span>
-                  <span className="cfo-order-total">{fmtCurrency(order.total_amount)}</span>
-                  <span className="cfo-order-time">{prep}</span>
-                  <span className={`cfo-order-type-badge ${TYPE_MAP[order.order_type]?.cls || ''}`}>
-                    {TYPE_MAP[order.order_type]?.label || order.order_type || '—'}
-                  </span>
-                  <button className="cfo-view-btn" onClick={() => setSelectedOrder(order)}>
-                    <FaEye size={13} />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        </ResponsiveCard.Header>
+        <ResponsiveCard.Body className="p-0">
+          {loading ? (
+            <div className="text-center py-4">
+              <FaSpinner className="spinning" /> Loading orders…
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-4">
+              <FaCheckCircle size={32} style={{ color: '#d1d5db', display: 'block', margin: '0 auto 8px' }} />
+              <p>No completed orders found for this date.</p>
+            </div>
+          ) : (
+            <ResponsiveTable>
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Customer</th>
+                  <th>Total</th>
+                  <th>Prep Time</th>
+                  <th>Type</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(order => {
+                  const prep = (order.created_at && order.completed_at)
+                    ? (() => {
+                        const ms = new Date(order.completed_at) - new Date(order.created_at);
+                        const m = Math.round(ms / 60000);
+                        return m >= 60 ? `${Math.floor(m/60)}h ${m%60}m` : `${m}m`;
+                      })()
+                    : '—';
+                  return (
+                    <tr key={order.id}>
+                      <td><span className="cfo-order-num">#{order.order_number || order.id}</span></td>
+                      <td>{order.user?.name || order.customer_name || 'Guest'}</td>
+                      <td>{fmtCurrency(order.total_amount)}</td>
+                      <td>{prep}</td>
+                      <td>
+                        <span className={`cfo-order-type-badge ${TYPE_MAP[order.order_type]?.cls || ''}`}>
+                          {TYPE_MAP[order.order_type]?.label || order.order_type || '—'}
+                        </span>
+                      </td>
+                      <td>
+                        <ResponsiveButton variant="outline-primary" size="sm" onClick={() => setSelectedOrder(order)}>
+                          <FaEye size={13} />
+                        </ResponsiveButton>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </ResponsiveTable>
+          )}
+        </ResponsiveCard.Body>
+      </ResponsiveCard>
 
         {/* Pagination */}
         {lastPage > 1 && (
           <div className="cfo-pagination">
             <span>Page {page} of {lastPage}</span>
             <div className="cfo-page-btns">
-              <button className="cfo-page-btn" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+              <ResponsiveButton
+                variant="outline-secondary"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage(p => p - 1)}
+              >
                 <FaChevronLeft size={11} /> Prev
-              </button>
-              <button className="cfo-page-btn" disabled={page >= lastPage} onClick={() => setPage(p => p + 1)}>
+              </ResponsiveButton>
+              <ResponsiveButton
+                variant="outline-secondary"
+                size="sm"
+                disabled={page >= lastPage}
+                onClick={() => setPage(p => p + 1)}
+              >
                 Next <FaChevronRight size={11} />
-              </button>
+              </ResponsiveButton>
             </div>
           </div>
         )}

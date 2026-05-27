@@ -6,17 +6,17 @@ import {
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
-import ResponsiveButton from '../../components/responsive/Button';
-import ResponsiveForm from '../../components/responsive/Form';
-import ResponsiveModal from '../../components/responsive/Modal';
-import ResponsiveTable from '../../components/responsive/Table';
-import ResponsiveCard from '../../components/responsive/Card';
-import ResponsiveAlert from '../../components/responsive/Alert';
-import ResponsiveSpinner from '../../components/responsive/Spinner';
-import ResponsiveBadge from '../../components/responsive/Badge';
-import ResponsiveContainer from '../../components/responsive/Container';
-import ResponsiveRow from '../../components/responsive/Row';
-import ResponsiveCol from '../../components/responsive/Col';
+import ResponsiveButton from '@/components/responsive/Button';
+import ResponsiveForm from '@/components/responsive/Form';
+import ResponsiveModal from '@/components/responsive/Modal';
+import ResponsiveTable from '@/components/responsive/Table';
+import ResponsiveCard from '@/components/responsive/Card';
+import ResponsiveAlert from '@/components/responsive/Alert';
+import ResponsiveSpinner from '@/components/responsive/Spinner';
+import ResponsiveBadge from '@/components/responsive/Badge';
+import ResponsiveContainer from '@/components/responsive/Container';
+import ResponsiveRow from '@/components/responsive/Row';
+import ResponsiveCol from '@/components/responsive/Col';
 import './AdminWorkforce.css';
 
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';

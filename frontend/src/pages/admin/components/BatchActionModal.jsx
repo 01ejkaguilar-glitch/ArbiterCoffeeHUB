@@ -2,6 +2,7 @@ import React from 'react';
 import ResponsiveModal from '../../../components/responsive/Modal';
 import ResponsiveForm from '../../../components/responsive/Form';
 import ResponsiveButton from '../../../components/responsive/Button';
+import { FaTimes } from 'react-icons/fa';
 
 const BatchActionModal = ({ show, onHide, batchAction, setBatchAction, batchValue, setBatchValue, onSubmit }) => {
   return (

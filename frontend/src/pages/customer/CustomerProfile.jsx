@@ -1,8 +1,12 @@
 import PullToRefresh from '../../components/mobile/PullToRefresh';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Modal, Spinner, Form } from 'react-bootstrap';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ResponsiveModal,
+  ResponsiveSpinner,
+  ResponsiveForm,
+} from '@/components/responsive';
 import {
   FaUser, FaCoffee, FaBell, FaShieldAlt, FaCamera,
   FaTrash, FaCalendarAlt, FaCheck, FaExclamationCircle,
@@ -313,7 +317,7 @@ const CustomerProfile = () => {
     return (
       <main role="main" className="cpf-page">
         <div className="cpf-loading">
-          <Spinner animation="border" />
+          <ResponsiveSpinner animation="border" />
           <p>Loading your profile…</p>
         </div>
       </main>
@@ -430,7 +434,7 @@ const CustomerProfile = () => {
                   </div>
                 </div>
                 <button type="submit" className="cpf-btn cpf-btn-primary" disabled={saving}>
-                  {saving ? <Spinner animation="border" size="sm" /> : 'Save Changes'}
+                  {saving ? <ResponsiveSpinner /> : 'Save Changes'}
                 </button>
               </form>
             </div>
@@ -502,7 +506,7 @@ const CustomerProfile = () => {
                 </div>
 
                 <button type="submit" className="cpf-btn cpf-btn-primary" disabled={saving}>
-                  {saving ? <Spinner animation="border" size="sm" /> : 'Save Preferences'}
+                  {saving ? <ResponsiveSpinner animation="border" size="sm" /> : 'Save Preferences'}
                 </button>
               </form>
             </div>
@@ -526,7 +530,7 @@ const CustomerProfile = () => {
                         <div className="cpf-switch-label">{item.label}</div>
                         <p className="cpf-switch-desc">{item.desc}</p>
                       </div>
-                      <Form.Check
+                      <ResponsiveForm.Checkbox
                         type="switch"
                         id={`cpf-${item.key}`}
                         checked={notifications[item.key]}
@@ -537,7 +541,7 @@ const CustomerProfile = () => {
                 </div>
                 <div className="cpf-section-gap">
                   <button type="submit" className="cpf-btn cpf-btn-primary" disabled={saving}>
-                    {saving ? <Spinner animation="border" size="sm" /> : 'Save Preferences'}
+                    {saving ? <ResponsiveSpinner animation="border" size="sm" /> : 'Save Preferences'}
                   </button>
                 </div>
               </form>
@@ -570,7 +574,7 @@ const CustomerProfile = () => {
                   </div>
                 </div>
                 <button type="submit" className="cpf-btn cpf-btn-outline" disabled={saving}>
-                  {saving ? <Spinner animation="border" size="sm" /> : 'Change Password'}
+                  {saving ? <ResponsiveSpinner animation="border" size="sm" /> : 'Change Password'}
                 </button>
               </form>
             </div>
@@ -588,7 +592,7 @@ const CustomerProfile = () => {
                       <div className="cpf-switch-label">Public Profile</div>
                       <p className="cpf-switch-desc">Allow others to see your profile</p>
                     </div>
-                    <Form.Check
+                    <ResponsiveForm.Checkbox
                       type="switch"
                       id="cpf-public-profile"
                       checked={privacySettings.public_profile}
@@ -600,7 +604,7 @@ const CustomerProfile = () => {
                       <div className="cpf-switch-label">Data Sharing</div>
                       <p className="cpf-switch-desc">Share anonymized data to improve our services</p>
                     </div>
-                    <Form.Check
+                    <ResponsiveForm.Checkbox
                       type="switch"
                       id="cpf-data-sharing"
                       checked={privacySettings.data_sharing}
@@ -610,7 +614,7 @@ const CustomerProfile = () => {
                 </div>
                 <div className="cpf-section-gap">
                   <button type="submit" className="cpf-btn cpf-btn-outline" disabled={saving}>
-                    {saving ? <Spinner animation="border" size="sm" /> : 'Save Privacy Settings'}
+                    {saving ? <ResponsiveSpinner animation="border" size="sm" /> : 'Save Privacy Settings'}
                   </button>
                 </div>
               </form>
@@ -631,7 +635,7 @@ const CustomerProfile = () => {
       </AnimatePresence>
 
       {/* ── Deactivation Modal ─────────── */}
-      <Modal show={showDeactivateModal} onHide={() => setShowDeactivateModal(false)} centered className="cpf-modal">
+      <ResponsiveModal show={showDeactivateModal} onHide={() => setShowDeactivateModal(false)} centered className="cpf-modal">
         <div ref={deactivateModalRef}>
           <Modal.Header closeButton>
             <Modal.Title>Deactivate Account</Modal.Title>
@@ -674,11 +678,11 @@ const CustomerProfile = () => {
               onClick={handleDeactivate}
               disabled={saving || !deactivateForm.password}
             >
-              {saving ? <Spinner animation="border" size="sm" /> : 'Deactivate Account'}
+              {saving ? <ResponsiveSpinner animation="border" size="sm" /> : 'Deactivate Account'}
             </button>
-          </Modal.Footer>
+          </ResponsiveModal.Footer>
         </div>
-      </Modal>
+      </ResponsiveModal>
       </PullToRefresh>
     </main>
   );

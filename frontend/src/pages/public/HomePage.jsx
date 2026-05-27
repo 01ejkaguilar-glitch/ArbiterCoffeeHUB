@@ -1,6 +1,12 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { Container, Row, Col, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import {
+  ResponsiveButton,
+  ResponsiveCard,
+  ResponsiveContainer,
+  ResponsiveCol,
+  ResponsiveRow,
+} from '@/components/responsive';
 import {
   FaCoffee, FaLeaf, FaTruck, FaAward, FaArrowRight,
   FaSearch, FaMugHot, FaBoxOpen, FaSmile,
@@ -116,7 +122,7 @@ const HomePage = () => {
 
       {/* ── Hero Section ── */}
       <section aria-labelledby="hero-heading" className="hero-section">
-        <Container>
+        <ResponsiveContainer>
           <Row className="align-items-center">
             <Col lg={8} className="mx-auto text-center">
               <span className="hero-eyebrow">Specialty Coffee Experience</span>
@@ -128,22 +134,22 @@ const HomePage = () => {
                 Discover specialty coffees that awaken your senses and fuel your day.
               </p>
               <div className="mt-4 d-flex gap-3 justify-content-center flex-wrap">
-                <Button as={Link} to="/products" variant="light" size="lg" aria-label="Browse our coffee products">
+                <ResponsiveButton to="/products" variant="outline-secondary" size="lg" aria-label="Browse our coffee products">
                   <FaCoffee className="me-2" aria-hidden="true" />
                   Browse Products
                 </Button>
-                <Button as={Link} to="/about" variant="outline-light" size="lg" aria-label="Learn more about Arbiter Coffee">
+                <ResponsiveButton as={Link} to="/about" variant="outline-secondary" size="lg" aria-label="Learn more about Arbiter Coffee">
                   Our Story
                 </Button>
               </div>
             </Col>
           </Row>
-        </Container>
+        </ResponsiveContainer>
       </section>
 
       {/* ── Stats Bar ── */}
       <section className="stats-bar" aria-label="Key statistics">
-        <Container>
+        <ResponsiveContainer>
           <Row className="g-0 text-center">
             {stats.map((stat, i) => (
               <Col xs={6} md={3} key={i} className="stats-bar-item">
@@ -152,12 +158,12 @@ const HomePage = () => {
               </Col>
             ))}
           </Row>
-        </Container>
+        </ResponsiveContainer>
       </section>
 
       {/* ── Why Choose Us ── */}
       <section aria-labelledby="features-heading" className="section-modern">
-        <Container>
+        <ResponsiveContainer>
           <div className="section-header">
             <h2 id="features-heading">Why Choose Arbiter Coffee</h2>
             <div className="section-divider" />
@@ -168,23 +174,23 @@ const HomePage = () => {
               const Icon = feat.icon;
               return (
                 <Col md={6} lg={3} key={i} role="listitem">
-                  <article className="feature-card">
+                  <ResponsiveCard className="h-100">
                     <div className="feature-icon" aria-hidden="true">
                       <Icon />
                     </div>
                     <h3>{feat.title}</h3>
                     <p>{feat.text}</p>
-                  </article>
+                  </ResponsiveCard>
                 </Col>
               );
             })}
           </Row>
-        </Container>
+        </ResponsiveContainer>
       </section>
 
       {/* ── How It Works ── */}
       <section aria-labelledby="process-heading" className="section-modern" style={{ background: 'var(--color-off-white, #f9fafb)' }}>
-        <Container>
+        <ResponsiveContainer>
           <div className="section-header">
             <h2 id="process-heading">How It Works</h2>
             <div className="section-divider" />
@@ -207,12 +213,12 @@ const HomePage = () => {
               );
             })}
           </Row>
-        </Container>
+        </ResponsiveContainer>
       </section>
 
       {/* ── Featured Products / Recommendations ── */}
       <section aria-labelledby="recommendations-heading" className="section-modern">
-        <Container>
+        <ResponsiveContainer>
           <div className="section-header">
             <h2 id="recommendations-heading">Featured Products</h2>
             <div className="section-divider" />
@@ -225,12 +231,12 @@ const HomePage = () => {
           ) : (
             <div className="text-center py-4 text-muted">Featured products will load shortly...</div>
           )}
-        </Container>
+        </ResponsiveContainer>
       </section>
 
       {/* ── Our Values ── */}
       <section aria-labelledby="values-heading" className="section-modern" style={{ background: 'var(--color-off-white, #f9fafb)' }}>
-        <Container>
+        <ResponsiveContainer>
           <div className="section-header">
             <h2 id="values-heading">What We Stand For</h2>
             <div className="section-divider" />
@@ -241,23 +247,23 @@ const HomePage = () => {
               const Icon = val.icon;
               return (
                 <Col md={6} lg={3} key={i} role="listitem">
-                  <article className="feature-card">
+                  <ResponsiveCard className="h-100">
                     <div className="feature-icon" aria-hidden="true">
                       <Icon />
                     </div>
                     <h3>{val.title}</h3>
                     <p>{val.text}</p>
-                  </article>
+                  </ResponsiveCard>
                 </Col>
               );
             })}
           </Row>
-        </Container>
+        </ResponsiveContainer>
       </section>
 
       {/* ── Call to Action ── */}
       <section aria-labelledby="cta-heading" className="cta-section">
-        <Container>
+        <ResponsiveContainer>
           <Row className="align-items-center">
             <Col lg={7}>
               <h2 id="cta-heading">Start Your Coffee Journey Today</h2>
@@ -267,15 +273,15 @@ const HomePage = () => {
               </p>
             </Col>
             <Col lg={5} className="text-lg-end mt-4 mt-lg-0 d-flex gap-3 justify-content-lg-end justify-content-center flex-wrap">
-              <Button as={Link} to="/register" variant="light" size="lg" aria-label="Sign up for an Arbiter Coffee account">
+              <ResponsiveButton to="/register" variant="outline-secondary" size="lg" aria-label="Sign up for an Arbiter Coffee account">
                 Sign Up Free <FaArrowRight className="ms-2" aria-hidden="true" />
-              </Button>
-              <Button as={Link} to="/products" variant="outline-light" size="lg" aria-label="Browse products">
+              </ResponsiveButton>
+              <ResponsiveButton to="/products" variant="outline-secondary" size="lg" aria-label="Browse products">
                 Shop Now
-              </Button>
+              </ResponsiveButton>
             </Col>
           </Row>
-        </Container>
+        </ResponsiveContainer>
       </section>
     </main>
   );

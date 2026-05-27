@@ -1,0 +1,372 @@
+/* ═════════════════════════════════════════════════════
+   BaristaShifts.css  —  bs-* design system
+   Brand: var(--color-dark-green) dark-green | var(--color-medium-green) med-green
+          var(--color-success-bg) light-green | #9B6B00 amber
+          #C41E3A danger     | #1A1A1A text
+   ═════════════════════════════════════════════════════ */
+
+/* ── Page Shell ───────────────────────────────────── */
+.bs-page {
+  padding: 1.25rem 1.5rem;
+  min-height: 100vh;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Current Shift Card ───────────────────────────── */
+.bs-page .bs-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.bs-stat-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.bs-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 0.5rem;
+}
+
+.bs-stat-val {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1A1A1A;
+  display: block;
+}
+
+.bs-stat-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Filter Bar ─────────────────────────────────── */
+.bs-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.bs-search-wrap {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.bs-search-icon {
+  padding: 0.75rem 1rem;
+  color: #6b7280;
+  background: #f3f4f6;
+}
+
+.bs-search-input {
+  border: none;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  width: 250px;
+}
+
+.bs-search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.bs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bs-btn.primary {
+  background: var(--color-dark-green);
+  color: #fff;
+}
+
+.bs-btn.primary:hover {
+  background: #004d25;
+}
+
+.bs-btn.secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.bs-btn.secondary:hover {
+  background: #e5e7eb;
+}
+
+.bs-btn.danger {
+  background: #C41E3A;
+  color: #fff;
+}
+
+.bs-btn.danger:hover {
+  background: #991b1b;
+}
+
+.bs-btn-icon {
+  padding: 0.5rem;
+  width: 35px;
+  height: 35px;
+}
+
+/* ── Table Styles ───────────────────────────────── */
+.bs-table-wrap {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  overflow: hidden;
+}
+
+.bs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bs-table th,
+.bs-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.bs-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.bs-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.bs-td-bold {
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.bs-td-muted {
+  color: #6b7280;
+}
+
+/* ── Action Buttons ─────────────────────────────── */
+.bs-action-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.bs-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bs-action-btn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.bs-action-btn.edit {
+  color: #1f2937;
+}
+
+.bs-action-btn.edit:hover {
+  background: #d1d5db;
+}
+
+.bs-action-btn.swap {
+  color: #059669;
+}
+
+.bs-action-btn.swap:hover {
+  background: #d1fae5;
+}
+
+.bs-action-btn.delete {
+  color: #C41E3A;
+}
+
+.bs-action-btn.delete:hover {
+  background: #fee2e2;
+}
+
+/* ── Modal Styles ───────────────────────────────── */
+.bs-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.bs-modal {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  width: 100%;
+  max-width: 540px;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: bs-fadeIn .18s ease;
+}
+
+@keyframes bs-fadeIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.bs-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.3rem .9rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.bs-modal-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1A1A1A;
+  margin: 0;
+}
+
+.bs-modal-close {
+  border: none;
+  background: #f3f4f6;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bs-modal-close:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.bs-modal-body {
+  padding: 1.1rem 1.3rem;
+}
+
+.bs-modal-foot {
+  padding: .9rem 1.3rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+/* ── Form Styles ────────────────────────────────── */
+.bs-form-row {
+  margin-bottom: 1.5rem;
+}
+
+.bs-form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.bs-field-select,
+.bs-field-input,
+.bs-field-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: #fff;
+}
+
+.bs-field-select:focus,
+.bs-field-input:focus,
+.bs-field-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.bs-field-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.bs-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* ── Responsive Breakpoints ─────────────────────── */
+@media (max-width: 768px) {
+  .bs-page {
+    padding: 1rem;
+  }
+
+  .bs-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bs-search-wrap {
+    width: 100%;
+  }
+
+  .bs-2col {
+    grid-template-columns: 1fr;
+  }
+
+  .bs-table th,
+  .bs-table td {
+    padding: 0.75rem;
+  }
+}

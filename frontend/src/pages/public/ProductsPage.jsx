@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Container, Row, Col, Button, Form, InputGroup, Dropdown } from 'react-bootstrap';
-import { FaSearch, FaCoffee, FaCocktail, FaUtensils, FaBox, FaCookieBite, FaFilter, FaSort } from 'react-icons/fa';
 import { useSearchParams } from 'react-router-dom';
+import { FaSearch, FaCoffee, FaCocktail, FaUtensils, FaBox, FaCookieBite, FaFilter, FaSort } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import { useCart } from '../../context/CartContext';
@@ -15,6 +14,15 @@ import { useToast } from '../../components/animations/Toast';
 import ProductFilterForm from '../../components/product/ProductFilterForm';
 import ProductCategoryTabs from '../../components/product/ProductCategoryTabs';
 import ProductGrid from '../../components/product/ProductGrid';
+import {
+  ResponsiveButton,
+  ResponsiveContainer,
+  ResponsiveResponsiveCol,
+  ResponsiveForm,
+  ResponsiveInputGroup,
+  ResponsiveDropdown,
+  ResponsiveRow,
+} from '@/components/responsive';
 import '../../components/product/EnhancedProductCard.css';
 import '../../components/product/QuickViewModal.css';
 
@@ -179,9 +187,9 @@ const ProductsPage = () => {
   return (
     <main role="main">
       <PullToRefresh onRefresh={reloadProducts}>
-        <Container className="py-5">
+        <ResponsiveContainer className="py-5">
         <SEO
-          title={`${categoryName} - Browse Our Premium Coffee Collection`}
+          title={`${categoryName} - Browse Our Premium Coffee ResponsiveCollection`}
           description={`Explore ${productCount} premium coffee products. Shop specialty coffee, espresso, lattes, merchandise, and more.`}
           keywords="coffee products, specialty coffee, espresso, latte, coffee beans, coffee merchandise, buy coffee online"
           url="/products"
@@ -196,23 +204,23 @@ const ProductsPage = () => {
         </div>
 
         {/* Search, Sort & Filter Controls */}
-        <Row className="mb-3 align-items-center g-2">
-          <Col md={5} sm={12}>
-            <Form role="search" aria-label="Search products">
-              <InputGroup>
-                <InputGroup.Text><FaSearch aria-hidden="true" /></InputGroup.Text>
-                <Form.Control
+        <ResponsiveRow className="mb-3 align-items-center g-2">
+          <ResponsiveCol md={5} sm={12}>
+            <ResponsiveForm role="search" aria-label="Search products">
+              <ResponsiveInputGroup>
+                <ResponsiveInputGroup.Text><FaSearch aria-hidden="true" /></ResponsiveInputGroup.Text>
+                <ResponsiveForm.Control
                   type="text"
                   placeholder="Search products..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   aria-label="Search products by name"
                 />
-              </InputGroup>
-            </Form>
-          </Col>
-          <Col md={7} sm={12} className="d-flex gap-2 justify-content-md-end mt-2 mt-md-0 flex-wrap">
-            <Button
+              </ResponsiveInputGroup>
+            </ResponsiveForm>
+          </ResponsiveCol>
+          <ResponsiveCol md={7} sm={12} className="d-flex gap-2 justify-content-md-end mt-2 mt-md-0 flex-wrap">
+            <ResponsiveButton
               variant={showFilters ? 'primary' : 'outline-secondary'}
               onClick={() => setShowFilters(prev => !prev)}
               aria-label="Toggle product filters"
@@ -221,26 +229,26 @@ const ProductsPage = () => {
             >
               <FaFilter className="me-1" aria-hidden="true" />
               {showFilters ? 'Hide Filters' : 'Filters'}
-            </Button>
-            <Dropdown show={dropdownOpen} onToggle={(isOpen) => setDropdownOpen(isOpen)}>
-              <Dropdown.Toggle variant="outline-secondary" size="sm" aria-label="Sort products menu">
+            </ResponsiveButton>
+            <ResponsiveDropdown show={dropdownOpen} onToggle={(isOpen) => setDropdownOpen(isOpen)}>
+              <ResponsiveDropdown.Toggle variant="outline-secondary" size="sm" aria-label="Sort products menu">
                 <FaSort className="me-1" aria-hidden="true" />
                 {sortBy === 'name' ? 'Name' : sortBy === 'price' ? 'Price' : 'Date'}
                 {sortOrder === 'asc' ? ' \u2191' : ' \u2193'}
-              </Dropdown.Toggle>
-              <Dropdown.Menu role="menu">
-                <Dropdown.Item onClick={() => { setSortBy('name'); setSortOrder('asc'); }}>Name (A-Z)</Dropdown.Item>
-                <Dropdown.Item onClick={() => { setSortBy('name'); setSortOrder('desc'); }}>Name (Z-A)</Dropdown.Item>
-                <Dropdown.Item onClick={() => { setSortBy('price'); setSortOrder('asc'); }}>Price (Low to High)</Dropdown.Item>
-                <Dropdown.Item onClick={() => { setSortBy('price'); setSortOrder('desc'); }}>Price (High to Low)</Dropdown.Item>
-                <Dropdown.Item onClick={() => { setSortBy('date'); setSortOrder('desc'); }}>Newest First</Dropdown.Item>
-                <Dropdown.Item onClick={() => { setSortBy('date'); setSortOrder('asc'); }}>Oldest First</Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          </Col>
+              </ResponsiveDropdown.Toggle>
+              <ResponsiveDropdown.Menu role="menu">
+                <ResponsiveDropdown.Item onClick={() => { setSortBy('name'); setSortOrder('asc'); }}>Name (A-Z)</ResponsiveDropdown.Item>
+                <ResponsiveDropdown.Item onClick={() => { setSortBy('name'); setSortOrder('desc'); }}>Name (Z-A)</ResponsiveDropdown.Item>
+                <ResponsiveDropdown.Item onClick={() => { setSortBy('price'); setSortOrder('asc'); }}>Price (Low to High)</ResponsiveDropdown.Item>
+                <ResponsiveDropdown.Item onClick={() => { setSortBy('price'); setSortOrder('desc'); }}>Price (High to Low)</ResponsiveDropdown.Item>
+                <ResponsiveDropdown.Item onClick={() => { setSortBy('date'); setSortOrder('desc'); }}>Newest First</ResponsiveDropdown.Item>
+                <ResponsiveDropdown.Item onClick={() => { setSortBy('date'); setSortOrder('asc'); }}>Oldest First</ResponsiveDropdown.Item>
+              </ResponsiveDropdown.Menu>
+            </ResponsiveDropdown>
+          </ResponsiveCol>
         </Row>
 
-        {/* Inline Collapsible Filters */}
+        {/* Inline ResponsiveCollapsible Filters */}
         {showFilters && (
           <div className="product-filters-bar mb-4">
             <ProductFilterForm
@@ -299,7 +307,7 @@ const ProductsPage = () => {
             />
           </div>
         </section>
-      </Container>
+      </ResponsiveContainer>
     </PullToRefresh>
     </main>
   );

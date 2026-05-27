@@ -454,3 +454,322 @@
     font-size: .62rem;
   }
 }
+
+/* Order Group Styles */
+.cdb-order-group {
+  margin-bottom: 1.5rem;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.cdb-order-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: var(--color-bg-light);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-top: 1px solid var(--color-border-default);
+}
+
+.cdb-order-group-header:hover {
+  background: var(--color-white);
+}
+
+.cdb-order-group-header:first-child {
+  border-top: none;
+}
+
+.cdb-order-date {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.cdb-order-type-count {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cdb-toggle-icon {
+  font-size: var(--font-size-xs);
+  transition: transform 0.2s ease;
+}
+
+.cdb-toggle-icon.open {
+  transform: rotate(180deg);
+}
+
+.cdb-order-group-body {
+  border-top: 1px solid var(--color-border-default);
+}
+
+.cdb-order-type-group {
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.cdb-order-type-group:last-child {
+  border-bottom: none;
+}
+
+.cdb-order-type-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-white);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+}
+
+.cdb-order-type-label {
+  text-transform: capitalize;
+}
+
+.cdb-order-type-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cdb-order-reorder {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Reduced Motion Media Query */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Rewards Visualization Styles */
+.cdb-rewards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cdb-rewards-progress {
+  background: var(--color-bg-light);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.cdb-progress-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.cdb-progress-value {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-dark-green);
+}
+
+.cdb-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--color-border-default);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.cdb-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-success), var(--color-dark-green));
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.cdb-tier-marker {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  pointer-events: none;
+}
+
+.cdb-tier-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--color-white);
+  border: 2px solid var(--color-dark-green);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: -3px;
+  transform: translateY(-50%);
+}
+
+.cdb-tier-label {
+  position: absolute;
+  top: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.cdb-progress-text {
+  text-align: right;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+
+.cdb-rewards-preview {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.cdb-preview-title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cdb-rewards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cdb-reward-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  transition: var(--transition-base);
+}
+
+.cdb-reward-item:hover {
+  border-color: var(--color-dark-green);
+  transform: translateY(-1px);
+}
+
+.cdb-reward-item.unaffordable {
+  opacity: 0.7;
+}
+
+.cdb-reward-info {
+  flex: 1;
+}
+
+.cdb-reward-name {
+  margin: 0 0 0.25rem;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.cdb-reward-description {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.cdb-reward-cost {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: var(--font-size-xs);
+}
+
+.cdb-expiration-warnings {
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.cdb-expiration-title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-warning);
+}
+
+.cdb-expiry-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.cdb-expiry-item:last-child {
+  border-bottom: none;
+}
+
+.cdb-expiry-info {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.cdb-expiry-amount {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-white);
+}
+
+.cdb-expiry-date {
+  color: var(--color-white);
+  opacity: 0.9;
+}
+
+.cdb-expiry-action .btn {
+  padding: 0.25rem 0.75rem;
+  font-size: var(--font-size-xs);
+}
+
+/* Responsive adjustments for rewards */
+@media (max-width: 768px) {
+  .cdb-rewards-container {
+    flex-direction: column;
+  }
+
+  .cdb-reward-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .cdb-reward-cost {
+    align-items: flex-start;
+  }
+
+  .cdb-expiry-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .cdb-expiry-action {
+    margin-top: 0.5rem;
+  }
+}

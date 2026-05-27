@@ -103,7 +103,16 @@
       "Skill(superpowers:subagent-driven-development)",
       "Bash(npx jest *)",
       "Bash(grep -E \"\\(Settings|Tasks|Users|Workforce\\)\\\\.\\(jsx|css\\)$\")",
-      "Bash(grep -E \"\\(Users|Workforce\\)\\\\.\\(jsx\\)$\")"
+      "Bash(grep -E \"\\(Users|Workforce\\)\\\\.\\(jsx\\)$\")",
+      "Bash(tee /tmp/build.log)",
+      "Bash(handle *)",
+      "PowerShell(Move-Item *)",
+      "Bash(composer show *)",
+      "Bash(dir C:\\\\Users\\\\01ker\\\\ArbiterCoffeeHUB\\\\database\\\\migrations *)",
+      "Bash(npx react-scripts *)",
+      "Bash(xargs grep -l \"react-bootstrap\")",
+      "Bash(gh api *)",
+      "mcp__plugin_context7_context7__query-docs"
     ]
   },
   "prefersReducedMotion": false

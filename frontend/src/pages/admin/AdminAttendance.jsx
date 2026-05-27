@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import ResponsiveButton from '../../components/responsive/Button';
-import ResponsiveForm from '../../components/responsive/Form';
-import ResponsiveAlert from '../../components/responsive/Alert';
+import ResponsiveButton from '@/components/responsive/Button';
+import ResponsiveForm from '@/components/responsive/Form';
+import ResponsiveAlert from '@/components/responsive/Alert';
 import {
   FaClock, FaSearch, FaPlus, FaCheckCircle, FaTimesCircle,
   FaUserClock, FaTimes, FaCalendarAlt, FaSync,

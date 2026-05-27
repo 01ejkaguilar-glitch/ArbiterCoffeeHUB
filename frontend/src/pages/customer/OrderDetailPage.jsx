@@ -1,6 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Container, Row, Col, Button, Spinner } from 'react-bootstrap';
+import {
+  ResponsiveContainer,
+  ResponsiveRow,
+  ResponsiveCol,
+  ResponsiveButton,
+  ResponsiveSpinner
+} from '@/components/responsive';
 import {
   FaArrowLeft, FaSync, FaUtensils, FaShoppingBag, FaTruck,
   FaMapMarkerAlt, FaClock, FaCalendarAlt, FaReceipt,
@@ -108,11 +114,11 @@ const OrderDetailPage = () => {
   if (loading) {
     return (
       <main role="main">
-        <Container className="py-5 text-center">
-          <Spinner animation="border" role="status" style={{ color: 'var(--color-dark-green)' }}>
+        <ResponsiveContainer className="py-5 text-center">
+          <ResponsiveSpinner animation="border" role="status" style={{ color: 'var(--color-dark-green)' }}>
             <span className="visually-hidden">Loading…</span>
-          </Spinner>
-        </Container>
+          </ResponsiveSpinner>
+        </ResponsiveContainer>
       </main>
     );
   }
@@ -121,14 +127,14 @@ const OrderDetailPage = () => {
   if (error) {
     return (
       <main role="main">
-        <Container className="py-5">
+        <ResponsiveContainer className="py-5">
           <div className="od-error">
             <FaTimesCircle className="od-error-icon" />
             <h2>Order Not Found</h2>
             <p>{error}</p>
-            <Button variant="primary" onClick={() => navigate('/orders')}>Back to Orders</Button>
+            <ResponsiveButton variant="primary" onClick={() => navigate('/orders')}>Back to Orders</ResponsiveButton>
           </div>
-        </Container>
+        </ResponsiveContainer>
       </main>
     );
   }
@@ -144,7 +150,7 @@ const OrderDetailPage = () => {
   return (
     <main role="main">
       <SEO title={`Order #${order?.order_number}`} url={`/orders/${id}`} />
-      <Container className="py-5">
+      <ResponsiveContainer className="py-5">
 
         {/* ── Header ── */}
         <div className="od-header">
@@ -191,7 +197,7 @@ const OrderDetailPage = () => {
           )}
         </div>
 
-        <Row className="g-4">
+        <ResponsiveRow className="g-4">
           {/* ─── Left: Items ─── */}
           <Col lg={8}>
             <section className="od-section">

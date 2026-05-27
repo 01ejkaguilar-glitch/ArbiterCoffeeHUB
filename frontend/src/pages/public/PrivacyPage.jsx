@@ -1,5 +1,9 @@
 import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
+import {
+  ResponsiveContainer,
+  ResponsiveRow,
+  ResponsiveCol,
+} from '@/components/responsive';
 import { FaShieldAlt, FaDatabase, FaLock, FaUserShield, FaCookieBite, FaEnvelope } from 'react-icons/fa';
 import SEO from '../../components/SEO';
 import { BreadcrumbSchema } from '../../components/StructuredData';
@@ -50,15 +54,15 @@ function PrivacyPage() {
       <BreadcrumbSchema items={[{ name: 'Home', url: '/' }, { name: 'Privacy Policy', url: '/privacy' }]} />
 
       <div className="page-header-modern">
-        <Container>
+        <ResponsiveContainer>
           <h1>Privacy Policy</h1>
           <p>Your privacy is important to us. This policy outlines how we collect, use, and protect your personal information.</p>
-        </Container>
+        </ResponsiveContainer>
       </div>
 
       <section className="section-modern">
-        <Container>
-          <Row className="g-4">
+        <ResponsiveContainer>
+          <ResponsiveRow className="g-4">
             {sections.map((s, i) => {
               const Icon = s.icon;
               return (
@@ -73,7 +77,7 @@ function PrivacyPage() {
                 </Col>
               );
             })}
-          </Row>
+          </ResponsiveRow>
           <p className="text-center text-muted mt-5" style={{ fontSize: 'var(--font-size-sm)' }}>
             Last updated: January 2026
           </p>

@@ -1,8 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import ResponsiveButton from '../../components/responsive/Button';
-import ResponsiveForm from '../../components/responsive/Form';
-import ResponsiveModal from '../../components/responsive/Modal';
-import ResponsiveAlert from '../../components/responsive/Alert';
+import { ResponsiveButton, ResponsiveForm, ResponsiveModal, ResponsiveAlert, ResponsiveCard } from '@/components/responsive';
 import {
   FaHistory, FaUsers, FaPlus, FaEdit, FaTrash, FaTimes,
   FaChevronUp, FaChevronDown, FaSave, FaUserCircle, FaSync,
@@ -133,202 +130,117 @@ const AdminSettings = () => {
   return (
     <PageShell title="Settings" subtitle="Manage company timeline and team members" error={error} onRetry={() => { fetchTimeline(); fetchTeam(); }}>
       <div className="as-page">
-
-        {/* ── Company Timeline ─────────────────────────────────────────────── */}
-        <div className="as-section-card">
-          <div className="as-section-head">
-            <div className="as-section-icon green"><FaHistory /></div>
-            <span className="as-section-title">Company Timeline</span>
-            <span className="as-section-count">{timeline.length} entries</span>
-            <div className="as-head-actions">
-              <ResponsiveButton variant="outline-secondary" size="sm" className="as-btn add" onClick={fetchTimeline} title="Refresh">
-                <FaSync />
-              </ResponsiveButton>
-              <ResponsiveButton variant="primary" size="sm" className="as-btn add" onClick={openTlAdd}>
-                <FaPlus />Add Entry
-              </ResponsiveButton>
-            </div>
-          </div>
-          <div className="as-section-body">
-            <ResponsiveAlert show={!!alert.timeline?.msg} onHide={() => clearAlert('timeline')} message={alert.timeline?.msg} type={alert.timeline?.type} />
-            {loading.timeline ? (
-              <div className="as-loading"><div className="as-spinner" />Loading timeline…</div>
-            ) : timeline.length === 0 ? (
-              <div className="as-empty">
-                <div className="as-empty-icon"><FaHistory /></div>
-                <div className="as-empty-text">No timeline entries yet</div>
-                <div className="as-empty-sub">Add your first milestone to showcase your journey</div>
-              </div>
-            ) : (
-              <div className="as-entries">
-                {timeline.map((item, idx) => (
-                  <div className="as-entry-card" key={item.id || idx}>
-                    <div className="as-entry-head">
-                      <div className="as-entry-num">{idx + 1}</div>
-                      <span className="as-year-pill">{item.year}</span>
-                      <span className={`as-entry-title ${item.title ? '' : 'muted'}`}>{item.title || 'Untitled entry'}</span>
-                      <div className="as-entry-actions">
-                        <button className="as-icon-btn" title="Move up"   disabled={idx === 0}                   onClick={() => moveTl(idx, -1)}><FaChevronUp /></button>
-                        <button className="as-icon-btn" title="Move down" disabled={idx === timeline.length - 1} onClick={() => moveTl(idx, +1)}><FaChevronDown /></button>
-                        <button className="as-icon-btn" title="Edit" onClick={() => openTlEdit(item)}><FaEdit /></button>
-                        <button className="as-icon-btn danger" title="Delete" onClick={() => deleteTl(item)}><FaTrash /></button>
-                      </div>
-                    </div>
-                    {item.description && (
-                      <div className="as-entry-body">
-                        <p style={{ margin: 0, fontSize: '.875rem', color: '#6b7280' }}>{item.description}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Team Members ─────────────────────────────────────────────────── */}
-        <div className="as-section-card">
-          <div className="as-section-head">
-            <div className="as-section-icon blue"><FaUsers /></div>
-            <span className="as-section-title">Team Members</span>
-            <span className="as-section-count">{team.length} members</span>
-            <div className="as-head-actions">
-              <ResponsiveButton variant="outline-secondary" size="sm" className="as-btn add" onClick={fetchTeam} title="Refresh">
-                <FaSync />
-              </ResponsiveButton>
-              <ResponsiveButton variant="primary" size="sm" className="as-btn add" onClick={openTmAdd}>
-                <FaPlus />Add Member
-              </ResponsiveButton>
-            </div>
-          </div>
-          <div className="as-section-body">
-            <ResponsiveAlert show={!!alert.team?.msg} onHide={() => clearAlert('team')} message={alert.team?.msg} type={alert.team?.type} />
-            {loading.team ? (
-              <div className="as-loading"><div className="as-spinner" />Loading team members…</div>
-            ) : team.length === 0 ? (
-              <div className="as-empty">
-                <div className="as-empty-icon"><FaUsers /></div>
-                <div className="as-empty-text">No team members yet</div>
-                <div className="as-empty-sub">Add members to display on your public page</div>
-              </div>
-            ) : (
-              <div className="as-entries">
-                {team.map((m, idx) => (
-                  <div className="as-entry-card" key={m.id || idx}>
-                    <div className="as-entry-head">
-                      <div className="as-entry-num">{idx + 1}</div>
-                      {m.photo_url
-                        ? <img className="as-avatar-preview" src={m.photo_url} alt={m.name} loading="lazy" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
-                        : <div className="as-avatar-placeholder" style={{ width: 32, height: 32, fontSize: '.9rem' }}><FaUserCircle /></div>}
-                      <span className={`as-entry-title ${m.name ? '' : 'muted'}`}>
-                        {m.name || 'Unnamed'}
-                        {m.role && <span style={{ fontWeight: 400, color: '#9ca3af', marginLeft: '.4rem', fontSize: '.8rem' }}>— {m.role}</span>}
-                      </span>
-                      <div className="as-entry-actions">
-                        <button className="as-icon-btn" title="Edit" onClick={() => openTmEdit(m)}><FaEdit /></button>
-                        <button className="as-icon-btn danger" title="Remove" onClick={() => deleteTm(m)}><FaTrash /></button>
-                      </div>
-                    </div>
-                    {m.bio && (
-                      <div className="as-entry-body">
-                        <p style={{ margin: 0, fontSize: '.875rem', color: '#6b7280' }}>{m.bio}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Timeline Modal ────────────────────────────────────────────────── */}
-        {tlModal && (
-          <div className="wf-modal-overlay" onClick={() => setTlModal(false)}>
-            <div className="wf-modal" onClick={e => e.stopPropagation()}>
-              <div className="wf-modal-head">
-                <span className="wf-modal-title"><FaHistory style={{ marginRight: '.5rem' }} />{selected ? 'Edit Timeline Entry' : 'Add Timeline Entry'}</span>
-                <button className="wf-modal-close" onClick={() => setTlModal(false)}><FaTimes /></button>
-              </div>
-              <form onSubmit={saveTl}>
-                <div className="wf-modal-body">
-                  <div className="wf-form-row wf-2col">
-                    <div>
-                      <label className="wf-form-label">Year *</label>
-                      <input type="number" min="1900" max="2100" className="wf-field-input" required {...tlField('year')} />
-                    </div>
-                    <div>
-                      <label className="wf-form-label">Title *</label>
-                      <input className="wf-field-input" placeholder="Milestone title" required {...tlField('title')} />
-                    </div>
-                  </div>
-                  <div className="wf-form-row">
-                    <label className="wf-form-label">Description</label>
-                    <textarea className="wf-field-textarea" rows={3} placeholder="Describe this milestone…" {...tlField('description')} />
-                  </div>
-                </div>
-                <div className="wf-modal-foot">
-                  <button type="button" className="wf-btn secondary" onClick={() => setTlModal(false)}>Cancel</button>
-                  <button type="submit" className="wf-btn primary" disabled={saving.timeline}><FaSave style={{ marginRight: '.3rem' }} />{saving.timeline ? 'Saving…' : selected ? 'Update' : 'Add Entry'}</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* ── Team Member Modal ─────────────────────────────────────────────── */}
-        {tmModal && (
-          <div className="wf-modal-overlay" onClick={() => setTmModal(false)}>
-            <div className="wf-modal" onClick={e => e.stopPropagation()}>
-              <div className="wf-modal-head">
-                <span className="wf-modal-title"><FaUsers style={{ marginRight: '.5rem' }} />{selected ? 'Edit Team Member' : 'Add Team Member'}</span>
-                <button className="wf-modal-close" onClick={() => setTmModal(false)}><FaTimes /></button>
-              </div>
-              <form onSubmit={saveTm}>
-                <div className="wf-modal-body">
-                  <div className="wf-form-row wf-2col">
-                    <div>
-                      <label className="wf-form-label">Full Name *</label>
-                      <input className="wf-field-input" placeholder="Member name" required {...tmField('name')} />
-                    </div>
-                    <div>
-                      <label className="wf-form-label">Role / Position</label>
-                      <input className="wf-field-input" placeholder="e.g. Head Barista" {...tmField('role')} />
-                    </div>
-                  </div>
-                  <div className="wf-form-row">
-                    <label className="wf-form-label">Bio</label>
-                    <textarea className="wf-field-textarea" rows={3} placeholder="Short bio or description…" {...tmField('bio')} />
-                  </div>
-                  <div className="wf-form-row wf-2col">
-                    <div>
-                      <label className="wf-form-label">Photo URL</label>
-                      <input className="wf-field-input" placeholder="https://…" {...tmField('photo_url')} />
-                    </div>
-                    <div>
-                      <label className="wf-form-label">Display Order</label>
-                      <input type="number" min="0" className="wf-field-input" {...tmField('display_order')} />
-                    </div>
-                  </div>
-                  {tmForm.photo_url && (
-                    <div className="as-avatar-row" style={{ marginTop: '.5rem' }}>
-                      <img className="as-avatar-preview" src={tmForm.photo_url} alt="Preview" loading="lazy" onError={e => { e.target.style.display = 'none'; }} />
-                      <span style={{ fontSize: '.78rem', color: '#9ca3af' }}>Photo preview</span>
-                    </div>
-                  )}
-                </div>
-                <div className="wf-modal-foot">
-                  <ResponsiveButton variant="outline-secondary" size="sm" type="button" onClick={() => setTmModal(false)}>
-                    Cancel
+        <div className="as-section-row row g-4">
+          {/* ── Company Timeline ─────────────────────────────────────────────── */}
+          <div className="col-12 col-sm-6">
+            <ResponsiveCard className="as-section-card">
+              <div className="as-section-head">
+                <div className="as-section-icon green"><FaHistory /></div>
+                <span className="as-section-title">Company Timeline</span>
+                <span className="as-section-count">{timeline.length} entries</span>
+                <div className="as-head-actions">
+                  <ResponsiveButton variant="outline-secondary" size="sm" className="as-btn add" onClick={fetchTimeline} title="Refresh">
+                    <FaSync />
                   </ResponsiveButton>
-                  <ResponsiveButton variant="primary" size="sm" type="submit" disabled={saving.team}>
-                    <FaSave style={{ marginRight: '.3rem' }} />{saving.team ? 'Saving…' : selected ? 'Update' : 'Add Member'}
+                  <ResponsiveButton variant="primary" size="sm" className="as-btn add" onClick={openTlAdd}>
+                    <FaPlus />Add Entry
                   </ResponsiveButton>
                 </div>
-              </form>
-            </div>
+              </div>
+              <div className="as-section-body">
+                <ResponsiveAlert show={!!alert.timeline?.msg} onHide={() => clearAlert('timeline')} message={alert.timeline?.msg} type={alert.timeline?.type} />
+                {loading.timeline ? (
+                  <div className="as-loading"><div className="as-spinner" />Loading timeline…</div>
+                ) : timeline.length === 0 ? (
+                  <div className="as-empty">
+                    <div className="as-empty-icon"><FaHistory /></div>
+                    <div className="as-empty-text">No timeline entries yet</div>
+                    <div className="as-empty-sub">Add your first milestone to showcase your journey</div>
+                  </div>
+                ) : (
+                  <div className="as-entries">
+                    {timeline.map((item, idx) => (
+                      <div className="as-entry-card" key={item.id || idx}>
+                        <div className="as-entry-head">
+                          <div className="as-entry-num">{idx + 1}</div>
+                          <span className="as-year-pill">{item.year}</span>
+                          <span className={`as-entry-title ${item.title ? '' : 'muted'}`}>{item.title || 'Untitled entry'}</span>
+                          <div className="as-entry-actions">
+                            <button className="as-icon-btn" title="Move up"   disabled={idx === 0}                   onClick={() => moveTl(idx, -1)}><FaChevronUp /></button>
+                            <button className="as-icon-btn" title="Move down" disabled={idx === timeline.length - 1} onClick={() => moveTl(idx, +1)}><FaChevronDown /></button>
+                            <button className="as-icon-btn" title="Edit" onClick={() => openTlEdit(item)}><FaEdit /></button>
+                            <button className="as-icon-btn danger" title="Delete" onClick={() => deleteTl(item)}><FaTrash /></button>
+                          </div>
+                        </div>
+                        {item.description && (
+                          <div className="as-entry-body">
+                            <p style={{ margin: 0, fontSize: '.875rem', color: '#6b7280' }}>{item.description}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </ResponsiveCard>
           </div>
-        )}
 
+          {/* ── Team Members ─────────────────────────────────────────────────── */}
+          <div className="col-12 col-sm-6">
+            <ResponsiveCard className="as-section-card">
+              <div className="as-section-head">
+                <div className="as-section-icon blue"><FaUsers /></div>
+                <span className="as-section-title">Team Members</span>
+                <span className="as-section-count">{team.length} members</span>
+                <div className="as-head-actions">
+                  <ResponsiveButton variant="outline-secondary" size="sm" className="as-btn add" onClick={fetchTeam} title="Refresh">
+                    <FaSync />
+                  </ResponsiveButton>
+                  <ResponsiveButton variant="primary" size="sm" className="as-btn add" onClick={openTmAdd}>
+                    <FaPlus />Add Member
+                  </ResponsiveButton>
+                </div>
+              </div>
+              <div className="as-section-body">
+                <ResponsiveAlert show={!!alert.team?.msg} onHide={() => clearAlert('team')} message={alert.team?.msg} type={alert.team?.type} />
+                {loading.team ? (
+                  <div className="as-loading"><div className="as-spinner" />Loading team members…</div>
+                ) : team.length === 0 ? (
+                  <div className="as-empty">
+                    <div className="as-empty-icon"><FaUsers /></div>
+                    <div className="as-empty-text">No team members yet</div>
+                    <div className="as-empty-sub">Add members to display on your public page</div>
+                  </div>
+                ) : (
+                  <div className="as-entries">
+                    {team.map((m, idx) => (
+                      <div className="as-entry-card" key={m.id || idx}>
+                        <div className="as-entry-head">
+                          <div className="as-entry-num">{idx + 1}</div>
+                          {m.photo_url
+                            ? <img className="as-avatar-preview" src={m.photo_url} alt={m.name} loading="lazy" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+                            : <div className="as-avatar-placeholder" style={{ width: 32, height: 32, fontSize: '.9rem' }}><FaUserCircle /></div>}
+                          <span className={`as-entry-title ${m.name ? '' : 'muted'}`}>
+                            {m.name || 'Unnamed'}
+                            {m.role && <span style={{ fontWeight: 400, color: '#9ca3af', marginLeft: '.4rem', fontSize: '.8rem' }}>— {m.role}</span>}
+                          </span>
+                          <div className="as-entry-actions">
+                            <button className="as-icon-btn" title="Edit" onClick={() => openTmEdit(m)}><FaEdit /></button>
+                            <button className="as-icon-btn danger" title="Remove" onClick={() => deleteTm(m)}><FaTrash /></button>
+                          </div>
+                        </div>
+                        {m.bio && (
+                            <div className="as-entry-body">
+                              <p style={{ margin: 0, fontSize: '.875rem', color: '#6b7280' }}>{m.bio}</p>
+                            </div>
+                          />}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </ResponsiveCard>
+          </div>
+        </div>
       </div>
     </PageShell>
   );
