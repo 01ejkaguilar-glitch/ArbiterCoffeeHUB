@@ -8,6 +8,7 @@ import broadcastService from '../services/broadcast.service';
 
 export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false) => {
   const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const channelRef = useRef(null);
 
   useEffect(() => {
@@ -35,16 +36,38 @@ export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false)
     const connection = pusherSocket?.connection;
     if (connection && typeof connection.bind === 'function' && typeof connection.unbind === 'function') {
       // WebSocket mode — track actual connection state
-      setIsConnected(connection.state === 'connected');
+      // Set initial state based on current connection.state
+      if (connection.state === 'connected') {
+        setIsConnected(true);
+        setIsConnecting(false);
+      } else if (connection.state === 'connecting') {
+        setIsConnected(false);
+        setIsConnecting(true);
+      } else {
+        setIsConnected(false);
+        setIsConnecting(false);
+      }
 
-      const handleConnected    = () => setIsConnected(true);
-      const handleDisconnected = () => setIsConnected(false);
+      const handleConnecting = () => {
+        setIsConnected(false);
+        setIsConnecting(true);
+      };
+      const handleConnected    = () => {
+        setIsConnected(true);
+        setIsConnecting(false);
+      };
+      const handleDisconnected = () => {
+        setIsConnected(false);
+        setIsConnecting(false);
+      };
+      connection.bind('connecting', handleConnecting);
       connection.bind('connected',    handleConnected);
       connection.bind('disconnected', handleDisconnected);
 
       return () => {
         try {
           if (channelName && broadcastService.getEcho()) broadcastService.unsubscribe(channelName);
+          connection.unbind('connecting', handleConnecting);
           connection.unbind('connected',    handleConnected);
           connection.unbind('disconnected', handleDisconnected);
         } catch (err) {
@@ -54,6 +77,7 @@ export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false)
     } else {
       // Polling fallback mode — treat as always "connected" (polling is active)
       setIsConnected(true);
+      setIsConnecting(false);
       return () => {
         try {
           if (channelName && broadcastService.getEcho()) broadcastService.unsubscribe(channelName);
@@ -66,6 +90,7 @@ export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false)
 
   return {
     isConnected,
+    isConnecting,
     channel: channelRef.current
   };
 };
@@ -93,10 +118,11 @@ export const useOrderUpdates = (userId, onOrderUpdate) => {
     }
   };
 
-  const { isConnected } = useBroadcast(`user-orders-${userId}`, eventHandlers, true);
+  const { isConnected, isConnecting } = useBroadcast(`user-orders-${userId}`, eventHandlers, true);
 
   return {
     isConnected,
+    isConnecting,
     lastUpdate
   };
 };
@@ -117,10 +143,11 @@ export const useBaristaOrders = (onNewOrder) => {
     }
   };
 
-  const { isConnected } = useBroadcast('barista-orders', eventHandlers);
+  const { isConnected, isConnecting } = useBroadcast('barista-orders', eventHandlers);
 
   return {
     isConnected,
+    isConnecting,
     pendingOrders
   };
 };
@@ -159,10 +186,11 @@ export const useKitchenOrders = (onNewOrder) => {
     }
   };
 
-  const { isConnected } = useBroadcast('kitchen-orders', eventHandlers);
+  const { isConnected, isConnecting } = useBroadcast('kitchen-orders', eventHandlers);
 
   return {
     isConnected,
+    isConnecting,
     pendingOrders
   };
 };
