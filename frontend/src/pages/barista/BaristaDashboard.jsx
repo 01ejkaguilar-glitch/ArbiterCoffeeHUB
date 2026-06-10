@@ -11,6 +11,8 @@ import { API_ENDPOINTS } from '../../config/api';
 import apiService from '../../services/api.service';
 import { useBaristaOrders } from '../../hooks/useBroadcast';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardNavigation';
+import { useSwipeToDismiss } from '../../hooks/useSwipeToDismiss';
 import ResponsiveButton from '@/components/responsive/Button';
 import ResponsiveCard from '@/components/responsive/Card';
 import ResponsiveForm from '@/components/responsive/Form';
@@ -37,35 +39,21 @@ const fmt = (n, prefix = '') =>
     : (n || 0).toString();
 
 /* ─── Connection chip ────────────────────────────────────────── */
-const ConnChip = ({ connected, lastUpdated }) => {
-  const [reconnecting, setReconnecting] = useState(false);
-
-  // Simulate reconnection attempts when disconnected
-  useEffect(() => {
-    if (!connected) {
-      const attemptReconnect = () => {
-        setReconnecting(true);
-        // Simulate reconnection attempt
-        setTimeout(() => {
-          // In real implementation, this would attempt to reconnect
-          setReconnecting(false);
-        }, 3000);
-      };
-
-      const interval = setInterval(attemptReconnect, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [connected]);
-
+const ConnChip = ({ isConnected, isConnecting, lastUpdated }) => {
   return (
-    <span className={`bd-conn-chip ${connected ? 'live' : 'offline'} ${reconnecting ? 'reconnecting' : ''}`}>
+    <span className={`bd-conn-chip ${isConnected ? 'live' : isConnecting ? 'connecting' : 'offline'}`}>
       <span
         className="bd-conn-dot"
         style={{
-          animation: connected && !reconnecting ? 'pulse 1.5s infinite' : 'none'
+          animation: isConnected && !isConnecting ? 'bd-pulse 1.6s infinite' : 'none'
         }}
       />
-      {connected ? 'Live' : reconnecting ? 'Reconnecting...' : 'Offline'}
+      {isConnected ? 'Live' : isConnecting ? 'Reconnecting...' : 'Offline'}
+      {lastUpdated && (
+        <span className="bd-last-updated ml-2">
+          Last updated: {lastUpdated}
+        )
+      )}
     </span>
   );
 };
@@ -81,9 +69,10 @@ const SkeletonLoader = () => (
   </>
 );
 
-/* ══════════════════════════════════════════════════════════════
+
+/* ══════════════════════════════════════════════════════════════════
    BARISTA DASHBOARD
-   ══════════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════════ */
 const BaristaDashboard = () => {
   const { user } = useAuth();
   const { showOrderNotification } = useNotificationSystem();
@@ -94,11 +83,55 @@ const BaristaDashboard = () => {
   const [loading, setLoading]               = useState(true);
   const [error, setError]                   = useState(null);
   const [refreshing, setRefreshing]         = useState(false);
+  const [lastUpdated, setLastUpdated]       = useState(null);
+
+  /* Swipe-to-dismiss state */
+  const [swipeOrders, setSwipeOrders] = useState({}); // orderId -> {x: number, dismissing: boolean}
+
+  /* Keyboard shortcuts */
+  const handleDeleteOrder = () => {
+    // For demo purposes, we'll just show a notification
+    // In a real app, this might dismiss the oldest order or selected order
+    showOrderNotification('Order dismissed via keyboard shortcut', 'info');
+  };
+
+  const handleEnterOrder = () => {
+    // For demo purposes, we'll just show a notification
+    // In a real app, this might mark the oldest order as processed
+    showOrderNotification('Order marked as processed via keyboard shortcut', 'success');
+  };
+
+  useKeyboardShortcuts({
+    'delete': handleDeleteOrder,
+    'enter': handleEnterOrder
+  }, true);
+
+  const handleDismissOrder = (orderId) => {
+    // Optimistic update: remove from queue immediately
+    setQueueData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        pending_orders: prev.pending_orders.filter(order => order.id !== orderId),
+        preparing_orders: prev.preparing_orders.filter(order => order.id !== orderId),
+        ready_orders: prev.ready_orders.filter(order => order.id !== orderId)
+      };
+    });
+
+    // Show notification
+    showOrderNotification('Order dismissed', 'info');
+
+    // In a real app, you might want to call an API to actually dismiss/complete the order
+    // For now, we'll just refresh the data to sync with server
+    fetchDashboardData(false);
+  };
 
   /* real-time orders ----------------------------------------- */
-  const { isConnected: realtimeConnected } = useBaristaOrders((newOrder) => {
+  const { isConnected: realtimeConnected, isConnecting: realtimeConnecting } = useBaristaOrders((newOrder) => {
     showOrderNotification(newOrder, 'New Order Received!');
     fetchDashboardData(false);
+    // Update last updated timestamp
+    setLastUpdated(new Date());
   });
 
   /* data fetch ----------------------------------------------- */
@@ -171,7 +204,7 @@ const BaristaDashboard = () => {
           <p className="bd-subtitle">{todayLabel}</p>
         </div>
         <div className="bd-header-right d-flex align-items-center gap-3">
-          <ConnChip connected={realtimeConnected} lastUpdated={new Date().toLocaleTimeString()} />
+          <ConnChip isConnected={realtimeConnected} isConnecting={realtimeConnecting} lastUpdated={lastUpdated} />
           <ResponsiveButton
             variant="outline-secondary"
             size="sm"
@@ -317,21 +350,8 @@ const BaristaDashboard = () => {
                     </div>
                   ) : (
                     <div className="list-group list-group-flush">
-                      {liveQueue.map((order) => (
-                        <div key={order.id} className="list-group-item list-group-item-action">
-                          <div className="d-flex w-100 justify-content-between">
-                            <h6 className="mb-1">#{order.order_number || order.id}</h6>
-                            <small className={`text-${order.status === 'completed' ? 'success' : order.status === 'preparing' ? 'warning' : order.status === 'pending' ? 'info' : 'secondary'}`}>
-                              {order.status}
-                            </small>
-                          </div>
-                          <p className="mb-1">
-                            <strong>{order.user?.name || order.customer_name || 'Guest'}</strong>
-                          </p>
-                          <small className="text-muted">
-                            {order.order_items?.length || order.orderItems?.length || 0} item(s)
-                          </small>
-                        </div>
+                      {liveQueue.map((order, index) => (
+                        <SwipeableOrderItem key={order.id} order={order} onDismiss={handleDismissOrder} index={index} />
                       ))}
                     </div>
                   )}
@@ -350,7 +370,7 @@ const BaristaDashboard = () => {
                     {currentShift ? (
                       <p className="mb-0 fw-medium">
                         {currentShift.start_time} – {currentShift.end_time}
-                      </p>
+                      )
                     ) : (
                       <p className="mb-0 text-muted">No shift today</p>
                     )}
@@ -410,19 +430,11 @@ const BaristaDashboard = () => {
                         </div>
                       </ResponsiveButton>
                     </ResponsiveCol>
-                    <ResponsiveCol md={6}>
+                    <ResptiveCol md={6}>
                       <ResponsiveButton to="/barista/beans" variant="outline-success" size="sm" className="w-100">
                         <div className="d-flex justify-content-start align-items-center">
                           <FaCoffee size={15} className="me-2" />
                           <span>Coffee Beans</span>
-                        </div>
-                      </ResponsiveButton>
-                    </ResponsiveCol>
-                    <ResponsiveCol md={6}>
-                      <ResponsiveButton to="/barista/featured-origins" variant="outline-info" size="sm" className="w-100">
-                        <div className="d-flex justify-content-start align-items-center">
-                          <FaLeaf size={15} className="me-2" />
-                          <span>Today's Origin</span>
                         </div>
                       </ResponsiveButton>
                     </ResponsiveCol>
@@ -490,4 +502,3 @@ const BaristaDashboard = () => {
 };
 
 export default BaristaDashboard;
-

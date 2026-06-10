@@ -3,13 +3,14 @@
  * React hook for subscribing to real-time events
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import broadcastService from '../services/broadcast.service';
 
 export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const channelRef = useRef(null);
+  const prevEventHandlersRef = useRef(eventHandlers);
 
   useEffect(() => {
     if (!broadcastService.isEnabled()) {
@@ -86,7 +87,37 @@ export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false)
         }
       };
     }
-  }, [channelName, isPrivate, eventHandlers]);
+  }, [channelName, isPrivate]);
+
+
+  // Update event handlers on existing channel when eventHandlers change
+  useEffect(() => {
+    const channel = channelRef.current;
+    if (!channel) return;
+
+    // Get the current eventHandlers from the ref (we'll store the previous in a ref)
+    // We use a ref to track the previous eventHandlers
+    const prevHandlers = prevEventHandlersRef.current;
+    const newHandlers = eventHandlers;
+
+    // Remove listeners for events that are no longer in newHandlers
+    Object.keys(prevHandlers).forEach(event => {
+      if (!(event in newHandlers)) {
+        channel.stopListening(event);
+      }
+    });
+
+    // Add or update listeners for events in newHandlers
+    Object.keys(newHandlers).forEach(event => {
+      if (prevHandlers[event] !== newHandlers[event]) {
+        channel.stopListening(event);
+        channel.listen(event, newHandlers[event]);
+      }
+    });
+
+    // Update the previous eventHandlers ref
+    prevEventHandlersRef.current = newHandlers;
+  }, [eventHandlers]);
 
   return {
     isConnected,
@@ -101,7 +132,7 @@ export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false)
 export const useOrderUpdates = (userId, onOrderUpdate) => {
   const [lastUpdate, setLastUpdate] = useState(null);
 
-  const eventHandlers = {
+  const eventHandlers = useMemo(() => ({
     'order.created': (event) => {
       //'New order created:', event);
       setLastUpdate(new Date());
@@ -116,7 +147,7 @@ export const useOrderUpdates = (userId, onOrderUpdate) => {
         onOrderUpdate('status_updated', event.order);
       }
     }
-  };
+  }), [userId, onOrderUpdate]);
 
   const { isConnected, isConnecting } = useBroadcast(`user-orders-${userId}`, eventHandlers, true);
 
@@ -133,7 +164,7 @@ export const useOrderUpdates = (userId, onOrderUpdate) => {
 export const useBaristaOrders = (onNewOrder) => {
   const [pendingOrders, setPendingOrders] = useState([]);
 
-  const eventHandlers = {
+  const eventHandlers = useMemo(() => ({
     'order.created': (event) => {
       //'New order for barista:', event);
       setPendingOrders(prev => [...prev, event.order].slice(-50));
@@ -141,7 +172,7 @@ export const useBaristaOrders = (onNewOrder) => {
         onNewOrder(event.order);
       }
     }
-  };
+  }), [onNewOrder]);
 
   const { isConnected, isConnecting } = useBroadcast('barista-orders', eventHandlers);
 
@@ -156,14 +187,14 @@ export const useBaristaOrders = (onNewOrder) => {
  * Hook for real-time inventory alerts
  */
 export const useInventoryAlerts = (onLowStock) => {
-  const eventHandlers = {
+  const eventHandlers = useMemo(() => ({
     'inventory.low-stock': (event) => {
       //'Low stock alert:', event);
       if (onLowStock) {
         onLowStock(event.item);
       }
     }
-  };
+  }), [onLowStock]);
 
   const { isConnected } = useBroadcast('inventory-alerts', eventHandlers);
 
@@ -176,7 +207,7 @@ export const useInventoryAlerts = (onLowStock) => {
 export const useKitchenOrders = (onNewOrder) => {
   const [pendingOrders, setPendingOrders] = useState([]);
 
-  const eventHandlers = {
+  const eventHandlers = useMemo(() => ({
     'order.created': (event) => {
       //'New food order for kitchen:', event);
       setPendingOrders(prev => [...prev, event.order].slice(-50));
@@ -184,7 +215,7 @@ export const useKitchenOrders = (onNewOrder) => {
         onNewOrder(event.order);
       }
     }
-  };
+  }), [onNewOrder]);
 
   const { isConnected, isConnecting } = useBroadcast('kitchen-orders', eventHandlers);
 
@@ -199,14 +230,14 @@ export const useKitchenOrders = (onNewOrder) => {
  * Hook for real-time task assignment notifications
  */
 export const useTaskAssignments = (onTaskAssigned) => {
-  const eventHandlers = {
+  const eventHandlers = useMemo(() => ({
     'task.assigned': (event) => {
       //'Task assigned:', event);
       if (onTaskAssigned) {
         onTaskAssigned(event);
       }
     }
-  };
+  }), [onTaskAssigned]);
 
   const { isConnected } = useBroadcast('tasks', eventHandlers);
 
@@ -217,14 +248,14 @@ export const useTaskAssignments = (onTaskAssigned) => {
  * Hook for real-time shift notifications
  */
 export const useShiftNotifications = (onShiftStarted) => {
-  const eventHandlers = {
+  const eventHandlers = useMemo(() => ({
     'shift.started': (event) => {
       //'Shift started:', event);
       if (onShiftStarted) {
         onShiftStarted(event);
       }
     }
-  };
+  }), [onShiftStarted]);
 
   const { isConnected } = useBroadcast('shifts', eventHandlers);
 
@@ -235,14 +266,14 @@ export const useShiftNotifications = (onShiftStarted) => {
  * Hook for real-time notifications
  */
 export const useNotifications = (userId, onNotification) => {
-  const eventHandlers = {
+  const eventHandlers = useMemo(() => ({
     'notification.received': (event) => {
       //'New notification:', event);
       if (onNotification) {
         onNotification(event.notification);
       }
     }
-  };
+  }), [userId, onNotification]);
 
   // Always call useBroadcast but with conditional channel name
   const channelName = userId ? `user-notifications-${userId}` : null;

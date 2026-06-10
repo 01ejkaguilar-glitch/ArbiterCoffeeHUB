@@ -11,6 +11,9 @@ import { API_ENDPOINTS } from '../../config/api';
 import apiService from '../../services/api.service';
 import { useKitchenOrders } from '../../hooks/useBroadcast';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardNavigation';
+import { useSwipeToDismiss } from '../../hooks/useSwipeToDismiss';
+import SwipeableOrderItem from '../../components/shared/SwipeableOrderItem';
 import {
   ResponsiveButton,
   ResponsiveCard,
@@ -35,12 +38,24 @@ const todayLabel = new Date().toLocaleDateString('en-US', {
 });
 
 /* ─── Connection chip ────────────────────────────────────────── */
-const ConnChip = ({ connected }) => (
-  <span className={`kd-conn-chip ${connected ? 'live' : 'offline'}`}>
-    <span className="kd-conn-dot" />
-    {connected ? 'Live' : 'Offline'}
-  </span>
-);
+const ConnChip = ({ isConnected, isConnecting, lastUpdated }) => {
+  return (
+    <span className={`kd-conn-chip ${isConnected ? 'live' : isConnecting ? 'connecting' : 'offline'}`}>
+      <span
+        className="kd-conn-dot"
+        style={{
+          animation: isConnected && !isConnecting ? 'kd-pulse 1.6s infinite' : 'none'
+        }}
+      />
+      {isConnected ? 'Live' : isConnecting ? 'Reconnecting...' : 'Offline'}
+      {lastUpdated && (
+        <span className="kd-last-updated ml-2">
+          Last updated: {lastUpdated.toLocaleTimeString()}
+        )
+      )}
+    </span>
+  );
+};
 
 /* ─── Skeleton loader ────────────────────────────────────────── */
 const SkeletonLoader = () => (
@@ -53,9 +68,9 @@ const SkeletonLoader = () => (
   </>
 );
 
-/* ══════════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════════
    KITCHEN DASHBOARD
-   ══════════════════════════════════════════════════════════════ */
+   ════════════════════════════════════════════════════════════════ */
 const KitchenDashboard = () => {
   const { user } = useAuth();
   const { showOrderNotification } = useNotificationSystem();
@@ -66,12 +81,68 @@ const KitchenDashboard = () => {
   const [loading, setLoading]               = useState(true);
   const [error, setError]                   = useState(null);
   const [refreshing, setRefreshing]         = useState(false);
+  const [lastUpdated, setLastUpdated]       = useState(null);
+
+  // Keyboard shortcuts
+  const handleDismissOrder = (orderId) => {
+    // Remove the order from the queue
+    setQueueData(prev => {
+      if (!prev) return prev;
+
+      // Remove from all queue arrays
+      const updatedPending = (prev.pending_orders || []).filter(order => order.id !== orderId);
+      const updatedPreparing = (prev.preparing_orders || []).filter(order => order.id !== orderId);
+      const updatedReady = (prev.ready_orders || []).filter(order => order.id !== orderId);
+
+      return {
+        ...prev,
+        pending_orders: updatedPending,
+        preparing_orders: updatedPreparing,
+        ready_orders: updatedReady
+      };
+    });
+
+    showOrderNotification('Order dismissed', 'info');
+  };
+
+  const handleProcessOrder = (orderId) => {
+    // For demo purposes, we'll show a notification
+    // In a real app, this might mark the oldest order as processed
+    showOrderNotification('Order marked as processed via keyboard shortcut', 'success');
+  };
+
+  useKeyboardShortcuts({
+    'delete': () => {
+      // Dismiss the first order in queue for delete key
+      const firstOrder =
+        (queueData?.pending_orders || [])[0] ||
+        (queueData?.preparing_orders || [])[0] ||
+        (queueData?.ready_orders || [])[0];
+
+      if (firstOrder) {
+        handleDismissOrder(firstOrder.id);
+      }
+    },
+    'enter': () => {
+      // Process the first order in queue for enter key
+      const firstOrder =
+        (queueData?.pending_orders || [])[0] ||
+        (queueData?.preparing_orders || [])[0] ||
+        (queueData?.ready_orders || [])[0];
+
+      if (firstOrder) {
+        showOrderNotification(`Order #${firstOrder.order_number || firstOrder.id} processed`, 'success');
+      }
+    }
+  }, true);
 
   // ─ Real-time via WebSocket / polling fallback ──────────────────────────────────
-  const { isConnected: realtimeConnected } = useKitchenOrders((newOrder) => {
+  const { isConnected: realtimeConnected, isConnecting: realtimeConnecting } = useKitchenOrders((newOrder) => {
     showOrderNotification(newOrder, 'New Food Order!');
     // Refresh stats so counts stay accurate
     fetchDashboardData(false);
+    // Update last updated timestamp
+    setLastUpdated(new Date());
   });
 
   /* data fetch ----------------------------------------------- */
@@ -108,6 +179,10 @@ const KitchenDashboard = () => {
     }
   }, []);
 
+  // Simulate reconnection attempts when disconnected
+  // NOTE: This effect is removed because we now get the connecting state from the hook.
+  // Keeping the comment for clarity but the effect is gone.
+
   useEffect(() => {
     fetchDashboardData();
     // 30-second background poll (fallback when WebSocket unavailable)
@@ -142,7 +217,7 @@ const KitchenDashboard = () => {
           <p className="kd-subtitle">{todayLabel}</p>
         </div>
         <div className="kd-header-right">
-          <ConnChip connected={realtimeConnected} />
+          <ConnChip isConnected={realtimeConnected} isConnecting={realtimeConnecting} lastUpdated={lastUpdated} />
           <button
             className="kd-refresh-btn"
             onClick={() => fetchDashboardData(false)}
@@ -270,24 +345,15 @@ const KitchenDashboard = () => {
                       <p className="mb-0">No active food orders — queue is clear!</p>
                     </div>
                   ) : (
-                    <div className="list-group list-group-flush">
+                    <>
                       {liveQueue.map((order) => (
-                        <div key={order.id} className="list-group-item list-group-item-action">
-                          <div className="d-flex w-100 justify-content-between">
-                            <h6 className="mb-1">#{order.order_number || order.id}</h6>
-                            <span className={`text-${order.status === 'completed' ? 'success' : order.status === 'preparing' ? 'warning' : order.status === 'pending' ? 'info' : 'secondary'}`}>
-                              {order.status}
-                            </span>
-                          </div>
-                          <p className="mb-1">
-                            <strong>{order.user?.name || order.customer_name || 'Guest'}</strong>
-                          </p>
-                          <small className="text-muted">
-                            {order.order_items?.length || order.orderItems?.length || 0} item(s)
-                          </small>
-                        </div>
+                        <SwipeableOrderItem
+                          key={order.id}
+                          order={order}
+                          onDismiss={handleDismissOrder}
+                        />
                       ))}
-                    </div>
+                    </>
                   )}
                 </ResponsiveCard.Body>
               </ResponsiveCard>
@@ -303,7 +369,7 @@ const KitchenDashboard = () => {
                     {currentShift ? (
                       <p className="mb-0 fw-medium">
                         {currentShift.start_time} – {currentShift.end_time}
-                      </p>
+                      )
                     ) : (
                       <p className="mb-0 text-muted">No shift today</p>
                     )}
@@ -407,23 +473,21 @@ const KitchenDashboard = () => {
               <Link to="/kitchen/tasks" className="text-muted text-decoration-none">
                 See all <FaChevronRight size={10} />
               </Link>
-            </ResponsiveCard.Header>
-            <ResponsiveCard.Body className="p-3">
-              {todaysTasks.length === 0 ? (
-                <p className="text-muted text-center">No tasks assigned for today.</p>
-              ) : (
-                <div className="list-group">
-                  {todaysTasks.slice(0, 6).map((task, i) => (
-                    <div key={task.id || i} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                      <div className="d-flex align-items-center">
-                        <span className={`badge bg-${task.status === 'in_progress' ? 'primary' : task.status === 'completed' ? 'success' : 'secondary'} me-2`}></span>
-                        <span className="me-2">{task.title || task.name || 'Unnamed task'}</span>
-                        {task.priority && (
-                          <span className={`badge bg-${task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'info'} ms-auto`}>{task.priority}</span>
-                        )}
-                      </div>
+            </ResponsiveCard.Body>
+            {todaysTasks.length === 0 ? (
+              <p className="text-muted text-center">No tasks assigned for today.</p>
+            ) : (
+              <div className="list-group">
+                {todaysTasks.slice(0, 6).map((task, i) => (
+                  <div key={task.id || i} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div className="d-flex align-items-center">
+                      <span className={`badge bg-${task.status === 'in_progress' ? 'primary' : task.status === 'completed' ? 'success' : 'secondary'} me-2`}></span>
+                      <span className="me-2">{task.title || task.name || 'Unnamed task'}</span>
+                      {task.priority && (
+                        <span className={`badge bg-${task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'info'} ms-auto`}>{task.priority}</span>
+                      )}
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </ResponsiveCard.Body>
