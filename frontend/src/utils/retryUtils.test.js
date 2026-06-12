@@ -1,4 +1,4 @@
-import { calculateBackoffDelay } from './retryUtils';
+import { calculateBackoffDelay, parseRetryAfterHeader } from './retryUtils';
 
 describe('retryUtils', () => {
   test('calculates exponential backoff with jitter', () => {
@@ -16,5 +16,19 @@ describe('retryUtils', () => {
     const delay2 = calculateBackoffDelay(2, 1000);
     expect(delay2).toBeGreaterThanOrEqual(4000);
     expect(delay2).toBeLessThan(8000);
+  });
+
+  test('parses Retry-After header value as seconds', () => {
+    const retryAfter = parseRetryAfterHeader('60'); // 60 seconds
+    expect(retryAfter).toBe(60 * 1000); // Converted to milliseconds
+  });
+
+  test('parses Retry-After header value as date', () => {
+    // Create a date that's exactly 30 seconds from now
+    const futureDate = new Date(Date.now() + 30000);
+    const dateString = futureDate.toString();
+    const retryAfter = parseRetryAfterHeader(dateString);
+    // Allow for timing differences in test execution
+    expect(retryAfter).toBeCloseTo(30000, -4);
   });
 });
