@@ -132,8 +132,8 @@ git commit -m "feat: add security headers and HTTPS findings for task #162"
 
 - [x] **Step 4: Commit findings**
 ```bash
-git add docs/superpowers/plans/backend-production-readiness-analysis.md
-git commit -m "feat: add database performance analysis tasks"
+git add docs/DATABASE_PERFORMANCE_FINDINGS.md
+git commit -m "docs: add database performance and optimization findings for Task 4"
 ```
 
 #### Task 5: Caching Strategy Review
