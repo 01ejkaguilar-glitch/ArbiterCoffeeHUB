@@ -112,25 +112,25 @@ git commit -m "feat: add security headers and HTTPS findings for task #162"
 - Read: `app/Http/Controllers/*Controller.php`
 - Read: `config/database.php`
 
-- [ ] **Step 1: Review model relationships**
+- [x] **Step 1: Review model relationships**
   - Check for eager loading vs lazy loading
   - Identify N+1 query problems
   - Review indexing strategies in migrations
   - Check for proper foreign key constraints
 
-- [ ] **Step 2: Analyze query patterns**
+- [x] **Step 2: Analyze query patterns**
   - Review controller methods for inefficient queries
   - Check for missing indexes on WHERE/JOIN columns
   - Verify use of Laravel's query builder optimizations
   - Check for proper use of chunking/cursors for large datasets
 
-- [ ] **Step 3: Identify performance bottlenecks**
+- [x] **Step 3: Identify performance bottlenecks**
   - Missing database indexes
   - Inefficient eager loading
   - Lack of query caching where appropriate
   - No read replica configuration
 
-- [ ] **Step 4: Commit findings**
+- [x] **Step 4: Commit findings**
 ```bash
 git add docs/superpowers/plans/backend-production-readiness-analysis.md
 git commit -m "feat: add database performance analysis tasks"
