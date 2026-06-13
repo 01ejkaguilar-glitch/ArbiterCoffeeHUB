@@ -80,26 +80,26 @@ git commit -m "docs: add input validation and sanitization findings for Task 2"
 - Read: `app/Http/Middleware/`
 - Read: `config/session.php`, `config/cookie.php`
 
-- [ ] **Step 1: Review security middleware**
+- [x] **Step 1: Review security middleware**
   - Check for CORS configuration
   - Review HTTPS enforcement
   - Check for security headers (X-Frame-Options, etc.)
 
-- [ ] **Step 2: Session & Cookie security**
+- [x] **Step 2: Session & Cookie security**
   - Verify secure flag usage
   - Check HTTP-only flags
   - Review session lifetime settings
 
-- [ ] **Step 3: Identify missing protections**
+- [x] **Step 3: Identify missing protections**
   - Missing CSP headers
   - Inadequate CORS configuration
   - Missing HSTS headers
   - Improper cookie settings
 
-- [ ] **Step 4: Commit findings**
+- [x] **Step 4: Commit findings**
 ```bash
-git add docs/superpowers/plans/backend-production-readiness-analysis.md
-git commit -m "feat: add security headers analysis tasks"
+git add docs/SECURITY_HEADERS_HTTPS_FINDINGS.md
+git commit -m "feat: add security headers and HTTPS findings for task #162"
 ```
 
 ### Phase 2: Performance Analysis
