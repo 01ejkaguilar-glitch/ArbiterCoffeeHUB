@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Api\BaseController;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreProductRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
 
@@ -139,31 +140,8 @@ class ProductController extends BaseController
     /**
      * Store a newly created product.
      */
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
-        // Prepare data for validation
-        $data = $request->all();
-        $data['category_id'] = (int) $data['category_id'];
-        $data['stock_quantity'] = (int) $data['stock_quantity'];
-        $data['price'] = (float) $data['price'];
-        $data['is_available'] = $request->boolean('is_available', true);
-
-        $validator = Validator::make($data, [
-            'category_id' => 'required|exists:categories,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'image_url' => 'nullable|string',
-            'stock_quantity' => 'required|integer|min:0',
-            'is_available' => 'boolean',
-            'customization_options' => 'nullable|array',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->sendValidationError($validator->errors()->toArray());
-        }
-
         $productData = $request->except('image');
 
         // Handle image upload
@@ -204,28 +182,12 @@ class ProductController extends BaseController
     /**
      * Update the specified product.
      */
-    public function update(Request $request, $id)
+    public function update(StoreProductRequest $request, $id)
     {
         $product = Product::find($id);
 
         if (!$product) {
             return $this->sendNotFound('Product not found');
-        }
-
-        $validator = Validator::make($request->all(), [
-            'category_id' => 'sometimes|exists:categories,id',
-            'name' => 'sometimes|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'sometimes|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'image_url' => 'nullable|string',
-            'stock_quantity' => 'sometimes|integer|min:0',
-            'is_available' => 'boolean',
-            'customization_options' => 'nullable|array',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->sendValidationError($validator->errors()->toArray());
         }
 
         $productData = $request->except('image');
