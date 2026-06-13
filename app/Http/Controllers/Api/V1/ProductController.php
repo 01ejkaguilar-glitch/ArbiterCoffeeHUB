@@ -182,7 +182,7 @@ class ProductController extends BaseController
     /**
      * Update the specified product.
      */
-    public function update(StoreProductRequest $request, $id)
+    public function update(UpdateProductRequest $request, $id)
     {
         $product = Product::find($id);
 
