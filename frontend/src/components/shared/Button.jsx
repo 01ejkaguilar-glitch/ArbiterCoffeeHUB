@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import './Button.css';
+import { HoverEffect } from './HoverEffect';
 
 const Button = ({
   children,
@@ -21,32 +22,57 @@ const Button = ({
   // Prevent native button behavior when not rendering as button
   const type = asChild && Component !== 'button' ? undefined : (loading || disabled ? undefined : 'button');
 
+  const handleClick = (e) => {
+    // Prevent form submission when button is not explicitly type="submit"
+    if (!disabled && !loading && type !== 'submit') {
+      e.preventDefault();
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    // Handle Enter and Space keys to trigger click
+    if (!disabled && !loading && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      // Create and dispatch a click event
+      const clickEvent = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+      });
+      e.currentTarget.dispatchEvent(clickEvent);
+    }
+  };
+
   return (
-    <Component
-      className={`btn btn-${variant} btn-${size} ${block ? 'btn-block' : ''} ${outline ? 'btn-outline' : ''} ${disabled ? 'disabled' : ''} ${loading ? 'loading' : ''} ${className}`}
-      type={type}
-      disabled={disabled || loading}
-      {...props}
-    >
-      {loading && (
-        <span className="btn-loading-indicator">
-          {/* Simple loading spinner */}
-          <span className="btn-loading-spinner" />
+    <HoverEffect className={className}>
+      <Component
+        className={`btn btn-${variant} btn-${size} ${block ? 'btn-block' : ''} ${outline ? 'btn-outline' : ''} ${disabled ? 'disabled' : ''} ${loading ? 'loading' : ''}`}
+        type={type}
+        disabled={disabled || loading}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        {...props}
+      >
+        {loading && (
+          <span className="btn-loading-indicator">
+            {/* Simple loading spinner */}
+            <span className="btn-loading-spinner" />
+          </span>
+        )}
+
+        {icon && iconPosition === 'left' && !loading && (
+          <span className="btn-icon btn-icon-left">{icon}</span>
+        )}
+
+        <span className="btn-content">
+          {children}
         </span>
-      )}
 
-      {icon && iconPosition === 'left' && !loading && (
-        <span className="btn-icon btn-icon-left">{icon}</span>
-      )}
-
-      <span className="btn-content">
-        {children}
-      </span>
-
-      {icon && iconPosition === 'right' && !loading && (
-        <span className="btn-icon btn-icon-right">{icon}</span>
-      )}
-    </Component>
+        {icon && iconPosition === 'right' && !loading && (
+          <span className="btn-icon btn-icon-right">{icon}</span>
+        )}
+      </Component>
+    </HoverEffect>
   );
 };
 

@@ -9,11 +9,6 @@
   transition: var(--transition-normal);
 }
 
-.card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-
 .card-img-top {
   width: 100%;
   height: auto;

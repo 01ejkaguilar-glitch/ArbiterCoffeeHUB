@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import {
   FaBan, FaCheckCircle, FaEdit, FaEye, FaPlus, FaSearch,
   FaUsers, FaUserCheck, FaUserShield, FaUserTimes, FaTimes,
-  FaExclamationTriangle
+  FaExclamationTriangle, FaPaperclip
 } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
@@ -72,14 +72,261 @@ const AdminUsers = () => {
 
   const [showEdit, setShowEdit]   = useState(false);
   const [editMode, setEditMode]   = useState('create');
-  const [editForm, setEditForm]   = useState({ name:'', email:'', password:'', role:'customer' });
+  const [editForm, setEditForm]   = useState({
+    name:'',
+    email:'',
+    password:'',
+    role:'customer',
+    address_line_1: '',
+    address_line_2: '',
+    city: '',
+    state: '',
+    postal_code: '',
+    country: '',
+    profile_image: null,
+    profile_image_preview: '',
+    document_file: null,
+    document_file_name: ''
+  });
   const [editSaving, setEditSaving] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
+  const [currentStep, setCurrentStep] = useState(1);
+  const addressInputRef = useRef(null);
 
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmUser, setConfirmUser] = useState(null);
   const [toggling, setToggling]       = useState(false);
 
+  /* ── form validation ── */
+  const [formErrors, setFormErrors] = useState({});
+  const [formTouched, setFormTouched] = useState({});
+
   const { showSuccessNotification, showErrorNotification } = useNotificationSystem();
+
+  const validateField = (field, value) => {
+    let error = '';
+    switch (field) {
+      case 'name':
+        if (!value || value.trim() === '') {
+          error = 'Full name is required';
+        }
+        break;
+      case 'email':
+        if (!value || value.trim() === '') {
+          error = 'Email is required';
+        } else if (!/\S+@\S+\.\S+/.test(value)) {
+          error = 'Email address is invalid';
+        }
+        break;
+      case 'password':
+        if (editMode === 'create' && (!value || value.trim() === '')) {
+          error = 'Password is required';
+        } else if (value && value.length < 8) {
+          error = 'Password must be at least 8 characters';
+        }
+        break;
+      case 'role':
+        if (!value) {
+          error = 'Role is required';
+        }
+        break;
+      case 'address_line_1':
+        if (!value || value.trim() === '') {
+          error = 'Address line 1 is required';
+        }
+        break;
+      case 'city':
+        if (!value || value.trim() === '') {
+          error = 'City is required';
+        }
+        break;
+      case 'state':
+        if (!value || value.trim() === '') {
+          error = 'State is required';
+        }
+        break;
+      case 'postal_code':
+        if (!value || value.trim() === '') {
+          error = 'Postal code is required';
+        }
+        break;
+      case 'country':
+        if (!value || value.trim() === '') {
+          error = 'Country is required';
+        }
+        break;
+      case 'profile_image':
+        if (editMode === 'create' && !value) {
+          error = 'Profile image is required';
+        }
+        break;
+      case 'document_file':
+        // Document is optional, no validation required
+        break;
+      default:
+        break;
+    }
+    return error;
+  };
+
+  const handleFieldChange = (field, val) => {
+    setFormTouched(prev => ({ ...prev, [field]: true }));
+    setEditForm(prev => ({ ...prev, [field]: val }));
+
+    // Validate on change
+    const error = validateField(field, val);
+    setFormErrors(prev => ({ ...prev, [field]: error }));
+
+    // Clear address suggestions when address fields are manually edited
+    if (field.includes('address_') || field === 'city' || field === 'state' || field === 'postal_code' || field === 'country') {
+      setAddressSuggestions([]);
+    }
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    const fields = ['name', 'email', 'password', 'role', 'address_line_1', 'city', 'state', 'postal_code', 'country'];
+    fields.forEach(field => {
+      const error = validateField(field, editForm[field]);
+      if (error) errors[field] = error;
+    });
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleProfileImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setFormErrors(prev => ({ ...prev, profile_image: 'Please upload an image file' }));
+        return;
+      }
+
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setFormErrors(prev => ({ ...prev, profile_image: 'File size must be under 5MB' }));
+        return;
+      }
+
+      // Clear previous errors
+      setFormErrors(prev => ({ ...prev, profile_image: '' }));
+
+      // Update form state
+      setEditForm(prev => ({
+        ...prev,
+        profile_image: file
+      }));
+
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setEditForm(prev => ({
+        ...prev,
+        profile_image_preview: previewUrl
+      }));
+    }
+  };
+
+  const handleDocumentChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+      if (!allowedTypes.includes(file.type)) {
+        setFormErrors(prev => ({ ...prev, document_file: 'Please upload a PDF, DOC, DOCX, or TXT file' }));
+        return;
+      }
+
+      // Validate file size (10MB max)
+      if (file.size > 10 * 1024 * 1024) {
+        setFormErrors(prev => ({ ...prev, document_file: 'File size must be under 10MB' }));
+        return;
+      }
+
+      // Clear previous errors
+      setFormErrors(prev => ({ ...prev, document_file: '' }));
+
+      // Update form state
+      setEditForm(prev => ({
+        ...prev,
+        document_file: file,
+        document_file_name: file.name
+      }));
+    }
+  };
+
+  const goToNextStep = () => {
+    // Validate current step before moving to next step
+    if (validateCurrentStep()) {
+      setCurrentStep(prev => Math.min(prev + 1, getTotalSteps()));
+    }
+  };
+
+  const goToPreviousStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
+
+  const getTotalSteps = () => {
+    return 3; // Account Info, Profile Info, Address Info
+  };
+
+  const validateCurrentStep = () => {
+    // Reset errors for current step validation
+    const stepErrors = {};
+    let isValid = true;
+
+    switch (currentStep) {
+      case 1: // Account Information
+        ['name', 'email', 'password', 'role'].forEach(field => {
+          const error = validateField(field, editForm[field]);
+          if (error) {
+            stepErrors[field] = error;
+            isValid = false;
+          }
+        });
+        break;
+      case 2: // Profile Information
+        // Profile image is required for create mode
+        if (editMode === 'create' && !editForm.profile_image) {
+          stepErrors.profile_image = 'Profile image is required';
+          isValid = false;
+        }
+        break;
+      case 3: // Address Information
+        ['address_line_1', 'city', 'state', 'postal_code', 'country'].forEach(field => {
+          const error = validateField(field, editForm[field]);
+          if (error) {
+            stepErrors[field] = error;
+            isValid = false;
+          }
+        });
+        break;
+      default:
+        break;
+    }
+
+    setFormErrors(stepErrors);
+    return isValid;
+  };
+
+  const getStepTitle = (step) => {
+    switch (step) {
+      case 1: return 'Account Information';
+      case 2: return 'Profile Information';
+      case 3: return 'Address Information';
+      default: return '';
+    }
+  };
+
+  const getStepDescription = (step) => {
+    switch (step) {
+      case 1: return 'Basic account details and login information';
+      case 2: return 'Profile picture and document upload';
+      case 3: return 'Contact and address information';
+      default: return '';
+    }
+  };
 
   /* ── debounce ── */
   useEffect(() => {
@@ -155,6 +402,12 @@ const AdminUsers = () => {
   const handleEditChange = (field, val) => setEditForm(f => ({ ...f, [field]: val }));
 
   const handleSaveUser = async () => {
+    // Validate form before submitting
+    if (!validateForm()) {
+      showErrorNotification('Error', 'Please fix the errors in the form');
+      return;
+    }
+
     setEditSaving(true);
     try {
       let res;
@@ -206,6 +459,65 @@ const AdminUsers = () => {
     } finally {
       setToggling(false);
     }
+  };
+
+  // Mock address autocomplete function
+  // In a real application, this would call an address validation/autocomplete service like Google Maps Places API
+  const fetchAddressSuggestions = async (addressData) => {
+    // Don't fetch suggestions if we don't have enough data
+    if (!addressData.address_line_1 && !addressData.city) {
+      setAddressSuggestions([]);
+      return;
+    }
+
+    // Simulate API delay
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // Mock suggestions based on input
+        const suggestions = [
+          {
+            id: 1,
+            formatted_address: '123 Main Street, San Francisco, CA 94105, USA',
+            address_line_1: '123 Main Street',
+            address_line_2: '',
+            city: 'San Francisco',
+            state: 'CA',
+            postal_code: '94105',
+            country: 'USA'
+          },
+          {
+            id: 2,
+            formatted_address: '456 Oak Avenue, Los Angeles, CA 90210, USA',
+            address_line_1: '456 Oak Avenue',
+            address_line_2: '',
+            city: 'Los Angeles',
+            state: 'CA',
+            postal_code: '90210',
+            country: 'USA'
+          },
+          {
+            id: 3,
+            formatted_address: '789 Pine Road, New York, NY 10001, USA',
+            address_line_1: '789 Pine Road',
+            address_line_2: 'Suite 100',
+            city: 'New York',
+            state: 'NY',
+            postal_code: '10001',
+            country: 'USA'
+          }
+        ];
+
+        // Filter suggestions based on input (simple mock filtering)
+        const filteredSuggestions = suggestions.filter(suggestion => {
+          const inputValues = Object.values(addressData).join(' ').toLowerCase();
+          const suggestionValues = Object.values(suggestion).join(' ').toLowerCase();
+          return suggestionValues.includes(inputValues.substring(0, Math.min(3, inputValues.length)));
+        });
+
+        setAddressSuggestions(filteredSuggestions.length > 0 ? filteredSuggestions : []);
+        resolve();
+      }, 500); // Simulate 500ms API delay
+    });
   };
 
   /* ── pagination buttons ── */
@@ -465,32 +777,168 @@ const AdminUsers = () => {
               <button className="au-modal-close" onClick={() => setShowEdit(false)}><FaTimes /></button>
             </div>
             <div className="au-modal-body">
-              <div className="au-form-grid">
-                <div className="au-form-group">
-                  <label className="au-form-label">Full Name *</label>
-                  <input className="au-form-input" value={editForm.name} onChange={e=>handleEditChange('name',e.target.value)} placeholder="Enter full name" />
-                </div>
-                <div className="au-form-group">
-                  <label className="au-form-label">Email *</label>
-                  <input className="au-form-input" type="email" value={editForm.email} onChange={e=>handleEditChange('email',e.target.value)} placeholder="Enter email address" />
-                </div>
-                <div className="au-form-group">
-                  <label className="au-form-label">{editMode==='create' ? 'Password *' : 'New Password'}</label>
-                  <input className="au-form-input" type="password" value={editForm.password} onChange={e=>handleEditChange('password',e.target.value)} placeholder={editMode==='create' ? 'Min 8 characters' : 'Leave blank to keep current'} />
-                  {editMode==='edit' && <span className="au-form-hint">Leave blank to keep the current password</span>}
-                </div>
-                <div className="au-form-group">
-                  <label className="au-form-label">Role *</label>
-                  <select className="au-form-select" value={editForm.role} onChange={e=>handleEditChange('role',e.target.value)}>
-                    {ROLES.map(r=><option key={r} value={r}>{r.charAt(0).toUpperCase()+r.slice(1)}</option>)}
-                  </select>
-                </div>
+              {/* Step Progress Indicator */}
+              <div className="au-wizard-steps">
+                {[1, 2, 3].map(step => (
+                  <div key={step} className={`au-wizard-step${step === currentStep ? ' active' : ''}${step < currentStep ? ' completed' : ''}`}>
+                    <div className="au-wizard-step-circle">{step}</div>
+                    <div className="au-wizard-step-label">{getStepTitle(step)}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Step Content */}
+              <div className="au-wizard-content">
+                {currentStep === 1 && (
+                  <>
+                    <div className="au-form-group">
+                      <label className="au-form-label">Full Name *</label>
+                      <input className="au-form-input" value={editForm.name} onChange={e=>handleFieldChange('name',e.target.value)} placeholder="Enter full name" />
+                      {formTouched.name && formErrors.name && <span className="au-form-error">{formErrors.name}</span>}
+                    </div>
+                    <div className="au-form-group">
+                      <label className="au-form-label">Email *</label>
+                      <input className="au-form-input" type="email" value={editForm.email} onChange={e=>handleFieldChange('email',e.target.value)} placeholder="Enter email address" />
+                      {formTouched.email && formErrors.email && <span className="au-form-error">{formErrors.email}</span>}
+                    </div>
+                    <div className="au-form-group">
+                      <label className="au-form-label">{editMode==='create' ? 'Password *' : 'New Password'}</label>
+                      <input className="au-form-input" type="password" value={editForm.password} onChange={e=>handleFieldChange('password',e.target.value)} placeholder={editMode==='create' ? 'Min 8 characters' : 'Leave blank to keep current'} />
+                      {editMode==='edit' && <span className="au-form-hint">Leave blank to keep the current password</span>}
+                      {formTouched.password && formErrors.password && <span className="au-form-error">{formErrors.password}</span>}
+                    </div>
+                    <div className="au-form-group">
+                      <label className="au-form-label">Role *</label>
+                      <select className="au-form-select" value={editForm.role} onChange={e=>handleFieldChange('role',e.target.value)}>
+                        {ROLES.map(r=><option key={r} value={r}>{r.charAt(0).toUpperCase()+r.slice(1)}</option>)}
+                      </select>
+                      {formTouched.role && formErrors.role && <span className="au-form-error">{formErrors.role}</span>}
+                    </div>
+                  </>
+                )}
+                {currentStep === 2 && (
+                  <>
+                    <div className="au-form-group">
+                      <label className="au-form-label">Profile Image *</label>
+                      <input className="au-form-input" type="file" accept="image/*" onChange={e=>handleProfileImageChange(e)} />
+                      {formTouched.profile_image && formErrors.profile_image && <span className="au-form-error">{formErrors.profile_image}</span>}
+                      {editForm.profile_image_preview && (
+                        <div className="au-image-preview mt-2">
+                          <img src={editForm.profile_image_preview} alt="Profile Preview" className="au-preview-img" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="au-form-group">
+                      <label className="au-form-label">Document Upload</label>
+                      <input className="au-form-input" type="file" accept=".pdf,.doc,.docx,.txt" onChange={e=>handleDocumentChange(e)} />
+                      {formTouched.document_file && formErrors.document_file && <span className="au-form-error">{formErrors.document_file}</span>}
+                      {editForm.document_file_name && (
+                        <div className="au-file-preview mt-2">
+                          <FaPaperclip className="au-file-icon" />
+                          <span className="au-file-name">{editForm.document_file_name}</span>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+                {currentStep === 3 && (
+                  <>
+                    {/* Address Fields */}
+                    <div className="au-form-group">
+                      <label className="au-form-label">Address Line 1 *</label>
+                      <input className="au-form-input" value={editForm.address_line_1} onChange={e=>handleFieldChange('address_line_1',e.target.value)} placeholder="Street address, P.O. box, etc." />
+                      {formTouched.address_line_1 && formErrors.address_line_1 && <span className="au-form-error">{formErrors.address_line_1}</span>}
+                    </div>
+
+                    <div className="au-form-group">
+                      <label className="au-form-label">Address Line 2</label>
+                      <input className="au-form-input" value={editForm.address_line_2} onChange={e=>handleFieldChange('address_line_2',e.target.value)} placeholder="Apartment, suite, unit, etc." />
+                    </div>
+
+                    <div className="au-form-row">
+                      <div className="au-form-group">
+                        <label className="au-form-label">City *</label>
+                        <input className="au-form-input" value={editForm.city} onChange={e=>handleFieldChange('city',e.target.value)} placeholder="City" />
+                        {formTouched.city && formErrors.city && <span className="au-form-error">{formErrors.city}</span>}
+                      </div>
+                      <div className="au-form-group">
+                        <label className="au-form-label">State *</label>
+                        <input className="au-form-input" value={editForm.state} onChange={e=>handleFieldChange('state',e.target.value)} placeholder="State/Province" />
+                        {formTouched.state && formErrors.state && <span className="au-form-error">{formErrors.state}</span>}
+                      </div>
+                    </div>
+
+                    <div className="au-form-row">
+                      <div className="au-form-group">
+                        <label className="au-form-label">Postal Code *</label>
+                        <input className="au-form-input" value={editForm.postal_code} onChange={e=>handleFieldChange('postal_code',e.target.value)} placeholder="ZIP or postal code" />
+                        {formTouched.postal_code && formErrors.postal_code && <span className="au-form-error">{formErrors.postal_code}</span>}
+                      </div>
+                      <div className="au-form-group">
+                        <label className="au-form-label">Country *</label>
+                        <input className="au-form-input" value={editForm.country} onChange={e=>handleFieldChange('country',e.target.value)} placeholder="Country" />
+                        {formTouched.country && formErrors.country && <span className="au-form-error">{formErrors.country}</span>}
+                      </div>
+                    </div>
+
+                    {/* Address Suggestions */}
+                    {addressSuggestions.length > 0 && (
+                      <div className="au-address-suggestions">
+                        <div className="au-address-suggestions-header">
+                          <strong>Address Suggestions:</strong>
+                          <button className="au-btn-link" onClick={() => setAddressSuggestions([])}>Clear</button>
+                        </div>
+                        <div className="au-address-suggestions-list">
+                          {addressSuggestions.map((suggestion, index) => (
+                            <div key={index} className="au-address-suggestion-item" onClick={() => {
+                              setEditForm({
+                                ...editForm,
+                                address_line_1: suggestion.address_line_1 || '',
+                                address_line_2: suggestion.address_line_2 || '',
+                                city: suggestion.city || '',
+                                state: suggestion.state || '',
+                                postal_code: suggestion.postal_code || '',
+                                country: suggestion.country || ''
+                              });
+                              setAddressSuggestions([]);
+                            }}>
+                              {suggestion.formatted_address}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
             <div className="au-modal-footer">
-              <button className="au-btn ghost" onClick={() => setShowEdit(false)}>Cancel</button>
-              <button className="au-btn primary" onClick={handleSaveUser} disabled={editSaving}>
-                {editSaving ? 'Saving…' : (editMode==='create' ? 'Create User' : 'Save Changes')}
+              <button
+                className="au-btn ghost"
+                onClick={() => {
+                  if (currentStep > 1) {
+                    goToPreviousStep();
+                  } else {
+                    setShowEdit(false);
+                  }
+                }}
+              >
+                {currentStep === 1 ? 'Cancel' : 'Back'}
+              </button>
+              <button
+                className="au-btn primary"
+                onClick={() => {
+                  if (currentStep === getTotalSteps()) {
+                    handleSaveUser();
+                  } else {
+                    goToNextStep();
+                  }
+                }}
+                disabled={editSaving || !validateCurrentStep()}
+              >
+                {currentStep === getTotalSteps()
+                  ? (editSaving ? 'Saving…' : (editMode==='create' ? 'Create User' : 'Save Changes'))
+                  : (editSaving ? 'Saving…' : 'Next Step')}
               </button>
             </div>
           </div>

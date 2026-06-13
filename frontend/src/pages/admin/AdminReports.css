@@ -142,7 +142,7 @@
   background: transparent;
   font-size: .84rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   cursor: pointer;
   border-bottom: 2.5px solid transparent;
   margin-bottom: -2px;
@@ -201,7 +201,7 @@
 }
 .ar-stat-label {
   font-size: .69rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: .04em;
   font-weight: 600;
@@ -311,7 +311,7 @@
 }
 
 .ar-employee-name  { font-weight: 600; font-size: .875rem; }
-.ar-employee-role  { font-size: .72rem; color: #6b7280; margin-top: 1px; }
+.ar-employee-role  { font-size: .72rem; color: var(--color-text-secondary); margin-top: 1px; }
 
 .ar-no-data {
   text-align: center;
@@ -341,7 +341,7 @@
   justify-content: center;
   gap: .75rem;
   padding: 4rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-size: .875rem;
 }
 
@@ -363,7 +363,7 @@
   flex-direction: column;
   align-items: center;
   padding: 3rem 1rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   gap: .5rem;
 }
 .ar-empty-icon { font-size: 2.2rem; color: #d1d5db; }

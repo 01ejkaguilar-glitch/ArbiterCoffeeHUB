@@ -27,7 +27,15 @@ class CustomerInsightsService
     public function generateCustomerInsights(int $customerId): array
     {
         $cacheKey = "customer_insights_{$customerId}";
-        
+
+        // Try to get from cache first to track hits/misses
+        if (Cache::has($cacheKey)) {
+            app(\App\Services\CacheMetricsService::class)->hit();
+            return Cache::get($cacheKey);
+        }
+
+        // Cache miss - generate value and store it
+        app(\App\Services\CacheMetricsService::class)->miss();
         return Cache::remember($cacheKey, 3600, function () use ($customerId) {
             return [
                 'purchase_behavior' => $this->analyzePurchaseBehavior($customerId),

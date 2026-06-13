@@ -15,6 +15,7 @@ import { useAuth } from '../../context/AuthContext';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS, BACKEND_BASE_URL } from '../../config/api';
 import { useEscapeKey, useFocusTrap } from '../../hooks/useKeyboardNavigation';
+import { useApiError } from '../../hooks/useApiError';
 import './CustomerProfile.css';
 
 /* ── Constants ────────────────────────────── */
@@ -49,12 +50,12 @@ const fmtMethod = (s) => s.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperC
 /* ── Component ────────────────────────────── */
 const CustomerProfile = () => {
   const { logout } = useAuth();
+  const { errorInfo, getErrorInfo } = useApiError();
 
   /* state */
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [activeTab, setActiveTab] = useState('personal');
 
@@ -117,8 +118,8 @@ const CustomerProfile = () => {
           }
         }
       }
-    } catch {
-      setError('Failed to load profile data');
+    } catch (err) {
+      getErrorInfo(err);
     } finally {
       setLoading(false);
     }
@@ -136,11 +137,11 @@ const CustomerProfile = () => {
     }
   }, [success]);
   useEffect(() => {
-    if (error) {
-      const t = setTimeout(() => setError(null), 5000);
+    if (errorInfo) {
+      const t = setTimeout(() => {}, 5000); // Just to trigger the effect, errorInfo is managed by hook
       return () => clearTimeout(t);
     }
-  }, [error]);
+  }, [errorInfo]);
 
   /* ── Handlers ──────────────────────────── */
   const handleProfileUpdate = async (e) => {
@@ -154,15 +155,16 @@ const CustomerProfile = () => {
     };
 
     setSaving(true);
-    setError(null);
     try {
       const response = await apiService.put(API_ENDPOINTS.CUSTOMER.PROFILE, payload);
       if (response.success) {
         setProfile((prev) => ({ ...prev, ...payload }));
         setSuccess('Profile updated successfully');
+      } else {
+        getErrorInfo({ message: response.message || 'Failed to update profile' });
       }
-    } catch {
-      setError('Failed to update profile');
+    } catch (err) {
+      getErrorInfo(err);
     } finally {
       setSaving(false);
     }
@@ -179,7 +181,6 @@ const CustomerProfile = () => {
     };
 
     setSaving(true);
-    setError(null);
     try {
       const response = await apiService.put(API_ENDPOINTS.CUSTOMER.PROFILE, {
         taste_preferences: prefs,
@@ -187,9 +188,11 @@ const CustomerProfile = () => {
       if (response.success) {
         setTastePreferences(prefs);
         setSuccess('Coffee preferences updated');
+      } else {
+        getErrorInfo({ message: response.message || 'Failed to update coffee preferences' });
       }
-    } catch {
-      setError('Failed to update coffee preferences');
+    } catch (err) {
+      getErrorInfo(err);
     } finally {
       setSaving(false);
     }
@@ -198,14 +201,15 @@ const CustomerProfile = () => {
   const handleNotificationUpdate = async (e) => {
     e.preventDefault();
     setSaving(true);
-    setError(null);
     try {
       const response = await apiService.put(API_ENDPOINTS.CUSTOMER.NOTIFICATIONS, notifications);
       if (response.success) {
         setSuccess('Notification preferences updated');
+      } else {
+        getErrorInfo({ message: response.message || 'Failed to update notification preferences' });
       }
-    } catch {
-      setError('Failed to update notification preferences');
+    } catch (err) {
+      getErrorInfo(err);
     } finally {
       setSaving(false);
     }
@@ -219,16 +223,15 @@ const CustomerProfile = () => {
     const confirm = fd.get('confirm_password');
 
     if (newPwd !== confirm) {
-      setError('New password and confirmation do not match');
+      getErrorInfo({ message: 'New password and confirmation do not match' });
       return;
     }
     if (newPwd.length < 8) {
-      setError('New password must be at least 8 characters');
+      getErrorInfo({ message: 'New password must be at least 8 characters' });
       return;
     }
 
     setSaving(true);
-    setError(null);
     try {
       const response = await apiService.put(API_ENDPOINTS.CUSTOMER.CHANGE_PASSWORD, {
         current_password: current,
@@ -238,9 +241,11 @@ const CustomerProfile = () => {
       if (response.success) {
         setSuccess('Password changed successfully');
         e.target.reset();
+      } else {
+        getErrorInfo({ message: response.message || 'Failed to change password' });
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to change password');
+      getErrorInfo(err);
     } finally {
       setSaving(false);
     }
@@ -249,14 +254,13 @@ const CustomerProfile = () => {
   const handlePrivacySave = async (e) => {
     e.preventDefault();
     setSaving(true);
-    setError(null);
     try {
       await apiService.put(API_ENDPOINTS.CUSTOMER.PROFILE, {
         taste_preferences: { privacy_settings: privacySettings },
       });
       setSuccess('Privacy settings saved');
-    } catch {
-      setError('Failed to save privacy settings');
+    } catch (err) {
+      getErrorInfo(err);
     } finally {
       setSaving(false);
     }
@@ -269,15 +273,16 @@ const CustomerProfile = () => {
     fd.append('profile_picture', file);
 
     setSaving(true);
-    setError(null);
     try {
       const response = await apiService.upload(API_ENDPOINTS.CUSTOMER.PROFILE_PICTURE, fd);
       if (response.success) {
         setProfile((prev) => ({ ...prev, profile_picture: response.data.profile_picture }));
         setSuccess('Profile picture updated');
+      } else {
+        getErrorInfo({ message: response.message || 'Failed to upload profile picture' });
       }
-    } catch {
-      setError('Failed to upload profile picture');
+    } catch (err) {
+      getErrorInfo(err);
     } finally {
       setSaving(false);
     }
@@ -285,12 +290,11 @@ const CustomerProfile = () => {
 
   const handleDeactivate = async () => {
     if (!deactivateForm.password) {
-      setError('Password is required');
+      getErrorInfo({ message: 'Password is required' });
       return;
     }
 
     setSaving(true);
-    setError(null);
     try {
       const response = await apiService.delete(API_ENDPOINTS.CUSTOMER.DEACTIVATE_ACCOUNT, {
         password: deactivateForm.password,
@@ -299,9 +303,11 @@ const CustomerProfile = () => {
       if (response.success) {
         logout();
         window.location.href = '/';
+      } else {
+        getErrorInfo({ message: response.message || 'Failed to deactivate account' });
       }
-    } catch {
-      setError('Failed to deactivate account');
+    } catch (err) {
+      getErrorInfo(err);
     } finally {
       setSaving(false);
     }
@@ -340,14 +346,14 @@ const CustomerProfile = () => {
             <FaCheck /> {success}
           </motion.div>
         )}
-        {error && (
+        {errorInfo && (
           <motion.div className="cpf-alert cpf-alert-error" {...fadeIn} key="error">
-            <FaExclamationCircle /> {error}
+            <FaExclamationCircle /> {errorInfo.message}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Profile Header ─────────────── */}
+        {/* ── Profile Header ─────────────── */}
       <section className="cpf-header">
         <div className="cpf-avatar-wrap">
           <img
@@ -381,7 +387,7 @@ const CustomerProfile = () => {
         )}
       </section>
 
-      {/* ── Tab Navigation ─────────────── */}
+        {/* ── Tab Navigation ─────────────── */}
       <nav className="cpf-nav" role="tablist" aria-label="Profile sections">
         {TABS.map(({ key, label, Icon }) => (
           <button
@@ -473,45 +479,44 @@ const CustomerProfile = () => {
                       <option value="italian">Italian Roast</option>
                     </select>
                   </div>
-                </div>
 
-                <div className="cpf-form-group">
-                  <label className="cpf-form-label">Brewing Methods</label>
-                  <div className="cpf-chips">
-                    {BREWING_METHODS.map((method) => (
-                      <label key={method} className="cpf-chip">
-                        <input
-                          type="checkbox"
-                          name="brewing_methods"
-                          value={method}
-                          defaultChecked={tastePreferences.brewing_methods?.includes(method)}
-                        />
-                        {fmtMethod(method)}
-                      </label>
-                    ))}
+                  <div className="cpf-form-group">
+                    <label className="cpf-form-label">Brewing Methods</label>
+                    <div className="cpf-chips">
+                      {BREWING_METHODS.map((method) => (
+                        <label key={method} className="cpf-chip">
+                          <input
+                            type="checkbox"
+                            name="brewing_methods"
+                            value={method}
+                            defaultChecked={tastePreferences.brewing_methods?.includes(method)}
+                          />
+                          {fmtMethod(method)}
+                        </label>
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                <div className="cpf-form-group">
-                  <label className="cpf-form-label" htmlFor="cpf-taste-notes">Taste Notes</label>
-                  <textarea
-                    id="cpf-taste-notes"
-                    name="taste_notes"
-                    className="cpf-form-input"
-                    rows={3}
-                    defaultValue={tastePreferences.taste_notes}
-                    placeholder="Describe the flavors you enjoy — fruity, chocolatey, nutty, floral…"
-                  />
-                  <span className="cpf-form-help">Tell us about the flavors and characteristics you love in coffee</span>
-                </div>
+                  <div className="cpf-form-group">
+                    <label className="cpf-form-label" htmlFor="cpf-taste-notes">Taste Notes</label>
+                    <textarea
+                      id="cpf-taste-notes"
+                      name="taste_notes"
+                      className="cpf-form-input"
+                      rows={3}
+                      defaultValue={tastePreferences.taste_notes}
+                      placeholder="Describe the flavors you enjoy — fruity, chocolatey, nutty, floral…"
+                    />
+                    <span className="cpf-form-help">Tell us about the flavors and characteristics you love in coffee</span>
+                  </div>
 
-                <button type="submit" className="cpf-btn cpf-btn-primary" disabled={saving}>
-                  {saving ? <ResponsiveSpinner animation="border" size="sm" /> : 'Save Preferences'}
-                </button>
-              </form>
-            </div>
-          </motion.div>
-        )}
+                  <button type="submit" className="cpf-btn cpf-btn-primary" disabled={saving}>
+                    {saving ? <ResponsiveSpinner animation="border" size="sm" /> : 'Save Preferences'}
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+          )}
 
         {/* ─── Notifications ──────────── */}
         {activeTab === 'notifications' && (
@@ -634,7 +639,7 @@ const CustomerProfile = () => {
         )}
       </AnimatePresence>
 
-      {/* ── Deactivation Modal ─────────── */}
+        {/* ── Deactivation Modal ─────────── */}
       <ResponsiveModal show={showDeactivateModal} onHide={() => setShowDeactivateModal(false)} centered className="cpf-modal">
         <div ref={deactivateModalRef}>
           <Modal.Header closeButton>
@@ -680,7 +685,7 @@ const CustomerProfile = () => {
             >
               {saving ? <ResponsiveSpinner animation="border" size="sm" /> : 'Deactivate Account'}
             </button>
-          </ResponsiveModal.Footer>
+          </Modal.Footer>
         </div>
       </ResponsiveModal>
       </PullToRefresh>

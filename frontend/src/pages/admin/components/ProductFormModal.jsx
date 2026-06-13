@@ -4,7 +4,7 @@ import ResponsiveModal from '../../../components/responsive/Modal';
 import ResponsiveForm from '../../../components/responsive/Form';
 import ResponsiveButton from '../../../components/responsive/Button';
 
-const ProductFormModal = ({ show, onHide, formData = {}, handleChange, handleRemoveImage, handleSubmit, editingProduct, categories = [], imagePreview }) => {
+const ProductFormModal = ({ show, onHide, formData = {}, handleChange, handleRemoveImage, handleSubmit, editingProduct, categories = [], imagePreview, errors = {} }) => {
   return (
     <ResponsiveModal show={show} onHide={onHide} size="lg" centered>
       <ResponsiveForm onSubmit={handleSubmit}>
@@ -51,22 +51,24 @@ const ProductFormModal = ({ show, onHide, formData = {}, handleChange, handleRem
             <label className="form-label">Name</label>
             <input
               type="text"
-              className="form-control"
+              className={`form-control${errors.name ? ' is-invalid' : ''}`}
               name="name"
               value={formData.name || ''}
               onChange={handleChange}
               required
             />
+            {errors.name && <div className="invalid-feedback">{errors.name}</div>}
           </div>
           <div className="form-group">
             <label className="form-label">Description</label>
             <textarea
-              className="form-control"
+              className={`form-control${errors.description ? ' is-invalid' : ''}`}
               rows={3}
               name="description"
               value={formData.description || ''}
               onChange={handleChange}
             />
+            {errors.description && <div className="invalid-feedback">{errors.description}</div>}
           </div>
           <div className="d-grid gap-3" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
             <div className="form-group">
@@ -74,29 +76,31 @@ const ProductFormModal = ({ show, onHide, formData = {}, handleChange, handleRem
               <input
                 type="number"
                 step="0.01"
-                className="form-control"
+                className={`form-control${errors.price ? ' is-invalid' : ''}`}
                 name="price"
                 value={formData.price || ''}
                 onChange={handleChange}
                 required
               />
+              {errors.price && <div className="invalid-feedback">{errors.price}</div>}
             </div>
             <div className="form-group">
               <label className="form-label">Stock Quantity</label>
               <input
                 type="number"
-                className="form-control"
+                className={`form-control${errors.stock_quantity ? ' is-invalid' : ''}`}
                 name="stock_quantity"
                 value={formData.stock_quantity || ''}
                 onChange={handleChange}
                 required
               />
+              {errors.stock_quantity && <div className="invalid-feedback">{errors.stock_quantity}</div>}
             </div>
           </div>
           <div className="form-group">
             <label className="form-label">Category</label>
             <select
-              className="form-select"
+              className={`form-select${errors.category_id ? ' is-invalid' : ''}`}
               name="category_id"
               value={formData.category_id || ''}
               onChange={handleChange}
@@ -106,6 +110,7 @@ const ProductFormModal = ({ show, onHide, formData = {}, handleChange, handleRem
                 <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
+            {errors.category_id && <div className="invalid-feedback">{errors.category_id}</div>}
           </div>
           <div className="form-check">
             <input

@@ -7,6 +7,10 @@ import './styles/fonts.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import * as serviceWorker from './utils/serviceWorker';
+import { initializeSentry } from './utils/sentry';
+
+// Initialize Sentry for error tracking
+initializeSentry();
 
 const DeferredGlobalStyles = () => {
   React.useEffect(() => {

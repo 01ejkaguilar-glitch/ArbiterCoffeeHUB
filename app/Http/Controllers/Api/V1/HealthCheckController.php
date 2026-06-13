@@ -170,6 +170,8 @@ class HealthCheckController extends Controller
             'uptime_seconds' => time() - ($_SERVER['REQUEST_TIME'] ?? time()),
             'active_connections' => $this->getActiveConnections(),
             'cache_hit_rate' => $this->getCacheHitRate(),
+            'cache_hits' => $this->getCacheHits(),
+            'cache_misses' => $this->getCacheMisses(),
         ];
     }
 
@@ -187,12 +189,26 @@ class HealthCheckController extends Controller
     }
 
     /**
-     * Get cache hit rate (simplified)
+     * Get actual cache hit rate from metrics service
      */
     private function getCacheHitRate(): float
     {
-        // This is a simplified implementation
-        // In production, you'd track this with a proper monitoring system
-        return 95.5; // Placeholder
+        return app(\App\Services\CacheMetricsService::class)->getHitRate();
+    }
+
+    /**
+     * Get total cache hits from metrics service
+     */
+    private function getCacheHits(): int
+    {
+        return app(\App\Services\CacheMetricsService::class)->getHits();
+    }
+
+    /**
+     * Get total cache misses from metrics service
+     */
+    private function getCacheMisses(): int
+    {
+        return app(\App\Services\CacheMetricsService::class)->getMisses();
     }
 }

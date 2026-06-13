@@ -2,7 +2,7 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { HelmetProvider } from 'react-helmet-async';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider } from './context/AuthContext';
 import { KITCHEN_THEME, KITCHEN_INVENTORY_TYPES } from './constants/workforceThemes';
 import apiService from './services/api.service';
@@ -11,10 +11,13 @@ import { CartProvider } from './context/CartContext';
 import { NotificationCenterProvider } from './context/NotificationContext';
 import { NotificationProvider } from './components/common/NotificationSystem';
 import { ToastProvider } from './components/animations/Toast';
-import PublicLayout from './components/layout/PublicLayout';
 import LoadingFallback from './components/common/LoadingFallback';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import FeedbackModal from './components/common/FeedbackModal';
 import HomePage from './pages/public/HomePage';
+import { FeedbackModalProvider } from './context/FeedbackModalContext';
+import { useFeedbackModal } from './context/FeedbackModalContext';
+import { useState } from 'react';
 
 // Styles loaded in index.js (bootstrap -> variables -> overrides -> utilities)
 
@@ -24,6 +27,7 @@ const CustomerLayout = lazy(() => import('./components/layout/CustomerLayout'));
 const AdminLayout = lazy(() => import('./components/layout/AdminLayout'));
 const BaristaLayout = lazy(() => import('./components/layout/BaristaLayout'));
 const KitchenLayout = lazy(() => import('./components/layout/KitchenLayout'));
+const PublicLayout = lazy(() => import('./components/layout/PublicLayout'));
 
 // Common Components - Lazy loaded
 const DashboardRedirect = lazy(() => import('./components/common/DashboardRedirect'));
@@ -133,6 +137,8 @@ const NotificationCenter = lazy(() => import('./pages/notifications/Notification
 const NotificationPreferences = lazy(() => import('./pages/notifications/NotificationPreferences'));
 
 function App() {
+  const { showFeedbackModal, toggleFeedbackModal } = useFeedbackModal();
+
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
@@ -146,6 +152,12 @@ function App() {
                       <Suspense fallback={<LoadingFallback />}>
                         <AnimatedRoutes />
                       </Suspense>
+                      <FeedbackModalProvider>
+                        <FeedbackModal
+                          show={showFeedbackModal}
+                          onHide={toggleFeedbackModal}
+                        />
+                      </FeedbackModalProvider>
                     </ErrorBoundary>
                   </NotificationProvider>
                 </ToastProvider>
@@ -184,101 +196,65 @@ function AnimatedRoutes() {
     queryClient.refetchQueries({ type: 'active' });
   }, [location.pathname, queryClient]);
 
+  // Helper function to determine route section
+  const getRouteSection = (pathname) => {
+    if (pathname.startsWith('/admin')) return 'admin';
+    if (pathname.startsWith('/barista')) return 'barista';
+    if (pathname.startsWith('/kitchen')) return 'kitchen';
+    if (pathname.startsWith('/auth') || pathname === '/login' || pathname === '/register' || pathname === '/forgot-password' || pathname === '/reset-password') return 'auth';
+    if (pathname.startsWith('/products') || pathname === '/' || pathname === '/about' || pathname === '/announcements' || pathname === '/inquiries' || pathname === '/contact') return 'public';
+    return 'public'; // default
+  };
+
+  // Define animation variants for different sections
+  const sectionVariants = {
+    public: {
+      initial: { opacity: 0, y: 20 },
+      animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.43, 0.13, 0.23, 0.96] } },
+      exit: { opacity: 0, y: -20, transition: { duration: 0.3, ease: [0.43, 0.13, 0.23, 0.96] } }
+    },
+    auth: {
+      initial: { opacity: 0, scale: 0.9 },
+      animate: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: [0.43, 0.13, 0.23, 0.96] } },
+      exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2, ease: [0.43, 0.13, 0.23, 0.96] } }
+    },
+    admin: {
+      initial: { opacity: 0, x: -20 },
+      animate: { opacity: 1, x: 0, transition: { duration: 0.3, ease: [0.43, 0.13, 0.23, 0.96] } },
+      exit: { opacity: 0, x: 20, transition: { duration: 0.2, ease: [0.43, 0.13, 0.23, 0.96] } }
+    },
+    barista: {
+      initial: { opacity: 0, x: 20 },
+      animate: { opacity: 1, x: 0, transition: { duration: 0.3, ease: [0.43, 0.13, 0.23, 0.96] } },
+      exit: { opacity: 0, x: -20, transition: { duration: 0.2, ease: [0.43, 0.13, 0.23, 0.96] } }
+    },
+    kitchen: {
+      initial: { opacity: 0, scale: 0.95 },
+      animate: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: [0.43, 0.13, 0.23, 0.96] } },
+      exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2, ease: [0.43, 0.13, 0.23, 0.96] } }
+    }
+  };
+
+  // Get current route section
+  const currentSection = getRouteSection(location.pathname);
+  const routeVariants = sectionVariants[currentSection] || sectionVariants.public;
+
   return (
     <AnimatePresence mode="wait">
       <Routes location={location}>
-
-        {/* Auth Routes: Full-screen, no Navbar/Footer */}
-        <Route element={<AuthLayout />}>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-        </Route>
-
-        {/* Public Routes: Navbar + Footer + BottomNav */}
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/products/:id" element={<ProductDetailPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/announcements" element={<AnnouncementsPage />} />
-          <Route path="/announcements/:id" element={<AnnouncementDetailPage />} />
-          <Route path="/inquiries" element={<InquiriesPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-        </Route>
-
-        {/* Customer Routes: Navbar + Footer, auth required */}
-        <Route element={<CustomerLayout />}>
-          <Route path="/dashboard" element={<DashboardRedirect />} />
-          <Route path="/customer/dashboard" element={<CustomerDashboard />} />
-          <Route path="/profile" element={<CustomerProfile />} />
-          <Route path="/orders" element={<OrderHistory />} />
-          <Route path="/orders/:id" element={<OrderDetailPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/insights" element={<CustomerInsightsPage />} />
-          <Route path="/notifications" element={<NotificationCenter />} />
-          <Route path="/notifications/settings" element={<NotificationPreferences />} />
-        </Route>
-
-        {/* Admin Routes: Sidebar, admin role required */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="analytics" element={<AdminAnalytics />} />
-          <Route path="inventory" element={<AdminInventory />} />
-          <Route path="reports" element={<AdminReports />} />
-          <Route path="coffee-beans" element={<AdminCoffeeBeans />} />
-          <Route path="employees" element={<AdminEmployees />} />
-          <Route path="attendance" element={<AdminAttendance />} />
-          <Route path="tasks" element={<AdminTasks />} />
-          <Route path="shifts" element={<AdminShifts />} />
-          <Route path="leave-requests" element={<AdminLeaveRequests />} />
-          <Route path="performance" element={<AdminPerformance />} />
-          <Route path="settings" element={<AdminSettings />} />
-        </Route>
-
-        {/* Barista Routes: Sidebar, barista role required */}
-        <Route path="/barista" element={<BaristaLayout />}>
-          <Route index element={<BaristaDashboard />} />
-          <Route path="dashboard" element={<BaristaDashboard />} />
-          <Route path="orders" element={<OrderQueue />} />
-          <Route path="beans" element={<CoffeeBeanControl />} />
-          <Route path="training" element={<TrainingInsights />} />
-          <Route path="completed" element={<CompletedOrders />} />
-          <Route path="featured-origins" element={<TodaysOriginManagement />} />
-          <Route path="inventory" element={<InventoryChecklist defaultTab="bar" title="Inventory Checklist" subtitle="Monitor and update bar stock levels" />} />
-          <Route path="attendance" element={<BaristaAttendance />} />
-          <Route path="tasks" element={<MyTasks />} />
-          <Route path="shifts" element={<MyShifts />} />
-          <Route path="leave-request" element={<LeaveRequest />} />
-          <Route path="performance" element={<MyPerformance />} />
-        </Route>
-
-        {/* Barista POS: Full-screen, no sidebar */}
-        <Route path="/barista/pos" element={<PosPage />} />
-
-        {/* Kitchen Staff Routes: Sidebar, kitchen-staff role required */}
-        <Route path="/kitchen" element={<KitchenLayout />}>
-          <Route index element={<KitchenDashboard />} />
-          <Route path="dashboard" element={<KitchenDashboard />} />
-          <Route path="orders" element={<FoodOrderQueue />} />
-          <Route path="completed" element={<CompletedFoodOrders />} />
-          <Route path="inventory" element={<KitchenInventory theme={KITCHEN_THEME} inventoryTypes={KITCHEN_INVENTORY_TYPES} defaultTab="kitchen" title="Kitchen Inventory" subtitle="Check and adjust kitchen stock levels" endpoints={kitchenEndpoints} buildAdjustPayload={kitchenBuildPayload} />} />
-          <Route path="attendance" element={<KitchenAttendance theme={KITCHEN_THEME} />} />
-          <Route path="tasks" element={<KitchenMyTasks theme={KITCHEN_THEME} />} />
-          <Route path="shifts" element={<KitchenMyShifts theme={KITCHEN_THEME} />} />
-          <Route path="leave-request" element={<KitchenLeaveRequest theme={KITCHEN_THEME} />} />
-          <Route path="performance" element={<KitchenMyPerformance theme={KITCHEN_THEME} liveEndpoint={API_ENDPOINTS.KITCHEN.PERFORMANCE} />} />
-        </Route>
-
-        {/* 404 */}
-        <Route path="*" element={<NotFound />} />
+        {/* Animate each route */}
+        <Route
+          element={
+            <motion.div
+              variants={routeVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <Routes location={location} />
+            </motion.div>
+          }
+        />
       </Routes>
     </AnimatePresence>
   );

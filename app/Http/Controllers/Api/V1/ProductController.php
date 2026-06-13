@@ -12,42 +12,55 @@ class ProductController extends BaseController
 {
     // Cache TTL in seconds
     const CACHE_TTL = 300; // 5 minutes
-    const CACHE_TAG = 'products';
-    
+
     /**
-     * Clear the products cache (without tags for database cache compatibility).
-     * Tracks cache keys in a registry so we can forget them specifically
-     * instead of flushing the entire application cache.
+     * Clear the products cache using Laravel cache tagging.
+     * Since we're using Redis (confirmed in .env), we can leverage tagging
+     * for more efficient cache clearing.
      */
     private function clearProductsCache()
     {
-        // Forget all tracked product list cache keys
-        $registeredKeys = Cache::get('products_cache_keys', []);
-        foreach ($registeredKeys as $key) {
-            Cache::forget($key);
-        }
-        Cache::forget('products_cache_keys');
+        // Flush all cache entries tagged with 'products'
+        Cache::tags(['products'])->flush();
 
-        // Forget individual product caches — use withTrashed() so soft-deleted
-        // product IDs are included and their cache entries are also busted.
-        $productIds = Product::withTrashed()->pluck('id');
-        foreach ($productIds as $id) {
-            Cache::forget('product_' . $id);
-        }
+        // Warm up critical product data to prevent cache stampede
+        $this->warmCriticalProducts();
     }
 
     /**
-     * Cache with key tracking — remembers which keys were used.
+     * Cache with tagging support.
+     * Tracks cache hits/misses for metrics.
      */
     private function rememberProduct($cacheKey, $ttl, $callback)
     {
-        // Register this cache key
-        $registeredKeys = Cache::get('products_cache_keys', []);
-        if (!in_array($cacheKey, $registeredKeys)) {
-            $registeredKeys[] = $cacheKey;
-            Cache::put('products_cache_keys', $registeredKeys, $ttl * 2);
+        // Try to get from cache first to track hits/misses
+        if (Cache::tags(['products'])->has($cacheKey)) {
+            app(\App\Services\CacheMetricsService::class)->hit();
+            return Cache::tags(['products'])->get($cacheKey);
         }
-        return Cache::remember($cacheKey, $ttl, $callback);
+
+        // Cache miss - generate value and store it
+        app(\App\Services\CacheMetricsService::class)->miss();
+        $value = Cache::tags(['products'])->remember($cacheKey, $ttl, $callback);
+
+        return $value;
+    }
+
+    /**
+     * Warm up critical product data after cache clearing.
+     */
+    private function warmCriticalProducts()
+    {
+        // Warm up the main products list (without filters)
+        $mainProductsKey = 'products_list_' . md5(json_encode([]));
+        if (!Cache::tags(['products'])->has($mainProductsKey)) {
+            $products = Product::with('category')
+                ->where('is_available', true)
+                ->orderBy('created_at', 'desc')
+                ->take(20)
+                ->get();
+            Cache::tags(['products'])->put($mainProductsKey, $products, self::CACHE_TTL);
+        }
     }
 
     /**

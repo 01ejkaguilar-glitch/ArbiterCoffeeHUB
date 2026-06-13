@@ -5,6 +5,10 @@
 
 import apiClientWithRetry from './apiClientWithRetry';
 import API_BASE_URL from '../config/api';
+import offlineQueue from './offlineQueue';
+
+// Critical actions that should be queued when offline
+const CRITICAL_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
 // Use the retry-enabled axios instance
 const apiClient = apiClientWithRetry;
@@ -99,6 +103,11 @@ apiClient.interceptors.response.use(
 // Helper: check if user is online
 const isOnline = () => navigator.onLine;
 
+// Helper: check if a request should be queued when offline
+const shouldQueueRequest = (method) => {
+  return CRITICAL_METHODS.includes(method.toUpperCase());
+};
+
 // Progress tracking for requests
 const progressCallbacks = new Map();
 let progressIdCounter = 0;
@@ -133,6 +142,7 @@ const apiService = {
 
   // GET request with optional progress tracking
   get: async (url, params = {}, bustCache = false, onProgress) => {
+    // GET requests are not queued as they are typically read-only
     if (!isOnline()) {
       throw new Error('No internet connection');
     }
@@ -205,6 +215,22 @@ const apiService = {
 
   // POST request with optional progress tracking
   post: async (url, data = {}, config = {}, onProgress) => {
+    // If offline and this is a critical request, queue it but still throw error
+    if (!isOnline() && shouldQueueRequest('POST')) {
+      offlineQueue.enqueue({
+        method: 'POST',
+        url,
+        data,
+        config,
+        timestamp: Date.now()
+      });
+
+      // Still throw the error for immediate feedback, but request is queued
+      const error = new Error('No internet connection');
+      error.queued = true;
+      throw error;
+    }
+
     if (!isOnline()) {
       throw new Error('No internet connection');
     }
@@ -271,6 +297,21 @@ const apiService = {
 
   // PUT request with optional progress tracking
   put: async (url, data = {}, onProgress) => {
+    // If offline and this is a critical request, queue it but still throw error
+    if (!isOnline() && shouldQueueRequest('PUT')) {
+      offlineQueue.enqueue({
+        method: 'PUT',
+        url,
+        data,
+        timestamp: Date.now()
+      });
+
+      // Still throw the error for immediate feedback, but request is queued
+      const error = new Error('No internet connection');
+      error.queued = true;
+      throw error;
+    }
+
     if (!isOnline()) {
       throw new Error('No internet connection');
     }
@@ -337,6 +378,21 @@ const apiService = {
 
   // PATCH request with optional progress tracking
   patch: async (url, data = {}, onProgress) => {
+    // If offline and this is a critical request, queue it but still throw error
+    if (!isOnline() && shouldQueueRequest('PATCH')) {
+      offlineQueue.enqueue({
+        method: 'PATCH',
+        url,
+        data,
+        timestamp: Date.now()
+      });
+
+      // Still throw the error for immediate feedback, but request is queued
+      const error = new Error('No internet connection');
+      error.queued = true;
+      throw error;
+    }
+
     if (!isOnline()) {
       throw new Error('No internet connection');
     }
@@ -403,6 +459,20 @@ const apiService = {
 
   // DELETE request with optional progress tracking
   delete: async (url, onProgress) => {
+    // If offline and this is a critical request, queue it but still throw error
+    if (!isOnline() && shouldQueueRequest('DELETE')) {
+      offlineQueue.enqueue({
+        method: 'DELETE',
+        url,
+        timestamp: Date.now()
+      });
+
+      // Still throw the error for immediate feedback, but request is queued
+      const error = new Error('No internet connection');
+      error.queued = true;
+      throw error;
+    }
+
     if (!isOnline()) {
       throw new Error('No internet connection');
     }
@@ -469,6 +539,24 @@ const apiService = {
 
   // Upload file with progress tracking (uses axios's built-in upload progress)
   upload: async (url, formData, onUploadProgress = null, onProgress) => {
+    // If offline and this is a critical request, queue it but still throw error
+    // Note: Uploads are considered critical as they represent user-generated content
+    if (!isOnline() && shouldQueueRequest('POST')) { // Uploads use POST internally
+      // For uploads, we need to create a special queued request
+      offlineQueue.enqueue({
+        method: 'UPLOAD',
+        url,
+        formData,
+        onUploadProgress,
+        timestamp: Date.now()
+      });
+
+      // Still throw the error for immediate feedback, but request is queued
+      const error = new Error('No internet connection');
+      error.queued = true;
+      throw error;
+    }
+
     if (!isOnline()) {
       throw new Error('No internet connection');
     }
@@ -521,6 +609,9 @@ const apiService = {
       throw error;
     }
   },
-};
+}
+
+// Start listening for online/offline events to process the queue
+offlineQueue.start();
 
 export default apiService;

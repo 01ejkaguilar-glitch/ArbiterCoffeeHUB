@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import {
   FaCheckCircle, FaCalendarAlt, FaSearch, FaDownload,
   FaEye, FaClock, FaMoneyBillWave, FaSync, FaTimes,
@@ -368,8 +369,9 @@ const CompletedOrders = () => {
                 })}
               </tbody>
             </table>
-        </ResponsiveTable>
+            </div>
         )}
+        </ResponsiveTable>
 
         {/* Pagination */}
         {totalPages > 1 && (
@@ -406,15 +408,29 @@ const CompletedOrders = () => {
               </button>
             </div>
           </div>
+
         )}
-      </div>
 
       {/* Detail modal */}
       {detailOrder && (
         <DetailModal order={detailOrder} onClose={() => setDetailOrder(null)} />
       )}
-    </div>
+    </ResponsiveContainer>
   );
-};
 
-export default CompletedOrders;
+// Set up pull-to-refresh hook
+const { onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(
+  () => fetchCompletedOrders(false),
+  { threshold: 100 }
+);
+
+return (
+  <ResponsiveContainer className="co-page"
+    onTouchStart={onTouchStart}
+    onTouchMove={onTouchMove}
+    onTouchEnd={onTouchEnd}
+    style={{ touchAction: 'manipulation' }}
+  >
+
+    {/* Top bar */}
+    <div className="co-topbar">

@@ -1,0 +1,10 @@
+.hover-effect {
+  /* Subtle hover transformation - lift up slightly */
+  transform: translateY(-2px);
+  transition: var(--transition-normal);
+}
+
+/* Use the defined shadow-md for consistency */
+.hover-effect:hover {
+  box-shadow: var(--shadow-md);
+}

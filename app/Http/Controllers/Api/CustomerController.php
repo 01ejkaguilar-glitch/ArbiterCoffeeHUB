@@ -20,6 +20,8 @@ class CustomerController extends BaseController
     public function dashboard()
     {
         try {
+            /** @var User $user */
+            /** @var User $user */
             $user = Auth::user();
 
             // Single query for all customer statistics instead of 4 separate queries
@@ -78,6 +80,8 @@ class CustomerController extends BaseController
     public function getProfile()
     {
         try {
+            /** @var User $user */
+            /** @var User $user */
             $user = Auth::user();
             $profile = $user->customerProfile;
 
@@ -116,6 +120,8 @@ class CustomerController extends BaseController
                 'taste_preferences' => 'sometimes|nullable|array',
             ]);
 
+            /** @var User $user */
+            /** @var User $user */
             $user = Auth::user();
 
             // Update user name if provided
@@ -183,6 +189,8 @@ class CustomerController extends BaseController
     public function getTastePreferences()
     {
         try {
+            /** @var User $user */
+            /** @var User $user */
             $user = Auth::user();
             $profile = $user->customerProfile;
 
@@ -210,6 +218,7 @@ class CustomerController extends BaseController
                 'taste_profile' => 'required|array',
             ]);
 
+            /** @var User $user */
             $user = Auth::user();
 
             // Update or create customer profile with taste preferences
@@ -237,6 +246,7 @@ class CustomerController extends BaseController
     public function getOrderAnalytics()
     {
         try {
+            /** @var User $user */
             $user = Auth::user();
 
             // Get order statistics
@@ -316,6 +326,7 @@ class CustomerController extends BaseController
                 'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
+            /** @var User $user */
             $user = Auth::user();
 
             // Handle image upload
@@ -361,6 +372,7 @@ class CustomerController extends BaseController
                 'promotional_offers' => 'boolean',
             ]);
 
+            /** @var User $user */
             $user = Auth::user();
 
             $preferences = $request->only([
@@ -398,6 +410,7 @@ class CustomerController extends BaseController
     public function getFavorites()
     {
         try {
+            /** @var User $user */
             $user = Auth::user();
 
             // Get favorite products with full product details
@@ -457,6 +470,7 @@ class CustomerController extends BaseController
                 'product_id' => 'required|integer|exists:products,id'
             ]);
 
+            /** @var User $user */
             $user = Auth::user();
             $productId = $request->product_id;
 
@@ -508,6 +522,7 @@ class CustomerController extends BaseController
     public function removeFavorite($id)
     {
         try {
+            /** @var User $user */
             $user = Auth::user();
 
             $deleted = DB::table('customer_favorites')
@@ -543,6 +558,7 @@ class CustomerController extends BaseController
                 'password' => 'required|string|min:8|confirmed',
             ]);
 
+            /** @var User $user */
             $user = Auth::user();
 
             if (!Hash::check($request->input('current_password'), $user->password)) {
@@ -574,6 +590,7 @@ class CustomerController extends BaseController
                 'password' => 'required|string',
             ]);
 
+            /** @var User $user */
             $user = Auth::user();
 
             // Verify password
@@ -591,16 +608,22 @@ class CustomerController extends BaseController
             $user->tokens()->delete();
 
             return $this->sendResponse(null, 'Account deactivated successfully');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->sendValidationError($e->errors());
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to deactivate account', 500, ['error' => $e->getMessage()]);
         }
+    }
 
-        /**
-         * Get customer rewards and loyalty points
-         *
-         * @return \Illuminate\Http\JsonResponse
-         */
-        public function rewards()
-        {
+    /**
+     * Get customer rewards and loyalty points
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function rewards()
+    {
             try {
+                /** @var User $user */
                 $user = Auth::user();
 
                 // Calculate loyalty points based on order history
@@ -708,7 +731,7 @@ class CustomerController extends BaseController
                     // Group expiring points by month for simplicity
                     $expiringByMonth = $oldOrders->groupBy(function ($order) {
                         return $order->created_at->format('Y-m');
-                    })->map(function ($orders, $month) {
+                    })->map(function ($orders, $month) use ($pointsPerDollar) {
                         $points = floor((float) $orders->sum('total_amount') * $pointsPerDollar);
                         return [
                             'points' => $points,
@@ -738,12 +761,6 @@ class CustomerController extends BaseController
                 return $this->sendError('Failed to retrieve rewards data', 500, ['error' => $e->getMessage()]);
             }
         }
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->sendValidationError($e->errors());
-        } catch (\Exception $e) {
-            return $this->sendError('Failed to deactivate account', 500, ['error' => $e->getMessage()]);
-        }
-    }
 
     public function toggleFavorite(Request $request)
     {

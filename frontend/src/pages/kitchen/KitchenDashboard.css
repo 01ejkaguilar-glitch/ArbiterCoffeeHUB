@@ -29,7 +29,7 @@
 }
 .kd-subtitle {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin: 0;
 }
 .kd-header-right {
@@ -136,7 +136,7 @@
 }
 .kd-stat-label {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -182,7 +182,7 @@
 }
 .kd-metric-label {
   font-size: 0.73rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 
 /* ----------------------------------------------------------------
@@ -288,7 +288,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin-bottom: 4px;
 }
 .kd-shift-time {
@@ -426,7 +426,7 @@
   text-overflow: ellipsis;
 }
 .kd-order-items {
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-size: 0.75rem;
   flex-shrink: 0;
 }
@@ -446,7 +446,7 @@
 .kd-order-empty {
   text-align: center;
   padding: 32px 16px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
 }
 
@@ -499,7 +499,7 @@
 .kd-task-priority.low    { background: #dcfce7; color: #16a34a; }
 .kd-task-empty {
   text-align: center;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 0.82rem;
   padding: 16px 0;
   font-style: italic;
@@ -519,6 +519,8 @@
 }
 .kd-conn-chip.live    { background: #dcfce7; color: #15803d; }
 .kd-conn-chip.offline { background: #fee2e2; color: #b91c1c; }
+.kd-conn-chip.connecting { background: #fee2e2; color: #b91c1c; }
+.kd-conn-chip.connecting .kd-conn-dot { background: #f59e0b; animation: kd-pulse 1.6s infinite; }
 .kd-conn-dot {
   width: 7px;
   height: 7px;
@@ -527,6 +529,7 @@
 }
 .kd-conn-chip.live .kd-conn-dot    { background: #16a34a; animation: kd-pulse 1.6s infinite; }
 .kd-conn-chip.offline .kd-conn-dot { background: #b91c1c; }
+.kd-conn-chip.reconnecting .kd-conn-dot { background: #f59e0b; animation: kd-pulse 1.6s infinite; }
 @keyframes kd-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%       { opacity: 0.5; transform: scale(0.7); }
@@ -558,6 +561,73 @@
    ---------------------------------------------------------------- */
 .spinning { animation: kd-spin 0.6s linear infinite; }
 @keyframes kd-spin { to { transform: rotate(360deg); } }
+
+/* ─── Swipe-to-Dismiss Order Item ────────────────────────────────────── */
+.swipe-order-item {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.swipe-order-item.swiping {
+  opacity: 0.8;
+}
+
+.swipe-order-item.dismissing {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+/* Priority indicators */
+.priority-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.priority-high {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.priority-medium {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.priority-low {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.priority-dot.priority-high { background: #fee2e2; }
+.priority-dot.priority-medium { background: #fef3c7; }
+.priority-dot.priority-low { background: #dcfce7; }
+
+/* ETA time */
+.eta-time {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.eta-soon {
+  background: #fee2e2;
+  color: #b91c1c;
+  animation: pulse 1.5s infinite;
+}
+
+.eta-late {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
 
 @media (max-width: 768px) {
   .kd-topbar { flex-direction: column; align-items: stretch; gap: .75rem; }

@@ -1,15 +1,22 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { Container, Row, Col, Breadcrumb, Button } from 'react-bootstrap';
+import { FaExclamationTriangle, FaRedo } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 import { ResponsiveModal, ResponsiveButton, ResponsiveForm, ResponsiveTable, ResponsiveAlert, ResponsiveCard, ResponsiveRow, ResponsiveCol } from '@/components/responsive';
 import {
   FaEye, FaRedo, FaWifi, FaBell,
   FaShoppingCart, FaCheckCircle, FaClock, FaBoxOpen,
   FaTimesCircle, FaArrowRight, FaTimes, FaSave,
+  FaFileDownload, FaList, FaEllipsisV
 } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import { useBaristaOrders } from '../../hooks/useBroadcast';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
+import { useApiError } from '../../hooks/useApiError';
 import PageShell from '../../components/layout/PageShell';
+import { exportToCSV } from '../../utils/exportUtils';
 import './AdminOrders.css';
 
 const ORDER_STATUSES = [
@@ -48,7 +55,31 @@ const AdminOrders = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [newStatus, setNewStatus] = useState('');
-  const [error, setError] = useState(null);
+  const { errorInfo, getErrorInfo } = useApiError();
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [selectedOrders, setSelectedOrders] = useState([]);
+  const [batchAction, setBatchAction] = useState('');
+  const [batchValue, setBatchValue] = useState('');
+  const [columnVisibility, setColumnVisibility] = useState({
+    orderNumber: true,
+    customer: true,
+    dateTime: true,
+    status: true,
+    total: true,
+    type: true,
+    actions: true
+  });
+  const [showColumnDropdown, setShowColumnDropdown] = useState(false);
+  const [exportFormat, setExportFormat] = useState('csv');
+  const [dateRange, setDateRange] = useState('all');
+  const [exporting, setExporting] = useState(false);
+  // Virtual scrolling
+  const [scrollOffset, setScrollOffset] = useState(0);
+  const [visibleStartIndex, setVisibleStartIndex] = useState(0);
+  const [visibleEndIndex, setVisibleEndIndex] = useState(0);
+  const rowHeightEstimate = 48; // pixels per row (estimated)
+  const viewportHeight = 500; // pixels - adjustable
 
   // Filters
   const [search, setSearch] = useState('');
@@ -85,7 +116,6 @@ const AdminOrders = () => {
     try {
       if (showRefreshIndicator) setRefreshing(true);
       else setLoading(true);
-      setError(null);
 
       const params = new URLSearchParams();
       params.set('page', page);
@@ -112,10 +142,10 @@ const AdminOrders = () => {
           });
         }
       } else {
-        setError('Failed to load orders');
+        getErrorInfo(response);
       }
     } catch (err) {
-      setError('Failed to load orders. Please try again.');
+      getErrorInfo(err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -127,10 +157,80 @@ const AdminOrders = () => {
     fetchOrders();
   }, [fetchOrders]);
 
+  // Clear selected orders when data changes to avoid stale selections
+  useEffect(() => {
+    setSelectedOrders([]);
+  }, [orders]);
+
+  // Close column dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showColumnDropdown) {
+        setShowColumnDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showColumnDropdown]);
+
+  // Virtual scrolling: update visible indices when scroll position changes
+  useEffect(() => {
+    if (!tableRef.current) return;
+
+    const updateVisibleIndices = () => {
+      const scrollTop = tableRef.current.scrollTop;
+      const startIndex = Math.max(0, Math.floor((scrollTop - (buffer * rowHeightEstimate)) / rowHeightEstimate));
+      const endIndex = Math.min(
+        orders.length - 1,
+        Math.ceil((scrollTop + viewportHeight + (buffer * rowHeightEstimate)) / rowHeightEstimate)
+      );
+
+      setScrollOffset(scrollTop);
+      setVisibleStartIndex(startIndex);
+      setVisibleEndIndex(endIndex);
+    };
+
+    const handleScroll = () => {
+      updateVisibleIndices();
+    };
+
+    tableRef.current.addEventListener('scroll', handleScroll);
+    // Initial calculation
+    updateVisibleIndices();
+
+    return () => {
+      tableRef.current.removeEventListener('scroll', handleScroll);
+    };
+  }, [orders.length, viewportHeight, rowHeightEstimate, buffer]);
+
+  // Set up pull-to-refresh hook
+  const { onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(
+    () => fetchOrders(false),
+    { threshold: 100 }
+  );
+
   const handleViewOrder = (order) => {
     setSelectedOrder(order);
     setNewStatus(order.status);
     setShowModal(true);
+  };
+
+  const handleToggleOrderSelection = (orderId) => {
+    setSelectedOrders(prev =>
+      prev.includes(orderId)
+        ? prev.filter(id => id !== orderId)
+        : [...prev, orderId]
+    );
+  };
+
+  const handleToggleSelectAll = () => {
+    setSelectedOrders(prev =>
+      prev.length === orders.length
+        ? []
+        : orders.map(order => order.id)
+    );
   };
 
   const handleStatusUpdate = async () => {
@@ -157,9 +257,11 @@ const AdminOrders = () => {
           'Order Updated',
           `Order #${selectedOrder.order_number} status changed to ${newStatus}.`
         );
+      } else {
+        getErrorInfo(response);
       }
     } catch (error) {
-      setError('Failed to update order status');
+      getErrorInfo(error);
     }
   };
 
@@ -188,6 +290,136 @@ const AdminOrders = () => {
     cancelled: orders.filter(o => o.status === 'cancelled').length,
   }), [orders, meta.total]);
 
+  // Export functions
+  const handleExportCSV = () => {
+    const exportData = orders.map(order => ({
+      'Order #': order.order_number,
+      Customer: order.user?.name || '—',
+      'Date & Time': new Date(order.created_at).toLocaleString(),
+      Status: order.status,
+      Total: parseFloat(order.total_amount).toFixed(2),
+      Type: order.order_type || '—'
+    }));
+    exportToCSV(exportData, `orders-${new Date().toISOString().split('T')[0]}.csv`);
+  };
+
+  const handleExportPDF = () => {
+    // For PDF export, we'll use the browser's print function on a special view
+    // In a production app, you might use a library like jsPDF
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Orders Export</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { text-align: center; color: #2c3e50; }
+            table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #ecf0f1; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+          <h1>Orders Export</h1>
+          <p>Exported on: ${new Date().toLocaleString()}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Date & Time</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${orders.map(order => `
+                <tr>
+                  <td>${order.order_number}</td>
+                  <td>${order.user?.name || '—'}</td>
+                  <td>${new Date(order.created_at).toLocaleString()}</td>
+                  <td>${order.status}</td>
+                  <td>₱${parseFloat(order.total_amount).toFixed(2)}</td>
+                  <td>${order.order_type || '—'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <script>
+            window.onload = () => {
+              window.print();
+              setTimeout(() => window.close(), 1000);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
+  const handleExportFromModal = () => {
+    setExporting(true);
+    try {
+      if (exportFormat === 'csv') {
+        handleExportCSV();
+      } else if (exportFormat === 'pdf') {
+        handleExportPDF();
+      }
+      setSuccessNotification('Success', `Orders exported successfully as ${exportFormat.toUpperCase()}`);
+    } catch (error) {
+      getErrorInfo(error);
+    } finally {
+      setExporting(false);
+      setShowExportModal(false);
+    }
+  };
+
+  // Batch actions
+  const handleBatchAction = async () => {
+    if (selectedOrders.length === 0) {
+      getErrorInfo({ message: 'Please select orders first' });
+      return;
+    }
+
+    try {
+      let updateData = {};
+      switch (batchAction) {
+        case 'status':
+          if (!batchValue) {
+            getErrorInfo({ message: 'Please select a status' });
+            return;
+          }
+          updateData = { status: batchValue };
+          break;
+        default:
+          getErrorInfo({ message: 'Invalid batch action' });
+          return;
+      }
+
+      // Update each selected order
+      await Promise.all(
+        selectedOrders.map(orderId =>
+          apiService.patch(
+            API_ENDPOINTS.ADMIN.ORDER_STATUS(orderId),
+            updateData
+          )
+        )
+      );
+
+      setSuccessNotification('Success', `Updated ${selectedOrders.length} orders successfully!`);
+      setShowBatchModal(false);
+      setSelectedOrders([]);
+      setBatchAction('');
+      setBatchValue('');
+      fetchOrders();
+    } catch (error) {
+      getErrorInfo(error);
+    }
+  };
+
   // Unique order types from current page for the filter dropdown
   const orderTypes = useMemo(() =>
     [...new Set(orders.map(o => o.order_type).filter(Boolean))],
@@ -212,8 +444,14 @@ const AdminOrders = () => {
       title="Order Management"
       subtitle="Manage and track all customer orders"
       loading={loading}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      style={{
+        touchAction: 'manipulation'
+      }}
       headerRight={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', flexWrap: 'wrap' }}>
           {/* Live indicator */}
           <span className={`ao-live-chip ${isConnected ? 'on' : 'off'}`}>
             <span className="ao-live-dot" />
@@ -227,6 +465,48 @@ const AdminOrders = () => {
               {pendingOrders.length} new
             </span>
           )}
+
+          {/* Batch actions */}
+          {selectedOrders.length > 0 && (
+            <div style={{ display: 'flex', gap: '.3rem' }}>
+              <ResponsiveButton
+                variant="outline-secondary"
+                size="sm"
+                onClick={() => setShowBatchModal(true)}
+                disabled={selectedOrders.length === 0}
+              >
+                <FaList size={12} />
+                Batch ({selectedOrders.length})
+              </ResponsiveButton>
+            </div>
+          )}
+
+          {/* Export buttons */}
+          <div style={{ display: 'flex', gap: '.3rem' }}>
+            <ResponsiveButton
+              variant="outline-success"
+              size="sm"
+              onClick={() => {
+                setExportFormat('csv');
+                setShowExportModal(true);
+              }}
+              disabled={loading || orders.length === 0}
+            >
+              <FaFileDownload size={12} />
+              CSV
+            </ResponsiveButton>
+            <ResponsiveButton
+              variant="outline-success"
+              size="sm"
+              onClick={() => {
+                setExportFormat('pdf');
+                setShowExportModal(true);
+              }}
+              disabled={loading || orders.length === 0}
+            >
+              PDF
+            </ResponsiveButton>
+          </div>
 
           {/* Refresh */}
           <ResponsiveButton
@@ -244,8 +524,25 @@ const AdminOrders = () => {
       }
     >
       {/* Error */}
-      {error && (
-        <ResponsiveAlert show={true} onHide={() => setError(null)} message={error} type="danger" />
+      {errorInfo && (
+        <div>
+          <ResponsiveAlert show={true} onHide={() => { /* Error cleared by useApiError internal state */ }} message={errorInfo.message} type={errorInfo.type} />
+          {errorInfo.actions && errorInfo.actions.length > 0 && (
+            <div className="mt-3">
+              {errorInfo.actions.map((action, index) => (
+                <ResponsiveButton
+                  key={index}
+                  variant={action.variant || 'primary'}
+                  size="sm"
+                  onClick={action.onClick}
+                  style={{ marginRight: index < errorInfo.actions.length - 1 ? '0.5rem' : 0 }}
+                >
+                  {action.label}
+                </ResponsiveButton>
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       {/* Stats Bar */}
@@ -313,6 +610,19 @@ const AdminOrders = () => {
             />
           </div>
 
+          {/* Select all toggle */}
+          <div className="ao-select-all-wrap">
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={selectedOrders.length === orders.length && orders.length > 0}
+                onChange={handleToggleSelectAll}
+              />
+              <label className="form-check-label">Select All</label>
+            </div>
+          </div>
+
           {/* Status filter */}
           <select className="ao-filter-select" value={filterStatus} onChange={e => handleFilterStatus(e.target.value)} aria-label="Filter by status">
             <option value="">All Statuses</option>
@@ -336,6 +646,89 @@ const AdminOrders = () => {
             ))}
           </select>
 
+          {/* Column visibility */}
+          <div
+  className="ao-column-toggle"
+  tabindex="0"
+  role="button"
+  aria-expanded={showColumnDropdown}
+  aria-label="Toggle column visibility"
+  onClick={() => setShowColumnDropdown(!showColumnDropdown)}
+  onKeyDown={(e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setShowColumnDropdown(!showColumnDropdown);
+    }
+  }}
+>
+            <FaEllipsisV size={14} className={`ao-column-toggle-icon${showColumnDropdown ? ' active' : ''}`} />
+            <div className={`ao-column-dropdown${showColumnDropdown ? ' active' : ''}`}>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={columnVisibility.orderNumber}
+                  onChange={(e) => setColumnVisibility(prev => ({ ...prev, orderNumber: e.target.value }))}
+                />
+                <label className="form-check-label">Order #</label>
+              </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={columnVisibility.customer}
+                  onChange={(e) => setColumnVisibility(prev => ({ ...prev, customer: e.target.value }))}
+                />
+                <label className="form-check-label">Customer</label>
+              </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={columnVisibility.dateTime}
+                  onChange={(e) => setColumnVisibility(prev => ({ ...prev, dateTime: e.target.value }))}
+                />
+                <label className="form-check-label">Date & Time</label>
+              </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={columnVisibility.status}
+                  onChange={(e) => setColumnVisibility(prev => ({ ...prev, status: e.target.value }))}
+                />
+                <label className="form-check-label">Status</label>
+              </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={columnVisibility.total}
+                  onChange={(e) => setColumnVisibility(prev => ({ ...prev, total: e.target.value }))}
+                />
+                <label className="form-check-label">Total</label>
+              </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={columnVisibility.type}
+                  onChange={(e) => setColumnVisibility(prev => ({ ...prev, type: e.target.value }))}
+                />
+                <label className="form-check-label">Type</label>
+              </div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={columnVisibility.actions}
+                  onChange={(e) => setColumnVisibility(prev => ({ ...prev, actions: e.target.value }))}
+                />
+                <label className="form-check-label">Actions</label>
+              </div>
+            </div>
+          </div>
+
           <span className="ao-filter-count">
             {meta.from ?? 0}–{meta.to ?? 0} of {meta.total}
           </span>
@@ -344,20 +737,34 @@ const AdminOrders = () => {
 
       {/* Table */}
       <div className="ao-table-card shadow-sm">
-        <div style={{ overflowX: 'auto' }}>
+        <div
+          ref={tableRef}
+          style={{
+            overflowX: 'auto',
+            overflowY: 'auto',
+            height: `${viewportHeight}px`,
+            position: 'relative'
+          }}
+        >
           <table className="ao-table" aria-label="Orders list">
             <thead>
               <tr>
-                <th>Order #</th>
-                <th>Customer</th>
-                <th>Date &amp; Time</th>
-                <th>Status</th>
-                <th>Total</th>
-                <th>Type</th>
-                <th style={{ width: 70 }}>Actions</th>
+                {columnVisibility.orderNumber && <th>Order #</th>}
+                {columnVisibility.customer && <th>Customer</th>}
+                {columnVisibility.dateTime && <th>Date &amp; Time</th>}
+                {columnVisibility.status && <th>Status</th>}
+                {columnVisibility.total && <th>Total</th>}
+                {columnVisibility.type && <th>Type</th>}
+                {columnVisibility.actions && <th style={{ width: 70 }}>Actions</th>}
               </tr>
             </thead>
             <tbody>
+              {/* Padding for virtual scrolling */}
+              <tr style={{ height: `${visibleStartIndex * rowHeightEstimate}px` }}>
+                <td colSpan="7"></td>
+              </tr>
+
+              {/* Visible rows */}
               {!loading && orders.length === 0 ? (
                 <tr>
                   <td colSpan="7">
@@ -368,43 +775,72 @@ const AdminOrders = () => {
                   </td>
                 </tr>
               ) : (
-                orders.map(order => (
+                orders.slice(visibleStartIndex, visibleEndIndex + 1).map(order => (
                   <tr key={order.id}>
-                    <td>
-                      <div className="ao-order-num">{order.order_number}</div>
-                    </td>
-                    <td>
-                      <div className="ao-customer-name">{order.user?.name || '—'}</div>
-                      {order.user?.email && (
-                        <div className="ao-customer-email">{order.user.email}</div>
-                      )}
-                    </td>
-                    <td>
-                      <div className="ao-order-time">{formatDate(order.created_at)}</div>
-                    </td>
-                    <td>
-                      <StatusChip status={order.status} />
-                    </td>
-                    <td>
-                      <span className="ao-price">₱{parseFloat(order.total_amount).toFixed(2)}</span>
-                    </td>
-                    <td>
-                      <span className="ao-type-pill">{order.order_type || '—'}</span>
-                    </td>
-                    <td>
-                      <ResponsiveButton
-                        variant="outline-secondary"
-                        size="sm"
-                        className="ao-view-btn"
-                        onClick={() => handleViewOrder(order)}
-                        aria-label={`View order ${order.order_number}`}
-                      >
-                        <FaEye size={11} /> View
-                      </ResponsiveButton>
-                    </td>
+                    {columnVisibility.orderNumber && (
+                      <td>
+                        <div className="ao-order-num">{order.order_number}</div>
+                      </td>
+                    )}
+                    {columnVisibility.customer && (
+                      <td>
+                        <div className="ao-customer-name">{order.user?.name || '—'}</div>
+                        {order.user?.email && (
+                          <div className="ao-customer-email">{order.user.email}</div>
+                        )}
+                      </td>
+                    )}
+                    {columnVisibility.dateTime && (
+                      <td>
+                        <div className="ao-order-time">{formatDate(order.created_at)}</div>
+                      </td>
+                    )}
+                    {columnVisibility.status && (
+                      <td>
+                        <StatusChip status={order.status} />
+                      </td>
+                    )}
+                    {columnVisibility.total && (
+                      <td>
+                        <span className="ao-price">₱{parseFloat(order.total_amount).toFixed(2)}</span>
+                      </td>
+                    )}
+                    {columnVisibility.type && (
+                      <td>
+                        <span className="ao-type-pill">{order.order_type || '—'}</span>
+                      </td>
+                    )}
+                    {columnVisibility.actions && (
+                      <td>
+                        <div className="ao-action-group">
+                          <div className="form-check">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              checked={selectedOrders.includes(order.id)}
+                              onChange={() => handleToggleOrderSelection(order.id)}
+                            />
+                          </div>
+                          <ResponsiveButton
+                            variant="outline-secondary"
+                            size="sm"
+                            className="ao-view-btn"
+                            onClick={() => handleViewOrder(order)}
+                            aria-label={`View order ${order.order_number}`}
+                          >
+                            <FaEye size={11} /> View
+                          </ResponsiveButton>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}
+
+              {/* Padding for virtual scrolling */}
+              <tr style={{ height: `${(orders.length - visibleEndIndex - 1) * rowHeightEstimate}px` }}>
+                <td colSpan="7"></td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -590,6 +1026,99 @@ const AdminOrders = () => {
             </div>
           </>
         )}
+      </ResponsiveModal>
+
+      {/* ── Batch Action Modal ── */}
+      <ResponsiveModal show={showBatchModal} onHide={() => setShowBatchModal(false)} centered>
+        <ResponsiveForm>
+          <ResponsiveModal.Header>
+            <ResponsiveModal.Title>Batch Update Orders</ResponsiveModal.Title>
+            <ResponsiveModal.CloseButton onClick={() => setShowBatchModal(false)} aria-label="Close">
+              <FaTimes />
+            </ResponsiveModal.CloseButton>
+          </ResponsiveModal.Header>
+          <ResponsiveModal.Body className="d-grid gap-3">
+            <div className="form-group">
+              <label className="form-label">Action</label>
+              <select
+                className="form-select"
+                value={batchAction}
+                onChange={(event) => setBatchAction(event.target.value)}
+              >
+                <option value="">Select action</option>
+                <option value="status">Update Status</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Status</label>
+              <select
+                className="form-select"
+                value={batchValue}
+                onChange={(event) => setBatchValue(event.target.value)}
+              >
+                <option value="">Select status</option>
+                {ORDER_STATUSES.map(s => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+            </div>
+          </ResponsiveModal.Body>
+          <ResponsiveModal.Footer>
+            <ResponsiveButton variant="secondary" onClick={() => setShowBatchModal(false)}>
+              Cancel
+            </ResponsiveButton>
+            <ResponsiveButton variant="primary" onClick={handleBatchAction} disabled={selectedOrders.length === 0}>
+              {selectedOrders.length > 0 ? `Update ${selectedOrders.length} Orders` : 'Update Orders'}
+            </ResponsiveButton>
+          </ResponsiveModal.Footer>
+        </ResponsiveForm>
+      </ResponsiveModal>
+
+      {/* ── Export Modal ── */}
+      <ResponsiveModal show={showExportModal} onHide={() => setShowExportModal(false)} centered>
+        <ResponsiveForm>
+          <ResponsiveModal.Header>
+            <ResponsiveModal.Title>Export Orders</ResponsiveModal.Title>
+            <ResponsiveModal.CloseButton onClick={() => setShowExportModal(false)} aria-label="Close">
+              <FaTimes />
+            </ResponsiveModal.CloseButton>
+          </ResponsiveModal.Header>
+          <ResponsiveModal.Body className="d-grid gap-3">
+            <div className="form-group">
+              <label className="form-label">Export Format</label>
+              <select
+                className="form-select"
+                value={exportFormat}
+                onChange={(event) => setExportFormat(event.target.value)}
+              >
+                <option value="csv">CSV</option>
+                <option value="pdf">PDF</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Date Range</label>
+              <select
+                className="form-select"
+                value={dateRange}
+                onChange={(event) => setDateRange(event.target.value)}
+              >
+                <option value="all">All Orders</option>
+                <option value="today">Today</option>
+                <option value="this_week">This Week</option>
+                <option value="this_month">This Month</option>
+                <option value="custom">Custom Range</option>
+              </select>
+            </div>
+          </ResponsiveModal.Body>
+          <ResponsiveModal.Footer>
+            <ResponsiveButton variant="secondary" onClick={() => setShowExportModal(false)}>
+              Cancel
+            </ResponsiveButton>
+            <ResponsiveButton variant="primary" onClick={handleExportFromModal} disabled={exporting}>
+              {exporting ? <><ResponsiveSpinner animation="border" size="sm" /> Exporting...</> : 'Export'}
+            </ResponsiveButton>
+          </ResponsiveModal.Footer>
+        </ResponsiveForm>
       </ResponsiveModal>
     </PageShell>
   );

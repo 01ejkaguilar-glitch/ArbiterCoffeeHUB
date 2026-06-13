@@ -198,12 +198,6 @@
   gap: var(--spacing-2);
 }
 
-/* Hover effects for all variants */
-.btn:hover:not(.btn-link):not(.btn-outline):not(.btn-ghost):not(.disabled) {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
 .btn:active:not(.btn-link):not(.btn-outline):not(.btn-ghost):not(.disabled) {
   transform: translateY(0);
 }

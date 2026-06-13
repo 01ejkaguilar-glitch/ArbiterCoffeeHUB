@@ -67,7 +67,20 @@ const ReviewCard = ({ review, theme }) => {
 
   return (
     <div className="mp-review-card">
-      <div className="mp-review-header" onClick={() => setOpen(o => !o)}>
+      <div
+  className="mp-review-header"
+  tabindex="0"
+  role="button"
+  aria-expanded={open}
+  aria-label="Toggle review details"
+  onClick={() => setOpen(o => !o)}
+  onKeyDown={(e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setOpen(o => !o);
+    }
+  }}
+>
         <div>
           <div className="mp-review-period">{fmtPeriod(review.review_period_start, review.review_period_end)}</div>
           <div className="mp-review-meta">Reviewed by {reviewer} · {fmtDate(review.created_at)}</div>

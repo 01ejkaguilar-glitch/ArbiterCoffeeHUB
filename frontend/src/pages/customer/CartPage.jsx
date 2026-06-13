@@ -33,9 +33,9 @@ const CartPage = () => {
       <PullToRefresh onRefresh={reloadCart}>
         <ResponsiveRow>
           <ResponsiveCol lg={8}>
-            <Card className="shadow-sm mb-4">
-              <Card.Body>
-                <Table responsive aria-label="Shopping cart items">
+            <ResponsiveCard className="shadow-sm mb-4">
+              <ResponsiveCard.Body>
+                <ResponsiveTable responsive aria-label="Shopping cart items">
                   <caption className="visually-hidden">Your shopping cart with {cartCount} items</caption>
                   <thead>
                     <tr>
@@ -87,16 +87,16 @@ const CartPage = () => {
                       </tr>
                     ))}
                   </tbody>
-                </Table>
-              </Card.Body>
-            </Card>
-          </Col>
+                </ResponsiveTable>
+              </ResponsiveCard.Body>
+            </ResponsiveCard>
+          </ResponsiveCol>
           <ResponsiveCol lg={4}>
-            <Card className="shadow-sm sticky-top" style={{ top: '100px' }}>
-              <Card.Header className="bg-primary text-white">
+            <ResponsiveCard className="shadow-sm sticky-top" style={{ top: '100px' }}>
+              <ResponsiveCard.Header className="bg-primary text-white">
                 <h5 className="mb-0">Order Summary</h5>
-              </Card.Header>
-              <Card.Body>
+              </ResponsiveCard.Header>
+              <ResponsiveCard.Body>
                 <div className="d-flex justify-content-between mb-2">
                   <span>Subtotal:</span>
                   <span className="fw-bold">₱{parseFloat(cart?.subtotal || 0).toFixed(2)}</span>
@@ -112,7 +112,7 @@ const CartPage = () => {
                     ₱{((cart?.subtotal || 0) + 50).toFixed(2)}
                   </span>
                 </div>
-                <Button
+                <ResponsiveButton
                   as={Link}
                   to="/checkout"
                   variant="primary"
@@ -120,8 +120,8 @@ const CartPage = () => {
                   className="w-100 mb-2"
                 >
                   Proceed to Checkout
-                </Button>
-                <Button
+                </ResponsiveButton>
+                <ResponsiveButton
                   as={Link}
                   to="/products"
                   variant="outline-secondary"
@@ -129,11 +129,11 @@ const CartPage = () => {
                   aria-label="Continue shopping"
                 >
                   Continue Shopping
-                </Button>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+                </ResponsiveButton>
+              </ResponsiveCard.Body>
+            </ResponsiveCard>
+          </ResponsiveCol>
+        </ResponsiveRow>
       </PullToRefresh>
     </PageShell>
   );

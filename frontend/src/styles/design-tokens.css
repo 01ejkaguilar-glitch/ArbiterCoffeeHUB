@@ -14,13 +14,24 @@
 
   --color-on-primary: #FFFFFF;
   --color-on-secondary: #000000;
+  --color-on-success: #FFFFFF;
+  --color-on-warning: #000000;
+  --color-on-error: #FFFFFF;
+  --color-on-info: #000000;
   --color-on-background: #212529;
   --color-on-surface: #212529;
+  --color-text-primary: #212529;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #6b7280;
 
   --color-success: #28A745;
+  --color-success-light: #d4edda;
   --color-warning: #FFC107;
+  --color-warning-light: #ffeeba;
   --color-error: #DC3545;
+  --color-error-light: #f8d7da;
   --color-info: #17A2B8;
+  --color-info-light: #d1ecf1;
 
   --color-border: #DEE2E6;
   --color-border-light: #E9ECEF;

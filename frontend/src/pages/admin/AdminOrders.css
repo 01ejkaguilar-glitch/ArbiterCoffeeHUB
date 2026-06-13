@@ -47,7 +47,7 @@
 }
 .ao-stat-label {
   font-size: .7rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
   line-height: 1.4;
 }
 
@@ -171,7 +171,7 @@
 .ao-filter-count {
   margin-left: auto;
   font-size: .78rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
   white-space: nowrap;
 }
 
@@ -197,7 +197,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .06em;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
 .ao-table tbody tr {
@@ -412,7 +412,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .05em;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 .ao-items-table tbody tr { border-bottom: 1px solid #f3f4f6; }
 .ao-items-table tbody tr:last-child { border-bottom: none; }
@@ -553,7 +553,7 @@
 
 .ao-page-info {
   font-size: .8rem;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-weight: 500;
 }
 
@@ -748,6 +748,80 @@
   .ao-stat-label { font-size: .65rem; }
   .ao-meta-grid { grid-template-columns: 1fr; }
   .ao-page-btns { flex-wrap: wrap; justify-content: center; }
+}
+
+/* Column visibility toggle */
+.ao-column-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  padding: .4rem .6rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  transition: all .2s ease;
+}
+
+.ao-column-toggle:hover {
+  background: #e9ecef;
+}
+
+.ao-column-toggle-icon {
+  font-size: .9rem;
+  color: var(--color-text-muted);
+  transition: transform .2s ease;
+}
+
+.ao-column-toggle.active .ao-column-toggle-icon {
+  transform: rotate(180deg);
+}
+
+.ao-column-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 200px;
+  margin-top: .5rem;
+  padding: .75rem;
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  z-index: 1000;
+  display: none;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.ao-column-dropdown.active {
+  display: flex;
+}
+
+.ao-column-dropdown .form-group {
+  margin: 0;
+}
+
+.ao-column-dropdown label {
+  font-weight: 600;
+  font-size: .875rem;
+  margin-bottom: .25rem;
+  display: block;
+}
+
+/* Responsive adjustments for column toggle */
+@media (max-width: 768px) {
+  .ao-column-toggle {
+    margin-top: .5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .ao-column-dropdown {
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

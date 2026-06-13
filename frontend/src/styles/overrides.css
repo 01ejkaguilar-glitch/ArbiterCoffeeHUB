@@ -3338,6 +3338,8 @@ body .border-end {
 .nt-bell-btn:hover { background: rgba(255,255,255,.10); color: #fff; }
 .nt-bell-btn--active { background: rgba(255,255,255,.15); color: #fff; }
 .nt-bell-btn:focus-visible { outline: 2px solid var(--color-primary, #006837); outline-offset: 2px; }
+.lr-card:focus-visible { outline: 2px solid var(--color-primary, #006837); outline-offset: 2px; }
+.lr-overlay:focus-visible { outline: 2px solid var(--color-primary, #006837); outline-offset: 2px; }
 .nt-bell-icon { font-size: 1.2rem; }
 
 .nt-bell-badge {

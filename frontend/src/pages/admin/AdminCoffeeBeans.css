@@ -45,7 +45,7 @@
 }
 .acb-stat-label {
   font-size: .7rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: .04em;
   font-weight: 600;
@@ -206,7 +206,7 @@
 }
 .acb-bean-variety {
   font-size: .72rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin-top: 1px;
 }
 .acb-featured-star {
@@ -228,7 +228,7 @@
 .acb-method-badge.natural  { background: #FFF3E0; color: #E65100; }
 .acb-method-badge.honey    { background: #FFF8E6; color: #9B6B00; }
 .acb-method-badge.semi     { background: #f3f4f6; color: #4A4A4A; }
-.acb-method-badge.default  { background: #f3f4f6; color: #6b7280; }
+.acb-method-badge.default  { background: #f3f4f6; color: var(--color-text-muted); }
 
 /* ── Stock Badge ────────────────────────────────── */
 .acb-stock-badge {
@@ -291,7 +291,7 @@
   flex-wrap: wrap;
   gap: .5rem;
 }
-.acb-pagination-info { font-size: .8rem; color: #6b7280; }
+.acb-pagination-info { font-size: .8rem; color: var(--color-text-secondary); }
 .acb-pagination-btns { display: flex; gap: .3rem; }
 .acb-page-btn {
   min-width: 32px;
@@ -317,11 +317,11 @@
 .acb-empty {
   text-align: center;
   padding: 3rem 1rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
 }
 .acb-empty-icon { font-size: 2.5rem; margin-bottom: .75rem; color: #d1d5db; }
 .acb-empty-text { font-size: .9rem; font-weight: 600; color: #374151; }
-.acb-empty-sub  { font-size: .8rem; color: #9ca3af; margin-top: 4px; }
+.acb-empty-sub  { font-size: .8rem; color: var(--color-text-muted); margin-top: 4px; }
 
 /* ── Modal ──────────────────────────────────────── */
 .acb-modal-header {
@@ -335,7 +335,7 @@
 }
 .acb-modal-subtitle {
   font-size: .78rem;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin-top: 2px;
 }
 .acb-modal-body { padding: 1.5rem 1.75rem; }
@@ -401,7 +401,7 @@
   height: 100%;
 }
 .acb-upload-icon { font-size: 1.5rem; color: #9ca3af; margin-bottom: .35rem; }
-.acb-upload-text { font-size: .78rem; color: #6b7280; }
+.acb-upload-text { font-size: .78rem; color: var(--color-text-secondary); }
 
 .acb-img-preview {
   margin-top: .75rem;

@@ -113,7 +113,27 @@
       "Bash(xargs grep -l \"react-bootstrap\")",
       "Bash(gh api *)",
       "mcp__plugin_context7_context7__query-docs",
-      "Bash(kill %b0r83fw6d)"
+      "Bash(kill %b0r83fw6d)",
+      "Read(//c:/Users/01ker/ArbiterCoffeeHUB/**)",
+      "Bash(sed -i 's/{m\\\\.bio \\\\&\\\\& \\(/{m\\\\.bio ? \\(/g' src/pages/admin/AdminSettings.jsx)",
+      "Bash(claude mcp *)",
+      "Bash(hf *)",
+      "Bash(bash -s)",
+      "PowerShell(Invoke-WebRequest -Uri \"https://hf.co/cli/install.sh\" -UseBasicParsing | Invoke-Expression)",
+      "Bash(bash -x hf_install.sh)",
+      "Bash(curl -LsSf https://hf.co/cli/install.sh)",
+      "Bash(bash hf_install.sh)",
+      "PowerShell(echo $env:HF_TOKEN)",
+      "Bash(xargs grep -l \"localStorage\\\\|sessionStorage\\\\|indexedDB\\\\|offline\\\\|online\")",
+      "Bash(npm list *)",
+      "Bash(dir *)",
+      "Bash(claude install *)",
+      "Bash(claude *)",
+      "Bash(npm *)",
+      "Bash(git log *)",
+      "Bash(xargs grep -l \"class BaseController\")",
+      "Bash(grep \"\\\\.md$\")",
+      "Bash(cmd *)"
     ]
   },
   "prefersReducedMotion": false

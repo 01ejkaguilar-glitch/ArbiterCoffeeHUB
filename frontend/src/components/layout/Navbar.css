@@ -597,3 +597,34 @@ body.nav-drawer-open {
 .app-nav-drawer-user::-webkit-scrollbar { width: 4px; }
 .app-nav-drawer-user::-webkit-scrollbar-track { background: transparent; }
 .app-nav-drawer-user::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+/* Feedback button styles */
+.app-navbar-feedback-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: none;
+  color: rgba(var(--color-text-on-dark-rgb), 0.8);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  font-size: 1.25rem;
+}
+
+.app-navbar-feedback-btn:hover,
+.app-navbar-feedback-btn:focus {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+/* Ensure touch target is at least 44x44px */
+@media (max-width: 1199px) {
+  .app-navbar-feedback-btn {
+    width: 48px;
+    height: 48px;
+  }
+}

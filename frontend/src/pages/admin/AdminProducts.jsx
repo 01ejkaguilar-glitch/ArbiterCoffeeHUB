@@ -31,6 +31,7 @@ const AdminProducts = () => {
     is_available: true,
     image: null
   });
+  const [formErrors, setFormErrors] = useState({});
   const [existingImage, setExistingImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -79,6 +80,60 @@ const AdminProducts = () => {
     } catch (error) {
       setCategories([]);
     }
+  };
+
+  const validateField = (field, value) => {
+    let error = '';
+    switch (field) {
+      case 'name':
+        if (!value || value.trim() === '') {
+          error = 'Product name is required';
+        } else if (value.length > 200) {
+          error = 'Product name must be less than 200 characters';
+        }
+        break;
+      case 'description':
+        if (value && value.length > 1000) {
+          error = 'Description must be less than 1000 characters';
+        }
+        break;
+      case 'price':
+        if (!value || value === '') {
+          error = 'Price is required';
+        } else {
+          const priceNum = parseFloat(value);
+          if (isNaN(priceNum)) {
+            error = 'Price must be a valid number';
+          } else if (priceNum <= 0) {
+            error = 'Price must be greater than zero';
+          } else if (priceNum > 10000) {
+            error = 'Price must not exceed $10,000';
+          }
+        }
+        break;
+      case 'stock_quantity':
+        if (!value || value === '') {
+          error = 'Stock quantity is required';
+        } else {
+          const stockNum = parseInt(value);
+          if (isNaN(stockNum)) {
+            error = 'Stock quantity must be a valid number';
+          } else if (stockNum < 0) {
+            error = 'Stock quantity cannot be negative';
+          } else if (stockNum > 100000) {
+            error = 'Stock quantity must not exceed 100,000';
+          }
+        }
+        break;
+      case 'category_id':
+        if (!value || value === '') {
+          error = 'Category is required';
+        }
+        break;
+      default:
+        break;
+    }
+    return error;
   };
 
   const handleShowModal = (product = null) => {
@@ -153,6 +208,10 @@ const AdminProducts = () => {
         [name]: type === 'checkbox' ? checked : value
       });
     }
+
+    // Validate the changed field
+    const error = validateField(name, type === 'checkbox' ? checked : value);
+    setFormErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const handleSubmit = async (e) => {
@@ -478,6 +537,7 @@ const AdminProducts = () => {
         imagePreview={imagePreview}
         categories={categories}
         handleSubmit={handleSubmit}
+        errors={formErrors}
       />
 
       {/* Batch Modal */}

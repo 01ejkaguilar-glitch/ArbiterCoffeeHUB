@@ -48,7 +48,19 @@ function FormDrawer({ onClose, onSubmit, submitting }) {
 
   return (
     <>
-      <div className="lr-overlay" onClick={onClose} />
+      <div
+        className="lr-overlay"
+        tabindex="0"
+        role="button"
+        aria-label="Close form"
+        onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClose();
+          }
+        }}
+      />
       <div className="lr-drawer" role="dialog" aria-label="New Leave Request">
         <div className="lr-drawer-hdr">
           <h2>New Leave Request</h2>
@@ -106,7 +118,19 @@ function DetailDrawer({ request, onClose, onCancel, cancelling }) {
   const days = calcDays(request.start_date, request.end_date);
   return (
     <>
-      <div className="lr-overlay" onClick={onClose} />
+      <div
+        className="lr-overlay"
+        tabindex="0"
+        role="button"
+        aria-label="Close details"
+        onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClose();
+          }
+        }}
+      />
       <div className="lr-drawer" role="dialog" aria-label="Leave Request Details">
         <div className="lr-drawer-hdr">
           <h2>Leave Request Details</h2>
@@ -356,7 +380,12 @@ const EmployeeLeaveRequest = ({ theme = DEFAULT_THEME }) => {
               <div key={req.id} className={`lr-card ${req.status}`}
                 onClick={() => setSelected(req)}
                 role="button" tabIndex={0}
-                onKeyDown={e => e.key === 'Enter' && setSelected(req)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelected(req);
+                  }
+                }}
               >
                 <div>
                   <div className="lr-card-title">{TYPE_LABELS[req.type] ?? req.type}</div>

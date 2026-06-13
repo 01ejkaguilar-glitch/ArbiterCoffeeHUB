@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { FaClock, FaEye, FaUtensils, FaThumbsUp, FaCheckCircle, FaTimes, FaSync } from 'react-icons/fa';
-import { ResponsiveCard } from '@/components/responsive/Card';
+import ResponsiveCard from '@/components/responsive/Card';
 
 const STATUS_ACTIONS = {
   pending: [
@@ -334,6 +334,7 @@ const OrderCard = ({
               Cancel
             </button>
           </div>
+        </div>
         </ResponsiveCard.Footer>
       </ResponsiveCard>
   );

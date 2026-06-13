@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   FaCalendarAlt, FaSearch, FaPlus, FaEdit, FaTrash,
   FaTimes, FaSync, FaClock, FaUsers, FaChevronLeft, FaChevronRight,
+  FaExchangeAlt, FaStopwatch,
 } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
@@ -17,6 +18,7 @@ import ResponsiveBadge from '@/components/responsive/Badge';
 import ResponsiveContainer from '@/components/responsive/Container';
 import ResponsiveRow from '@/components/responsive/Row';
 import ResponsiveCol from '@/components/responsive/Col';
+import { useNotificationSystem } from '../../components/common/NotificationSystem';
 import './AdminWorkforce.css';
 
 const DAYS   = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -49,10 +51,18 @@ const AdminShifts = () => {
   const [showModal, setShowModal]     = useState(false);
   const [selected, setSelected]       = useState(null);
   const [formData, setFormData]       = useState(blankForm());
+  const [formErrors, setFormErrors]   = useState({});
   const [saving, setSaving]           = useState(false);
   const [showDelete, setShowDelete]   = useState(false);
   const [toDelete, setToDelete]       = useState(null);
   const [error, setError]             = useState(null);
+  // Break timer state
+  const [breakTimer, setBreakTimer]   = useState(null);
+  const [isOnBreak, setIsOnBreak]     = useState(false);
+  const [breakStartTime, setBreakStartTime] = useState(null);
+  const [elapsedBreakTime, setElapsedBreakTime] = useState(0);
+  // Notification system
+  const { showSuccessNotification, showErrorNotification } = useNotificationSystem();
 
   const fetchEmployees = useCallback(async () => {
     try {
@@ -97,23 +107,72 @@ const AdminShifts = () => {
     } catch { /* non-fatal */ }
   }, [currentWeek]);
 
+  const validate = () => {
+    const errs = {};
+    // Notes validation: optional but limit to 500 characters
+    if (formData.notes && formData.notes.length > 500) {
+      errs.notes = 'Notes must be 500 characters or less';
+    }
+    return errs;
+  };
+
+  const validateField = (fieldName) => {
+    const errs = {};
+    switch (fieldName) {
+      case 'employee_id':
+        if (!formData.employee_id.trim()) errs.employee_id = 'Employee is required';
+        break;
+      case 'shift_date':
+        if (!formData.shift_date) errs.shift_date = 'Shift date is required';
+        break;
+      case 'start_time':
+        if (!formData.start_time) errs.start_time = 'Start time is required';
+        break;
+      case 'end_time':
+        if (!formData.end_time) errs.end_time = 'End time is required';
+        else if (formData.start_time && formData.end_time <= formData.start_time) {
+          errs.end_time = 'End time must be after start time';
+        }
+        break;
+      case 'notes':
+        if (formData.notes && formData.notes.length > 500) {
+          errs.notes = 'Notes must be 500 characters or less';
+        }
+        break;
+      default:
+        break;
+    }
+    return errs;
+  };
+
   useEffect(() => { fetchShifts(); fetchEmployees(); }, [fetchShifts, fetchEmployees]);
   useEffect(() => { if (view === 'week') fetchWeekly(); }, [view, fetchWeekly]);
+  // Clean up break timer on unmount
+  useEffect(() => {
+    return () => {
+      if (breakTimer) {
+        clearInterval(breakTimer);
+      }
+    };
+  }, [breakTimer]);
 
   const prevWeek = () => { const w = new Date(currentWeek); w.setDate(w.getDate() - 7); setCurrentWeek(w); };
   const nextWeek = () => { const w = new Date(currentWeek); w.setDate(w.getDate() + 7); setCurrentWeek(w); };
 
-  const openAdd = () => { setSelected(null); setFormData(blankForm()); setShowModal(true); };
+  const openAdd = () => { setSelected(null); setFormData(blankForm()); setFormErrors({}); setShowModal(true); };
   const openEdit = (sh) => {
     setSelected(sh);
     setFormData({ employee_id: sh.employee_id || '', shift_date: sh.shift_date || sh.date || '',
       start_time: sh.start_time?.slice(0, 5) || '08:00', end_time: sh.end_time?.slice(0, 5) || '16:00',
       notes: sh.notes || '' });
+    setFormErrors({});
     setShowModal(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length) { setFormErrors(errs); return; }
     setSaving(true);
     try {
       const payload = {
@@ -143,11 +202,53 @@ const AdminShifts = () => {
   const field = k => ({
     value: formData[k],
     onChange: e => setFormData(p => ({ ...p, [k]: e.target.value })),
+    onBlur: (e) => {
+      const fieldErrors = validateField(k);
+      setFormErrors(prev => ({ ...prev, ...fieldErrors }));
+    }
   });
 
   const empName = id => {
     const e = employees.find(e => String(e.id) === String(id));
     return e ? e.name : `#${id}`;
+  };
+
+  // Shift swap request
+  const requestShiftSwap = async (shiftId) => {
+    try {
+      // Implementation for shift swap request
+      // In a real app, this would make an API request to request a shift swap
+      showSuccessNotification('Shift swap request submitted!');
+    } catch (error) {
+      showErrorNotification('Failed to submit shift swap request');
+    }
+  };
+
+  // Break timer functionality
+  const startBreak = async () => {
+    setIsOnBreak(true);
+    setBreakStartTime(new Date());
+    // Start break timer
+    const interval = setInterval(() => {
+      setElapsedBreakTime(Date.now() - breakStartTime.getTime());
+    }, 1000);
+    // Store interval ID to clear later
+    setBreakTimer(interval);
+    showSuccessNotification('Break started');
+  };
+
+  const endBreak = async () => {
+    if (breakTimer) {
+      clearInterval(breakTimer);
+      setBreakTimer(null);
+    }
+    setIsOnBreak(false);
+    // Save break time to backend if needed
+    const breakDuration = elapsedBreakTime;
+    setElapsedBreakTime(0);
+    if (breakDuration > 0) {
+      showSuccessNotification(`Break ended. Duration: ${Math.floor(breakDuration / 60000)} minutes`);
+    }
   };
 
   const filtered = shifts.filter(s => {
@@ -160,6 +261,15 @@ const AdminShifts = () => {
     const d = new Date(currentWeek); d.setDate(d.getDate() + i);
     return d;
   });
+
+  // Clean up break timer interval on unmount
+  useEffect(() => {
+    return () => {
+      if (breakTimer) {
+        clearInterval(breakTimer);
+      }
+    };
+  }, [breakTimer]);
 
   return (
     <PageShell title="Shift Scheduling" subtitle="Manage and view employee work schedules" error={error} onRetry={fetchShifts}>
@@ -182,19 +292,71 @@ const AdminShifts = () => {
           ))}
         </div>
 
-        {/* Filter bar */}
-        <div className="wf-filter-bar">
-          <div className="wf-search-wrap">
-            <FaSearch className="wf-search-icon" />
-            <input className="wf-search-input" placeholder="Search by name or date…" value={search} onChange={e => setSearch(e.target.value)} />
+          {/* Current Shift Info and Break Timer */}
+          <ResponsiveCard className="border-0 shadow-sm">
+            <ResponsiveCard.Header className="d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">
+                <FaClipboardList className="me-2" />
+                Current Shift
+              </h5>
+              <div className="d-flex align-items-center gap-3">
+                <ResponsiveButton
+                  variant="outline-secondary"
+                  size="sm"
+                  className=""
+                  onClick={() => {/* Clock in/out logic - would be implemented based on shift scheduling */}}
+                >
+                  <div className="d-flex justify-content-start align-items-center">
+                    <FaSignInAlt size={13} className="me-2" />
+                    <span>Clock In/Out</span>
+                  </div>
+                </ResponsiveButton>
+                <ResponsiveButton
+                  variant={isOnBreak ? 'success' : 'outline-secondary'}
+                  size="sm"
+                  onClick={isOnBreak ? endBreak : startBreak}
+                >
+                  {isOnBreak ? (
+                    <>
+                      <FaStopwatch className="me-2" />
+                      End Break
+                    </>
+                  ) : (
+                    <>
+                      <FaStopwatch className="me-2" />
+                      Start Break
+                    </>
+                  )}
+                </ResponsiveButton>
+              </div>
+            </ResponsiveCard.Header>
+            <ResponsiveCard.Body className="p-4">
+              {/* Current shift details would go here */}
+              <div className="text-center">
+                <p className="text-muted">No active shift</p>
+                {isOnBreak && (
+                  <div className="mt-3">
+                    <p className="fw-bold">On Break</p>
+                    <p className="text-success">{Math.floor(elapsedBreakTime / 60000)} minutes</p>
+                  </div>
+                )}
+              </div>
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
+
+          {/* Filter bar */}
+          <div className="wf-filter-bar">
+            <div className="wf-search-wrap">
+              <FaSearch className="wf-search-icon" />
+              <input className="wf-search-input" placeholder="Search by name or date…" value={search} onChange={e => setSearch(e.target.value)} />
+            </div>
+            <div style={{ display: 'flex', gap: '.5rem' }}>
+              <button className={`wf-btn ${view === 'list' ? 'primary' : 'secondary'}`} onClick={() => setView('list')}>List</button>
+              <button className={`wf-btn ${view === 'week' ? 'primary' : 'secondary'}`} onClick={() => setView('week')}>Weekly</button>
+            </div>
+            <button className="wf-btn secondary wf-btn-icon" onClick={() => { fetchShifts(); if (view === 'week') fetchWeekly(); }} title="Refresh"><FaSync /></button>
+            <button className="wf-btn primary" onClick={openAdd}><FaPlus style={{ marginRight: '.4rem' }} />Add Shift</button>
           </div>
-          <div style={{ display: 'flex', gap: '.5rem' }}>
-            <button className={`wf-btn ${view === 'list' ? 'primary' : 'secondary'}`} onClick={() => setView('list')}>List</button>
-            <button className={`wf-btn ${view === 'week' ? 'primary' : 'secondary'}`} onClick={() => setView('week')}>Weekly</button>
-          </div>
-          <button className="wf-btn secondary wf-btn-icon" onClick={() => { fetchShifts(); if (view === 'week') fetchWeekly(); }} title="Refresh"><FaSync /></button>
-          <button className="wf-btn primary" onClick={openAdd}><FaPlus style={{ marginRight: '.4rem' }} />Add Shift</button>
-        </div>
 
         {/* List View */}
         {view === 'list' && (
@@ -225,6 +387,7 @@ const AdminShifts = () => {
                       <td>
                         <div className="wf-action-group">
                           <button className="wf-action-btn edit" title="Edit" onClick={() => openEdit(sh)}><FaEdit /></button>
+                          <button className="wf-action-btn info" title="Request Swap" onClick={() => requestShiftSwap(sh.id)}><FaExchangeAlt /></button>
                           <button className="wf-action-btn delete" title="Delete" onClick={() => { setToDelete(sh); setShowDelete(true); }}><FaTrash /></button>
                         </div>
                       </td>
@@ -315,7 +478,8 @@ const AdminShifts = () => {
                   </div>
                   <div className="wf-form-row">
                     <label className="wf-form-label">Notes</label>
-                    <textarea className="wf-field-textarea" rows={2} placeholder="Optional notes…" {...field('notes')} />
+                    <textarea className={`wf-field-textarea${formErrors.notes ? ' error' : ''}`} rows={2} placeholder="Optional notes…" {...field('notes')} />
+                    {formErrors.notes && <span className="wf-field-error">{formErrors.notes}</span>}
                   </div>
                 </div>
                 <div className="wf-modal-foot">

@@ -10,17 +10,55 @@ use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends BaseController
 {
-    // Cache TTL in seconds  
+    // Cache TTL in seconds
     const CACHE_TTL = 600; // 10 minutes (categories change less frequently)
-    const CACHE_TAG = 'categories';
-    
+
     /**
-     * Clear the categories cache (without tags for database cache compatibility)
+     * Clear the categories cache using Laravel cache tagging.
+     * Since we're using Redis (confirmed in .env), we can leverage tagging
+     * for more efficient cache clearing.
      */
     private function clearCategoriesCache()
     {
-        // Clear all cache keys
-        Cache::flush();
+        // Flush all cache entries tagged with 'categories'
+        Cache::tags(['categories'])->flush();
+
+        // Warm up critical category data to prevent cache stampede
+        $this->warmCriticalCategories();
+    }
+
+    /**
+     * Warm up critical category data after cache clearing.
+     */
+    private function warmCriticalCategories()
+    {
+        // Warm up the main categories list (without filters)
+        $mainCategoriesKey = 'categories_list_' . md5(json_encode([]));
+        if (!Cache::tags(['categories'])->has($mainCategoriesKey)) {
+            $categories = Category::withCount('products')
+                ->orderBy('sort_order', 'asc')
+                ->get();
+            Cache::tags(['categories'])->put($mainCategoriesKey, $categories, self::CACHE_TTL);
+        }
+    }
+
+    /**
+     * Cache with tagging support.
+     * Tracks cache hits/misses for metrics.
+     */
+    private function rememberCategory($cacheKey, $ttl, $callback)
+    {
+        // Try to get from cache first to track hits/misses
+        if (Cache::tags(['categories'])->has($cacheKey)) {
+            app(\App\Services\CacheMetricsService::class)->hit();
+            return Cache::tags(['categories'])->get($cacheKey);
+        }
+
+        // Cache miss - generate value and store it
+        app(\App\Services\CacheMetricsService::class)->miss();
+        $value = Cache::tags(['categories'])->remember($cacheKey, $ttl, $callback);
+
+        return $value;
     }
     
     /**
@@ -30,8 +68,9 @@ class CategoryController extends BaseController
     {
         // Create cache key based on request parameters
         $cacheKey = 'categories_list_' . md5(json_encode($request->all()));
-        
-        $categories = Cache::remember($cacheKey, self::CACHE_TTL, function () use ($request) {
+
+        // Try to get from cache (without tags for database cache driver compatibility)
+        $categories = $this->rememberCategory($cacheKey, self::CACHE_TTL, function () use ($request) {
             $query = Category::query();
 
             // Filter by active status
@@ -85,8 +124,8 @@ class CategoryController extends BaseController
     public function show($id)
     {
         $cacheKey = 'category_' . $id;
-        
-        $category = Cache::remember($cacheKey, self::CACHE_TTL, function () use ($id) {
+
+        $category = $this->rememberCategory($cacheKey, self::CACHE_TTL, function () use ($id) {
             return Category::withCount('products')->find($id);
         });
 

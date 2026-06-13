@@ -298,7 +298,7 @@ Thank you for your business!
       <PullToRefresh onRefresh={handleRefresh}>
         <ResponsiveContainer className="py-5">
       <ResponsiveRow className="mb-4">
-        <Col>
+        <ResponsiveCol>
           <div className="d-flex justify-content-between align-items-center">
             <div>
               <h1 className="display-5 fw-bold">Order History</h1>
@@ -326,15 +326,15 @@ Thank you for your business!
               >
                 <FaRedo className={refreshing ? 'fa-spin me-2' : 'me-2'} />
                 Refresh
-              </Button>
+              </ResponsiveButton>
             </div>
           </div>
-        </Col>
-      </Row>
+        </ResponsiveCol>
+      </ResponsiveRow>
 
       {/* Search and Filters */}
       <ResponsiveRow className="mb-4">
-        <Col lg={6}>
+        <ResponsiveCol lg={6}>
           <InputGroup>
             <ResponsiveInputGroup.Text>
               <FaSearch />
@@ -346,8 +346,8 @@ Thank you for your business!
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </InputGroup>
-        </Col>
-        <Col lg={6} className="d-flex gap-2 justify-content-end">
+        </ResponsiveCol>
+        <ResponsiveCol lg={6} className="d-flex gap-2 justify-content-end">
           <ResponsiveDropdown>
             <ResponsiveDropdown.Toggle variant="outline-secondary" size="sm">
               <FaFilter className="me-2" />
@@ -392,55 +392,55 @@ Thank you for your business!
 
           <ResponsiveButton variant="outline-secondary" size="sm" onClick={clearFilters}>
             Clear
-          </Button>
-        </Col>
+          </ResponsiveButton>
+        </ResponsiveCol>
       </Row>
 
       {/* Results Summary */}
       <ResponsiveRow className="mb-3">
-        <Col>
+        <ResponsiveCol>
           <ResponsiveAlert variant="light" className="py-2">
             <small>
               Showing {paginatedOrders.length} of {filteredAndSortedOrders.length} orders
               {searchTerm && ` matching "${searchTerm}"`}
             </small>
           </Alert>
-        </Col>
+        </ResponsiveCol>
       </Row>
 
       {/* Last update indicator */}
       {lastUpdate && (
         <ResponsiveRow className="mb-3">
-          <Col>
+          <ResponsiveCol>
             <ResponsiveAlert variant="info" className="py-2">
               <small>
                 Last updated: {lastUpdate.toLocaleTimeString()}
               </small>
             </Alert>
-          </Col>
+          </ResponsiveCol>
         </Row>
       )}
 
       {/* Error message */}
       {error && (
         <ResponsiveRow className="mb-3">
-          <Col>
+          <ResponsiveCol>
             <ResponsiveAlert variant="danger" dismissible onClose={() => setError(null)}>
               {error}
             </Alert>
-          </Col>
+          </ResponsiveCol>
         </Row>
       )}
 
       <ResponsiveRow>
-        <Col>
+        <ResponsiveCol>
           {orders.length === 0 ? (
             <ResponsiveCard className="shadow-sm">
               <ResponsiveCard.Body className="text-center py-5">
                 <p className="text-muted mb-3">No orders yet</p>
                 <ResponsiveButton variant="primary" href="/products">
                   Start Shopping
-                </Button>
+                </ResponsiveButton>
               </Card.Body>
             </Card>
           ) : filteredAndSortedOrders.length === 0 ? (
@@ -449,7 +449,7 @@ Thank you for your business!
                 <p className="text-muted mb-3">No orders match your filters</p>
                 <ResponsiveButton variant="outline-primary" onClick={clearFilters}>
                   Clear Filters
-                </Button>
+                </ResponsiveButton>
               </Card.Body>
             </Card>
           ) : (
@@ -495,7 +495,7 @@ Thank you for your business!
                               title="View Details"
                             >
                               <FaEye />
-                            </Button>
+                            </ResponsiveButton>
                             <ResponsiveButton
                               variant="outline-success"
                               size="sm"
@@ -508,7 +508,7 @@ Thank you for your business!
                               ) : (
                                 <FaRedoAlt />
                               )}
-                            </Button>
+                            </ResponsiveButton>
                             <ResponsiveButton
                               variant="outline-info"
                               size="sm"
@@ -516,7 +516,7 @@ Thank you for your business!
                               title="Download Receipt"
                             >
                               <FaDownload />
-                            </Button>
+                            </ResponsiveButton>
                             {/* Cancel button - only show for pending or confirmed orders */}
                             {(order.status === 'pending' || order.status === 'confirmed') && (
                               <ResponsiveButton
@@ -526,7 +526,7 @@ Thank you for your business!
                                 title="Request Cancellation"
                               >
                                 <FaTimes />
-                              </Button>
+                              </ResponsiveButton>
                             )}
                             {/* Show info if cancellation requested */}
                             {order.status === 'cancellation_requested' && (

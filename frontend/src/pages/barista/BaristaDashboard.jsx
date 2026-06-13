@@ -13,6 +13,8 @@ import { useBaristaOrders } from '../../hooks/useBroadcast';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardNavigation';
 import { useSwipeToDismiss } from '../../hooks/useSwipeToDismiss';
+import { usePullToRefresh } from '../../hooks/usePullToRefresh';
+import { useApiError } from '../../hooks/useApiError';
 import ResponsiveButton from '@/components/responsive/Button';
 import ResponsiveCard from '@/components/responsive/Card';
 import ResponsiveForm from '@/components/responsive/Form';
@@ -21,7 +23,7 @@ import ResponsiveRow from '@/components/responsive/Row';
 import ResponsiveCol from '@/components/responsive/Col';
 import './BaristaDashboard.css';
 
-/* ─── helpers ─────────────────────────────────────────────────── */
+/* ─── helpers ───────────────────────────────────────────────────── */
 const getGreeting = () => {
   const h = new Date().getHours();
   if (h < 12) return 'Good morning';
@@ -29,17 +31,25 @@ const getGreeting = () => {
   return 'Good evening';
 };
 
-const todayLabel = new Date().toLocaleDateString('en-US', {
-  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-});
+const fmt = (v, prefix = '₱') => {
+  const n = parseFloat(v);
+  return isNaN(n) ? '0.00' : prefix + n.toFixed(2);
+};
 
-const fmt = (n, prefix = '') =>
-  prefix
-    ? `${prefix}${Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-    : (n || 0).toString();
+const todayLabel = () => {
+  const today = new Date();
+  return today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+};
 
-/* ─── Connection chip ────────────────────────────────────────── */
+/* ─── Connection Status Chip ────────────────────────────────────── */
 const ConnChip = ({ isConnected, isConnecting, lastUpdated }) => {
+  const [connectingSince, setConnectingSince] = useState(null);
+
+  useEffect(() => {
+    if (isConnecting && !connectingSince) setConnectingSince(Date.now());
+    if (!isConnecting) setConnectingSince(null);
+  }, [isConnecting, connectingSince]);
+
   return (
     <span className={`bd-conn-chip ${isConnected ? 'live' : isConnecting ? 'connecting' : 'offline'}`}>
       <span
@@ -48,7 +58,16 @@ const ConnChip = ({ isConnected, isConnecting, lastUpdated }) => {
           animation: isConnected && !isConnecting ? 'bd-pulse 1.6s infinite' : 'none'
         }}
       />
-      {isConnected ? 'Live' : isConnecting ? 'Reconnecting...' : 'Offline'}
+      {isConnected ? 'Live' : isConnecting ? (
+        <>
+          Reconnecting...
+          {connectingSince && (
+            <span className="bd-reconnecting-time">
+              ({Math.floor((Date.now() - connectingSince) / 1000)}s)
+            )
+          )}
+        </>
+      ) : 'Offline'}
       {lastUpdated && (
         <span className="bd-last-updated ml-2">
           Last updated: {lastUpdated}
@@ -58,7 +77,7 @@ const ConnChip = ({ isConnected, isConnecting, lastUpdated }) => {
   );
 };
 
-/* ─── Skeleton loader ────────────────────────────────────────── */
+/* ─── Skeleton loader ───────────────────────────────────────────── */
 const SkeletonLoader = () => (
   <>
     <div className="bd-skeleton-stat-grid">
@@ -69,10 +88,9 @@ const SkeletonLoader = () => (
   </>
 );
 
-
-/* ══════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════
    BARISTA DASHBOARD
-   ══════════════════════════════════════════════════════════════════ */
+   ════════════════════════════════════════════════════════════════════ */
 const BaristaDashboard = () => {
   const { user } = useAuth();
   const { showOrderNotification } = useNotificationSystem();
@@ -81,7 +99,6 @@ const BaristaDashboard = () => {
   const [workforceData, setWorkforceData]   = useState(null);
   const [queueData, setQueueData]           = useState(null);
   const [loading, setLoading]               = useState(true);
-  const [error, setError]                   = useState(null);
   const [refreshing, setRefreshing]         = useState(false);
   const [lastUpdated, setLastUpdated]       = useState(null);
 
@@ -135,11 +152,14 @@ const BaristaDashboard = () => {
   });
 
   /* data fetch ----------------------------------------------- */
+  const { errorInfo, getErrorInfo } = useApiError();
   const fetchDashboardData = useCallback(async (showLoad = true) => {
     try {
       if (showLoad) setLoading(true);
       else setRefreshing(true);
-      setError(null);
+      // Note: useApiError doesn't expose a direct setter to clear error,
+      // but successful calls will naturally overwrite any existing error state
+      // We also clear loading/refreshing states in finally block
 
       /* main stats */
       const dashRes = await apiService.get(API_ENDPOINTS.BARISTA.DASHBOARD);
@@ -164,7 +184,7 @@ const BaristaDashboard = () => {
       } catch { setWorkforceData(null); }
 
     } catch (err) {
-      setError('Failed to load dashboard data. Please try again.');
+      getErrorInfo(err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -194,14 +214,26 @@ const BaristaDashboard = () => {
   ].slice(0, 8);
 
   /* ── render ───────────────────────────────────────────────── */
+  // Set up pull-to-refresh hook
+  const { onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(
+    () => fetchDashboardData(false),
+    { threshold: 100 }
+  );
+
   return (
-    <div className="bd-page">
+    <main
+      className="bd-page"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      style={{ touchAction: 'manipulation' }}
+    >
 
       {/* Header ─────────────────────────────────────────────── */}
       <div className="bd-header d-flex justify-content-between align-items-center">
         <div className="bd-header-left">
           <h1 className="bd-title">{getGreeting()}, {user?.name || 'Barista'}!</h1>
-          <p className="bd-subtitle">{todayLabel}</p>
+          <p className="bd-subtitle">{todayLabel()}</p>
         </div>
         <div className="bd-header-right d-flex align-items-center gap-3">
           <ConnChip isConnected={realtimeConnected} isConnecting={realtimeConnecting} lastUpdated={lastUpdated} />
@@ -227,10 +259,25 @@ const BaristaDashboard = () => {
       )}
 
       {/* Error ───────────────────────────────────────────────── */}
-      {error && (
+      {errorInfo && (
         <div className="bd-error">
           <FaExclamationTriangle className="bd-error-icon" />
-          <span>{error}</span>
+          <span>{errorInfo.message}</span>
+          {errorInfo.actions && errorInfo.actions.length > 0 && (
+            <div className="mt-3 d-flex gap-2">
+              {errorInfo.actions.map((action, index) => (
+                <ResponsiveButton
+                  key={index}
+                  variant={action.variant || 'primary'}
+                  size="sm"
+                  onClick={action.onClick}
+                  style={{ marginRight: index < errorInfo.actions.length - 1 ? '0.5rem' : 0 }}
+                >
+                  {action.label}
+                </ResponsiveButton>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -279,7 +326,7 @@ const BaristaDashboard = () => {
                     <FaDollarSign className="text-info me-2" size={20} />
                     <h5 className="mb-0">Today's Revenue</h5>
                   </div>
-                  <p className="fs-4 fw-bold mb-0">{fmt(revenue, '₱')}</p>
+                  <p className="fs-4 fw-bold mb-0">{fmt(revenue)}</p>
                 </div>
               </ResponsiveCard>
             </ResponsiveCol>
@@ -316,188 +363,176 @@ const BaristaDashboard = () => {
                     <FaClipboardList className="text-warning me-2" size={18} />
                     <h5 className="mb-0">Tasks Completed</h5>
                   </div>
-                  <p className="fs-5 fw-bold mb-0">{completedTasks} / {todaysTasks.length}</p>
+                  <p className="fs-5 fw-bold mb-0">{completedTasks}/{todaysTasks.length}</p>
                 </div>
               </ResponsiveCard>
             </ResponsiveCol>
           </ResponsiveRow>
 
-          {/* ── Body Grid ─────────────────────────────────────── */}
-          <div className="bd-body-grid">
-
-            {/* Left: Live Order Queue ─────────────────────────── */}
-            <ResponsiveCol md={8}>
+          {/* ── Live Order Queue ───────────────────────────────── */}
+          <ResponsiveRow className="g-4">
+            <ResponsiveCol xs={12}>
               <ResponsiveCard className="border-0 shadow-sm h-100">
-                <ResponsiveCard.Header className="d-flex justify-content-between align-items-center">
-                  <h5 className="mb-0">
-                    <FaBolt size={14} />
-                    Live Order Queue
-                    {liveQueue.length > 0 && (
-                      <span className={`ms-2 ${pendingOrders > 0 ? 'text-warning' : ''}`}>
-                        {liveQueue.length}
-                      </span>
-                    )}
-                  </h5>
-                  <Link to="/barista/orders" className="text-muted text-decoration-none">
-                    View all <FaChevronRight size={10} />
-                  </Link>
-                </ResponsiveCard.Header>
-                <ResponsiveCard.Body className="p-0">
-                  {liveQueue.length === 0 ? (
-                    <div className="text-center py-4">
-                      <FaCheckCircle className="text-success mb-2" size={28} />
-                      <p className="mb-0">No active orders — queue is clear!</p>
-                    </div>
-                  ) : (
-                    <div className="list-group list-group-flush">
-                      {liveQueue.map((order, index) => (
-                        <SwipeableOrderItem key={order.id} order={order} onDismiss={handleDismissOrder} index={index} />
-                      ))}
-                    </div>
-                  )}
-                </ResponsiveCard.Body>
-              </ResponsiveCard>
-            </ResponsiveCol>
-
-            {/* Right column ───────────────────────────────────── */}
-            <ResponsiveCol md={4}>
-
-              {/* Shift card */}
-              <ResponsiveCard className="border-0 shadow-sm h-100">
-                <ResponsiveCard.Header className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 className="mb-0 text-muted">Current Shift</h6>
-                    {currentShift ? (
-                      <p className="mb-0 fw-medium">
-                        {currentShift.start_time} – {currentShift.end_time}
-                      )
-                    ) : (
-                      <p className="mb-0 text-muted">No shift today</p>
-                    )}
-                    {currentShift?.shift_name && (
-                      <p className="mb-0 fw-medium">{currentShift.shift_name}</p>
-                    )}
-                  </div>
-                  <FaCalendarAlt size={18} className="text-primary" />
-                </ResponsiveCard.Header>
-                <ResponsiveCard.Body className="p-3">
-                  <div className="d-flex justify-content-end gap-3">
-                    <ResponsiveButton to="/barista/attendance" variant="outline-primary" size="sm" className="">
-                      <div className="d-flex justify-content-start align-items-center">
-                        <FaSignInAlt size={13} className="me-2" />
-                        <span>Clock In/Out</span>
-                      </div>
-                    </ResponsiveButton>
-                    <ResponsiveButton to="/barista/shifts" variant="outline-secondary" size="sm" className="">
-                      <div className="d-flex justify-content-start align-items-center">
-                        <FaCalendarAlt size={13} className="me-2" />
-                        <span>My Shifts</span>
-                      </div>
-                    </ResponsiveButton>
-                  </div>
-                </ResponsiveCard.Body>
-              </ResponsiveCard>
-
-              {/* Quick actions */}
-              <ResponsiveCard className="border-0 shadow-sm h-100 mt-3">
-                <ResponsiveCard.Header>
-                  <h5 className="mb-0">
-                    <FaBolt size={14} />
-                    Quick Actions
-                  </h5>
-                </ResponsiveCard.Header>
-                <ResponsiveCard.Body className="p-3">
-                  <ResponsiveRow className="g-2">
-                    <ResponsiveCol md={6}>
-                      <ResponsiveButton to="/barista/orders" variant="outline-warning" size="sm" className="w-100">
-                        <div className="d-flex justify-content-start align-items-center">
-                          <FaClock size={15} className="me-2" />
-                          <span>Order Queue</span>
-                          {pendingOrders > 0 && (
-                            <span className="ms-auto badge bg-warning">{pendingOrders}</span>
-                          )}
-                        </div>
-                      </ResponsiveButton>
-                    </ResponsiveCol>
-                    <ResponsiveCol md={6}>
-                      <ResponsiveButton to="/barista/tasks" variant="outline-primary" size="sm" className="w-100">
-                        <div className="d-flex justify-content-start align-items-center">
-                          <FaTasks size={15} className="me-2" />
-                          <span>My Tasks</span>
-                          {todaysTasks.length > 0 && (
-                            <span className="ms-auto badge bg-primary">{todaysTasks.length}</span>
-                          )}
-                        </div>
-                      </ResponsiveButton>
-                    </ResponsiveCol>
-                    <ResptiveCol md={6}>
-                      <ResponsiveButton to="/barista/beans" variant="outline-success" size="sm" className="w-100">
-                        <div className="d-flex justify-content-start align-items-center">
-                          <FaCoffee size={15} className="me-2" />
-                          <span>Coffee Beans</span>
-                        </div>
-                      </ResponsiveButton>
-                    </ResponsiveCol>
-                    <ResponsiveCol md={6}>
-                      <ResponsiveButton to="/barista/inventory" variant="outline-secondary" size="sm" className="w-100">
-                        <div className="d-flex justify-content-start align-items-center">
-                          <FaBoxes size={15} className="me-2" />
-                          <span>Inventory Check</span>
-                        </div>
-                      </ResponsiveButton>
-                    </ResponsiveCol>
-                    <ResponsiveCol md={6}>
-                      <ResponsiveButton to="/barista/performance" variant="outline-success" size="sm" className="w-100">
-                        <div className="d-flex justify-content-start align-items-center">
-                          <FaChartLine size={15} className="me-2" />
-                          <span>My Performance</span>
-                        </div>
-                      </ResponsiveButton>
-                    </ResponsiveCol>
-                  </ResponsiveRow>
-                </ResponsiveCard.Body>
-              </ResponsiveCard>
-
-            </ResponsiveCol>
-          </div>
-
-          {/* ── Today's Tasks ────────────────────────────────── */}
-          <div className="bd-card">
-            <div className="bd-card-head">
-              <h2 className="bd-card-title">
-                <FaList size={14} />
-                Today's Tasks
-                {todaysTasks.length > 0 && (
-                  <span className="bd-card-badge">{todaysTasks.length}</span>
-                )}
-              </h2>
-              <Link to="/barista/tasks" className="bd-see-all">
-                See all <FaChevronRight size={10} />
-              </Link>
-            </div>
-            <div className="bd-card-body">
-              {todaysTasks.length === 0 ? (
-                <p className="bd-task-empty">No tasks assigned for today.</p>
-              ) : (
-                <div className="bd-task-list">
-                  {todaysTasks.slice(0, 6).map((task, i) => (
-                    <div key={task.id || i} className="bd-task-item">
-                      <span className={`bd-task-status-dot ${task.status === 'in_progress' ? 'in_progress' : task.status}`} />
-                      <span className="bd-task-name">{task.title || task.name || 'Unnamed task'}</span>
-                      {task.priority && (
-                        <span className={`bd-task-priority ${task.priority}`}>{task.priority}</span>
+                <div className="p-4">
+                  <div className="d-flex justify-content-between align-items-start mb-3">
+                    <h5 className="mb-0">
+                      <FaClipboardList className="me-2" /> Live Order Queue ({liveQueue.length})
+                    </h5>
+                    <div className="d-flex gap-2">
+                      {liveQueue.length > 0 && (
+                        <ResponsiveButton
+                          variant="outline-primary"
+                          size="sm"
+                          onClick={() => {
+                            // In a real app, this might show all orders or open order management
+                            showOrderNotification('Viewing all orders', 'info');
+                          }}
+                        >
+                          <FaEye /> View All
+                        </ResponsiveButton>
                       )}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+                  </div>
+                  {liveQueue.length === 0 ? (
+                    <div className="text-center py-3">
+                      <FaClipboardList className="mb-2" style={{ fontSize: '2rem', opacity: '0.3' }} />
+                      <p className="mb-0">No active orders</p>
+                    </div>
+                  ) : (
+                    <div className="queue-list">
+                      {liveQueue.map((order) => {
+                        const isSwiping = swipeOrders[order.id]?.dismissing;
+                        const swipeX = swipeOrders[order.id]?.x || 0;
 
+                        return (
+                          <div
+                            key={order.id}
+                            className={`bd-order-item${isSwiping ? ' dismissing' : ''}`}
+                            style={{ transform: `translateX(${swipeX}px)` }}
+                            onTouchStart={(e) => {
+                              const touch = e.touches[0];
+                              setSwipeOrders(prev => ({
+                                ...prev,
+                                [order.id]: { x: touch.clientX, dismissing: false }
+                              }));
+                            }}
+                            onTouchMove={(e) => {
+                              const touch = e.touches[0];
+                              const startX = swipeOrders[order.id]?.x || 0;
+                              const diffX = touch.clientX - startX;
+
+                              // Update position while tracking if user is swiping far enough to dismiss
+                              setSwipeOrders(prev => ({
+                                ...prev,
+                                [order.id]: {
+                                  x: startX + diffX,
+                                  dismissing: Math.abs(diffX) > 60
+                                }
+                              }));
+                            }}
+                            onTouchEnd={() => {
+                              if (swipeOrders[order.id]?.dismissing) {
+                                handleDismissOrder(order.id);
+                              } else {
+                                // Reset position
+                                setSwipeOrders(prev => ({
+                                  ...prev,
+                                  [order.id]: { x: 0, dismissing: false }
+                                }));
+                              }
+                            }}
+                          >
+                            <div className="bd-order-content">
+                              <div className="bd-order-header d-flex justify-content-between align-items-start">
+                                <div>
+                                  <h6 className="mb-1">#{order.order_number}</h6>
+                                  <p className="text-muted small">
+                                    {order.customer?.name || 'Guest Customer'}
+                                  </p>
+                                </div>
+                                <span className={`bd-status-badge bd-status-${order.status}`}>
+                                  {order.status.toUpperCase()}
+                                </span>
+                              </div>
+                              <div className="bd-order-details mt-2">
+                                <div className="d-flex gap-3">
+                                  <div className="bd-order-item-info">
+                                    <strong>Items:</strong> {order.total_items || 0}
+                                  </div>
+                                  <div className="bd-order-item-info">
+                                    <strong>Total:</strong> {fmt(order.total_amount || 0)}
+                                  </div>
+                                  <div className="bd-order-item-info">
+                                    <strong>Time:</strong> {new Date(order.created_at).toLocaleTimeString()}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+          </ResponsiveRow>
+
+          {/* ── Workforce Overview ─────────────────────────────── */}
+          <ResponsiveRow className="g-4 mt-4">
+            <ResponsiveCol xs={12} sm={6} md={4}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaUsers className="text-info me-2" size={20} />
+                    <h5 className="mb-0">Team Status</h5>
+                  </div>
+                  {currentShift ? (
+                    <>
+                      <p className="fs-5 fw-bold mb-1">{currentShift.name || 'Shift'}</p>
+                      <p className="text-sm mb-0">
+                        {currentShift.start_time} – {currentShift.end_time}
+                      </>
+                    </>
+                  ) : (
+                    <p className="text-muted text-center py-2">No active shift</p>
+                  )}
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+            <ResponsiveCol xs={12} sm={6} md={4}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaTasks className="text-warning me-2" size={20} />
+                    <h5 className="mb-0">Today's Tasks</h5>
+                  </div>
+                  <p className="fs-5 fw-bold mb-1">{completedTasks}/{todaysTasks.length} Completed</p>
+                  {todaysTasks.length > 0 && (
+                    <div className="progress-wrapper">
+                      <div className="progress-bg">
+                        <div className="progress-fill" style={{ width: `${(completedTasks / todaysTasks.length * 100) || 0}%` }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+            <ResponsiveCol xs={12} sm={6} md={4}>
+              <ResponsiveCard className="border-0 shadow-sm h-100">
+                <div className="p-3">
+                  <div className="d-flex align-items-center mb-2">
+                    <FaCalendarAlt className="text-success me-2" size={20} />
+                    <h5 className="mb-0">Attendance</h5>
+                  </div>
+                  <p className="fs-5 fw-bold mb-1">{workforceData?.attendance_present || 0}/{workforceData?.attendance_scheduled || 0} Present</p>
+                </div>
+              </ResponsiveCard>
+            </ResponsiveCol>
+          </ResponsiveRow>
         </>
       )}
-
-    </div>
+    </main>
   );
 };
 

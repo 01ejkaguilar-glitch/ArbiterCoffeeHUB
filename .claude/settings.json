@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c ' *)",
+      "Bash(dir C:\\\\Users\\\\01ker\\\\ArbiterCoffeeHUB\\\\temp*.jsx)",
+      "Bash(dir \"C:\\\\Users\\\\01ker\\\\ArbiterCoffeeHUB\\\\temp_original.jsx\")",
+      "Bash(xxd frontend/src/pages/admin/AdminSettings.jsx)",
+      "Bash(xxd)"
+    ]
+  }
+}

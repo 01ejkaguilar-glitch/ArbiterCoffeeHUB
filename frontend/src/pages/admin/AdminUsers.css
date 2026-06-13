@@ -590,6 +590,13 @@
   color: #aaa;
 }
 
+.au-form-error {
+  font-size: .72rem;
+  color: #e74c3c;
+  margin-top: .25rem;
+  display: block;
+}
+
 /* ── Modal Buttons ───────────────────────────────────────────── */
 .au-btn {
   padding: .5rem 1.2rem;
@@ -932,4 +939,117 @@
   .au-stat-icon { width: 34px; height: 34px; font-size: .85rem; border-radius: 8px; }
   .au-stat-value { font-size: 1.15rem; }
   .au-stat-label { font-size: .65rem; }
+}
+
+/* File Upload Preview Styles */
+.au-image-preview {
+  margin-top: .75rem;
+  text-align: center;
+}
+
+.au-preview-img {
+  max-width: 150px;
+  max-height: 150px;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  object-fit: cover;
+}
+
+.au-file-preview {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-top: .75rem;
+  padding: .75rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.au-file-icon {
+  font-size: 1.5rem;
+  color: #3498db;
+}
+
+.au-file-name {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* Wizard Styles */
+.au-wizard-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+  position: relative;
+}
+
+.au-wizard-steps::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #e0e0e0;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.au-wizard-step {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  text-align: center;
+}
+
+.au-wizard-step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 0 auto 0.5rem;
+  transition: all 0.3s ease;
+  border: 2px solid #e0e0e0;
+  background: #fff;
+}
+
+.au-wizard-step.active .au-wizard-step-circle {
+  border-color: #2ecc71;
+  background: #2ecc71;
+  color: #fff;
+}
+
+.au-wizard-step.completed .au-wizard-step-circle {
+  border-color: #2ecc71;
+  background: #2ecc71;
+  color: #fff;
+}
+
+.au-wizard-step-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.au-wizard-step.active .au-wizard-step-label {
+  color: #2ecc71;
+}
+
+.au-wizard-step.completed .au-wizard-step-label {
+  color: #2ecc71;
+}
+
+.au-wizard-content {
+  animation: auFadeIn 0.3s ease;
+}
+
+@keyframes auFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

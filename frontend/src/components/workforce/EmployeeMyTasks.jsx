@@ -26,7 +26,19 @@ const PRIORITY_ORDER = { urgent: 0, high: 1, medium: 2, low: 3 };
 const Drawer = ({ task, onClose, onUpdate, updating, theme }) => {
   if (!task) return null;
   return (
-    <div className="mt-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div
+  className="mt-overlay"
+  tabindex="0"
+  role="button"
+  aria-label="Close task drawer"
+  onClick={(e) => e.target === e.currentTarget && onClose()}
+  onKeyDown={(e) => {
+    if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onClose();
+    }
+  }}
+>
       <div className="mt-drawer">
         <div className="mt-drawer-hdr">
           <h2>{task.title}</h2>
@@ -109,7 +121,12 @@ const TaskCard = ({ task, primaryColor, onSelect, onUpdate, updating }) => {
       onClick={() => onSelect(task)}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && onSelect(task)}
+      onKeyDown={(e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelect(task);
+    }
+  }}
     >
       <div className="mt-task-header">
         <div className="mt-task-title">{task.title}</div>

@@ -14,12 +14,19 @@ const ResponsiveModal = ({
     return null;
   }
 
+  const handleKeyDown = (e) => {
+    if (keyboard && e.key === 'Escape' && onHide) {
+      onHide();
+    }
+  };
+
   return (
     <div
       className={`modal ${backdrop ? 'show' : ''} d-block`}
       tabIndex="-1"
       role="dialog"
       style={{ display: 'block' }}
+      onKeyDown={handleKeyDown}
       {...props}
     >
       <div className="modal-dialog" role="document">

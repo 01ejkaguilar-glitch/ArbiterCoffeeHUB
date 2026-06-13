@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import './Form.css';
+import { HoverEffect } from './HoverEffect';
 
 const Form = ({
   children,
@@ -11,14 +12,16 @@ const Form = ({
   ...props
 }) => {
   return (
-    <form
-      className={`form ${className} ${inline ? 'form-inline' : ''} ${validated ? 'was-validated' : ''}`}
-      onSubmit={onSubmit}
-      noValidate={validated}
-      {...props}
-    >
-      {children}
-    </form>
+    <HoverEffect className={className}>
+      <form
+        className={`form ${className} ${inline ? 'form-inline' : ''} ${validated ? 'was-validated' : ''}`}
+        onSubmit={onSubmit}
+        noValidate={validated}
+        {...props}
+      >
+        {children}
+      </form>
+    </HoverEffect>
   );
 };
 

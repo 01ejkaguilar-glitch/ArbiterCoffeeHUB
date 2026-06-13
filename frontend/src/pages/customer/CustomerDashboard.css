@@ -507,6 +507,11 @@
 
 .cdb-order-group-body {
   border-top: 1px solid var(--color-border-default);
+  display: none; /* Hidden by default */
+}
+
+.cdb-order-group-body.show {
+  display: block; /* Show when has .show class */
 }
 
 .cdb-order-type-group {
@@ -771,5 +776,15 @@
 
   .cdb-expiry-action {
     margin-top: 0.5rem;
+  }
+}
+
+/* Reduced Motion Media Query */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

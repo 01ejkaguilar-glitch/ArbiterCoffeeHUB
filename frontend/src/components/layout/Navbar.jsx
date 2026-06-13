@@ -4,6 +4,7 @@ import { Badge, Dropdown } from 'react-bootstrap';
 import { FaShoppingCart, FaUser, FaCoffee, FaSignOutAlt, FaTachometerAlt, FaUtensils, FaBars, FaTimes } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { useFeedbackModal } from '../../context/FeedbackModalContext';
 import { SearchDropdown } from '../search';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
@@ -161,6 +162,12 @@ const Navbar = () => {
                     <Dropdown.Item as={Link} to="/kitchen"><FaUtensils className="me-2" />Kitchen Staff</Dropdown.Item>
                   )}
                   <Dropdown.Divider />
+                  <Dropdown.Item onClick={() => {
+                    const { toggleFeedbackModal } = useFeedbackModal();
+                    toggleFeedbackModal();
+                  }}>
+                    <FaComment className="me-2" />Feedback
+                  </Dropdown.Item>
                   <Dropdown.Item onClick={handleLogout}>
                     <FaSignOutAlt className="me-2" />Logout
                   </Dropdown.Item>
@@ -183,6 +190,18 @@ const Navbar = () => {
                   <NotificationBell />
                 </div>
               </Suspense>
+            )}
+            {isAuthenticated && (
+              <button
+                className="app-navbar-feedback-btn"
+                onClick={() => {
+                  const { toggleFeedbackModal } = useFeedbackModal();
+                  toggleFeedbackModal();
+                }}
+                aria-label="Open feedback"
+              >
+                <FaComment />
+              </button>
             )}
             <button
               className="app-navbar-hamburger"
@@ -260,6 +279,13 @@ const Navbar = () => {
               {user?.roles?.includes('kitchen-staff') && (
                 <Link to="/kitchen" className="app-nav-drawer-link" onClick={closeDrawer}><FaUtensils className="me-2" />Kitchen Staff</Link>
               )}
+              {/* Feedback button */}
+              <button className="app-nav-drawer-feedback" onClick={() => {
+                const { toggleFeedbackModal } = useFeedbackModal();
+                toggleFeedbackModal();
+              }}>
+                <FaComment className="me-2" />Feedback
+              </button>
               <button className="app-nav-drawer-logout" onClick={handleLogout}>
                 <FaSignOutAlt className="me-2" />Logout
               </button>

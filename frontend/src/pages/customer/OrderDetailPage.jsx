@@ -199,7 +199,7 @@ const OrderDetailPage = () => {
 
         <ResponsiveRow className="g-4">
           {/* ─── Left: Items ─── */}
-          <Col lg={8}>
+          <ResponsiveCol lg={8}>
             <section className="od-section">
               <h2 className="od-section-title">Order Items</h2>
               <div className="od-items">
@@ -246,10 +246,10 @@ const OrderDetailPage = () => {
                 <p className="od-notes-text">{order.notes || order.special_instructions}</p>
               </section>
             )}
-          </Col>
+          </ResponsiveCol>
 
           {/* ─── Right: Summary sidebar ─── */}
-          <Col lg={4}>
+          <ResponsiveCol lg={4}>
             <div className="od-summary-card">
               <h2 className="od-summary-title">Payment Summary</h2>
 
@@ -339,9 +339,9 @@ const OrderDetailPage = () => {
                 </p>
               </div>
             )}
-          </Col>
-        </Row>
-      </Container>
+          </ResponsiveCol>
+        </ResponsiveRow>
+      </ResponsiveContainer>
     </main>
   );
 };

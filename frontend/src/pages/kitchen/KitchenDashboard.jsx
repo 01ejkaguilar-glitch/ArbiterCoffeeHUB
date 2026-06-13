@@ -13,6 +13,7 @@ import { useKitchenOrders } from '../../hooks/useBroadcast';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardNavigation';
 import { useSwipeToDismiss } from '../../hooks/useSwipeToDismiss';
+import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import SwipeableOrderItem from '../../components/shared/SwipeableOrderItem';
 import {
   ResponsiveButton,
@@ -39,6 +40,16 @@ const todayLabel = new Date().toLocaleDateString('en-US', {
 
 /* ─── Connection chip ────────────────────────────────────────── */
 const ConnChip = ({ isConnected, isConnecting, lastUpdated }) => {
+  const [connectingSince, setConnectingSince] = useState(null);
+
+  useEffect(() => {
+    if (isConnecting) {
+      setConnectingSince(Date.now());
+    } else {
+      setConnectingSince(null);
+    }
+  }, [isConnecting]);
+
   return (
     <span className={`kd-conn-chip ${isConnected ? 'live' : isConnecting ? 'connecting' : 'offline'}`}>
       <span
@@ -47,7 +58,16 @@ const ConnChip = ({ isConnected, isConnecting, lastUpdated }) => {
           animation: isConnected && !isConnecting ? 'kd-pulse 1.6s infinite' : 'none'
         }}
       />
-      {isConnected ? 'Live' : isConnecting ? 'Reconnecting...' : 'Offline'}
+      {isConnected ? 'Live' : isConnecting ? (
+        <>
+          Reconnecting...
+          {connectingSince && (
+            <span className="kd-reconnecting-time">
+              ({Math.floor((Date.now() - connectingSince) / 1000)}s)
+            )
+          )}
+        </>
+      ) : 'Offline'}
       {lastUpdated && (
         <span className="kd-last-updated ml-2">
           Last updated: {lastUpdated.toLocaleTimeString()}
@@ -190,6 +210,12 @@ const KitchenDashboard = () => {
     return () => clearInterval(poll);
   }, [fetchDashboardData]);
 
+  // Set up pull-to-refresh hook
+  const { onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(
+    () => fetchDashboardData(false),
+    { threshold: 100 }
+  );
+
   /* derived -------------------------------------------------- */
   const pendingOrders   = dashboardData?.pending_orders   || 0;
   const preparingOrders = dashboardData?.preparing_orders || 0;
@@ -208,7 +234,13 @@ const KitchenDashboard = () => {
   ].slice(0, 8);
 
   return (
-    <div className="kd-page">
+    <main
+      className="kd-page"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      style={{ touchAction: 'manipulation' }}
+    >
 
       {/* Header */}
       <div className="kd-header">
@@ -494,7 +526,7 @@ const KitchenDashboard = () => {
           </ResponsiveCard>
         </>
       )}
-    </div>
+    </main>
   );
 };
 

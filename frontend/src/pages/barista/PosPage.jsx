@@ -899,9 +899,9 @@ export default function PosPage() {
                     )}
                   </div>
                 </div>
-              )
+              ))}
             </div>
-          )
+          )}
         </ResponsiveModal.Body>
         <ResponsiveModal.Footer>
         </ResponsiveModal.Footer>

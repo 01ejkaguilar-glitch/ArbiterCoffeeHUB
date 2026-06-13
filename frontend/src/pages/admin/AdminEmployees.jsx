@@ -90,6 +90,32 @@ const AdminEmployees = () => {
     return errs;
   };
 
+  const validateField = (fieldName) => {
+    const errs = {};
+    switch (fieldName) {
+      case 'name':
+        if (!formData.name.trim()) errs.name = 'Name is required';
+        break;
+      case 'email':
+        if (!formData.email.trim()) errs.email = 'Email is required';
+        else if (!/\S+@\S+\.\S+/.test(formData.email)) errs.email = 'Email is invalid';
+        break;
+      case 'password':
+        if (!selected && !formData.password.trim()) errs.password = 'Password is required';
+        else if (formData.password.length < 8) errs.password = 'Password must be at least 8 characters';
+        break;
+      case 'position':
+        if (!selected && !formData.position.trim()) errs.position = 'Position is required';
+        break;
+      case 'email':
+        // Already handled above
+        break;
+      default:
+        break;
+    }
+    return errs;
+  };
+
   const openAdd = () => { setSelected(null); setFormData(blankForm()); setFormErrors({}); setShowModal(true); };
   const openEdit = (emp) => {
     setSelected(emp);
@@ -161,6 +187,10 @@ const AdminEmployees = () => {
   const field = (key) => ({
     value: formData[key],
     onChange: (e) => setFormData(p => ({ ...p, [key]: e.target.value })),
+    onBlur: (e) => {
+      const fieldErrors = validateField(key);
+      setFormErrors(prev => ({ ...prev, ...fieldErrors }));
+    }
   });
 
   const filtered = employees.filter(e => {

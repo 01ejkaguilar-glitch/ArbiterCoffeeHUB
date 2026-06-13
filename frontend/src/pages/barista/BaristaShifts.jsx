@@ -19,6 +19,7 @@ import ResponsiveContainer from '@/components/responsive/Container';
 import ResponsiveRow from '@/components/responsive/Row';
 import ResponsiveCol from '@/components/responsive/Col';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
+import { useApiError } from '../../hooks/useApiError';
 import './BaristaShifts.css';
 
 const DAYS   = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -54,17 +55,22 @@ const BaristaShifts = () => {
   const [saving, setSaving]           = useState(false);
   const [showDelete, setShowDelete]   = useState(false);
   const [toDelete, setToDelete]       = useState(null);
-  const [error, setError]             = useState(null);
+  const { errorInfo, getErrorInfo } = useApiError();
   const [breakTimer, setBreakTimer]   = useState(null);
   const [isOnBreak, setIsOnBreak]     = useState(false);
   const [breakStartTime, setBreakStartTime] = useState(null);
   const [elapsedBreakTime, setElapsedBreakTime] = useState(0);
+  // Notification system
+  const { showSuccessNotification, showErrorNotification } = useNotificationSystem();
 
   const fetchEmployees = useCallback(async () => {
     try {
       const res = await apiService.get(API_ENDPOINTS.WORKFORCE.EMPLOYEES);
       if (res.success) setEmployees(Array.isArray(res.data) ? res.data : (res.data?.data || []));
-    } catch { /* non-fatal */ }
+    } catch (err) {
+      // Non-fatal, but we could log it if needed
+      getErrorInfo(err);
+    }
   }, []);
 
   const fetchShifts = useCallback(async () => {
@@ -82,9 +88,14 @@ const BaristaShifts = () => {
           upcoming:  d.filter(s => s.shift_date > today).length,
           uniqueEmp: new Set(d.map(s => s.employee_id)).size,
         });
+      } else {
+        getErrorInfo({ message: res.message || 'Failed to load shifts.' });
       }
-    } catch { setError('Failed to load shifts.'); }
-    finally { setLoading(false); }
+    } catch (err) {
+      getErrorInfo(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const fetchWeekly = useCallback(async () => {
@@ -99,12 +110,25 @@ const BaristaShifts = () => {
               (Array.isArray(items) ? items : []).map(shift => normalizeShift(shift, date))
             );
         setWeeklyData(flattened);
+      } else {
+        getErrorInfo({ message: res.message || 'Failed to load weekly schedule.' });
       }
-    } catch { /* non-fatal */ }
+    } catch (err) {
+      getErrorInfo(err);
+    }
   }, [currentWeek]);
 
   useEffect(() => { fetchShifts(); fetchEmployees(); }, [fetchShifts, fetchEmployees]);
   useEffect(() => { if (view === 'week') fetchWeekly(); }, [view, fetchWeekly]);
+
+  // Clean up break timer interval on unmount
+  useEffect(() => {
+    return () => {
+      if (breakTimer) {
+        clearInterval(breakTimer);
+      }
+    };
+  }, [breakTimer]);
 
   const prevWeek = () => { const w = new Date(currentWeek); w.setDate(w.getDate() - 7); setCurrentWeek(w); };
   const nextWeek = () => { const w = new Date(currentWeek); w.setDate(w.getDate() + 7); setCurrentWeek(w); };
@@ -140,10 +164,14 @@ const BaristaShifts = () => {
         setShowModal(false);
         fetchShifts();
         if (view === 'week') fetchWeekly();
+      } else {
+        getErrorInfo({ message: res.message || 'Save failed.' });
       }
-      else setError(res.message || 'Save failed.');
-    } catch { setError('Failed to save shift.'); }
-    finally { setSaving(false); }
+    } catch (err) {
+      getErrorInfo(err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -151,11 +179,12 @@ const BaristaShifts = () => {
     try {
       await apiService.delete(API_ENDPOINTS.WORKFORCE.SHIFT_DETAIL(toDelete.id));
       setShowDelete(false); setToDelete(null); fetchShifts();
-    } catch { setError('Failed to delete shift.'); }
+    } catch (err) {
+      getErrorInfo(err);
+    }
   };
 
     const requestShiftSwap = async (shiftId) => {
-    const { showSuccessNotification, showErrorNotification } = useNotificationSystem();
     try {
       // Implementation for shift swap request
       // In a real app, this would make an API request to request a shift swap
@@ -166,7 +195,6 @@ const BaristaShifts = () => {
   };
 
   const startBreak = async () => {
-    const { showSuccessNotification } = useNotificationSystem();
     setIsOnBreak(true);
     setBreakStartTime(new Date());
     // Start break timer
@@ -179,7 +207,6 @@ const BaristaShifts = () => {
   };
 
   const endBreak = async () => {
-    const { showSuccessNotification } = useNotificationSystem();
     if (breakTimer) {
       clearInterval(breakTimer);
       setBreakTimer(null);
@@ -215,7 +242,7 @@ const BaristaShifts = () => {
   });
 
   return (
-    <PageShell title="My Shifts" subtitle="Manage and view your work schedules" error={error} onRetry={fetchShifts}>
+    <PageShell title="My Shifts" subtitle="Manage and view your work schedules" error={errorInfo} onRetry={fetchShifts}>
       <div className="bs-page">
 
         {/* Current Shift Info and Break Timer */}

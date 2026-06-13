@@ -364,7 +364,7 @@ const CheckoutPage = () => {
                 />
               </div>
             </section>
-          </Col>
+          </ResponsiveCol>
 
           {/* ─────── RIGHT: order summary ─────── */}
           <ResponsiveCol lg={4}>
@@ -426,7 +426,7 @@ const CheckoutPage = () => {
               >
                 {loading ? (
                   <>
-                    <Spinner animation="border" size="sm" className="me-2" /> Processing…
+                    <ResponsiveSpinner size="sm" className="me-2" /> Processing…
                   </>
                 ) : (
                   <>
@@ -449,13 +449,13 @@ const CheckoutPage = () => {
                 </div>
               </div>
             </div>
-          </Col>
-        </Row>
-      </Container>
+          </ResponsiveCol>
+        </ResponsiveRow>
+      </ResponsiveContainer>
 
       {/* ─── Payment QR Modal ──────────────── */}
-      <Modal show={showPaymentQR} onHide={() => setShowPaymentQR(false)} size="md" centered className="co-qr-modal">
-        <Modal.Body className="text-center p-4 p-md-5">
+      <ResponsiveModal show={showPaymentQR} onHide={() => setShowPaymentQR(false)} size="md" centered className="co-qr-modal">
+        <ResponsiveModal.Body className="text-center p-4 p-md-5">
           <div className="co-qr-success-icon">
             <FaCheckCircle />
           </div>
@@ -502,7 +502,7 @@ const CheckoutPage = () => {
             >
               Cancel Order
             </ResponsiveButton>
-            <ResponsiveButton
+              <ResponsiveButton
               variant="primary"
               className="flex-grow-1"
               disabled={loading}
@@ -527,11 +527,11 @@ const CheckoutPage = () => {
                 }
               }}
             >
-              {loading ? <Spinner animation="border" size="sm" /> : 'Payment Completed'}
+              Payment Completed
             </ResponsiveButton>
           </div>
-        </Modal.Body>
-      </Modal>
+        </ResponsiveModal.Body>
+      </ResponsiveModal>
     </main>
   );
 };
