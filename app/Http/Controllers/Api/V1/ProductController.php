@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\BaseController;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
 
