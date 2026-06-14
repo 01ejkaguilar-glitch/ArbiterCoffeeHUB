@@ -40,8 +40,14 @@ class CacheWarmingServiceTest extends TestCase
     {
         $service = new CacheWarmingService();
 
-        // Create test categories
+        // Create test categories with products
         $categories = Category::factory()->count(3)->create();
+        foreach ($categories as $category) {
+            Product::factory()->create([
+                'category_id' => $category->id,
+                'is_available' => true,
+            ]);
+        }
 
         // Warm the cache
         $service->warmPopularCategories();
