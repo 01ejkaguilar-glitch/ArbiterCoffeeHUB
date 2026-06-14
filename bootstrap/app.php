@@ -83,16 +83,25 @@ return Application::configure(basePath: dirname(__DIR__))
                     $request
                 );
 
+                // Handle ValidationException with standard API validation error format
+                if ($e instanceof \Illuminate\Validation\ValidationException) {
+                    $errors = $e->errors();
+
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Validation failed',
+                        'errors' => $errors,
+                    ], 422);
+                }
+
+                // For all other exceptions, return standard API error format
+                $message = config('app.debug')
+                    ? $e->getMessage()
+                    : 'An error occurred';
+
                 return response()->json([
                     'success' => false,
-                    'message' => config('app.debug') ? $e->getMessage() : 'An error occurred',
-                    'error' => config('app.debug') ? [
-                        'type' => get_class($e),
-                        'file' => $e->getFile(),
-                        'line' => $e->getLine(),
-                        'trace' => $e->getTraceAsString(),
-                    ] : null,
-                    'request_id' => $request->header('X-Request-ID'),
+                    'message' => $message,
                 ], $getStatusCode($e));
             }
         });
