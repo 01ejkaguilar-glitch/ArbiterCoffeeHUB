@@ -63,7 +63,7 @@ class CacheWarmingService
     {
         // Get categories with products (most likely to be accessed)
         $popularCategories = Category::withCount('products')
-            ->having('products_count', '>', 0)
+            ->where('products_count', '>', 0)
             ->orderByDesc('products_count')
             ->take(10)
             ->get();
