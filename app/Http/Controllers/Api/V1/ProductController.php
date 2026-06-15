@@ -9,6 +9,8 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
+use App\Http\Resources\ProductResource;
+use App\Http\Resources\ProductCollection;
 
 class ProductController extends BaseController
 {
@@ -72,7 +74,7 @@ class ProductController extends BaseController
     {
         // Create cache key based on request parameters
         $cacheKey = 'products_list_' . md5(json_encode($request->all()));
-        
+
         // Try to get from cache (without tags for database cache driver compatibility)
         $products = $this->rememberProduct($cacheKey, self::CACHE_TTL, function () use ($request) {
             $query = Product::with('category');
@@ -105,7 +107,7 @@ class ProductController extends BaseController
             return $query->paginate($perPage);
         });
 
-        return $this->sendResponse($products, 'Products retrieved successfully');
+        return $this->sendResponse(new ProductCollection($products), 'Products retrieved successfully');
     }
 
     /**
@@ -159,7 +161,7 @@ class ProductController extends BaseController
         // Clear the products cache since we added a new product
         $this->clearProductsCache();
 
-        return $this->sendCreated($product, 'Product created successfully');
+        return $this->sendCreated(new ProductResource($product), 'Product created successfully');
     }
 
     /**
@@ -168,7 +170,7 @@ class ProductController extends BaseController
     public function show($id)
     {
         $cacheKey = 'product_' . $id;
-        
+
         $product = $this->rememberProduct($cacheKey, self::CACHE_TTL, function () use ($id) {
             return Product::with('category')->find($id);
         });
@@ -177,7 +179,7 @@ class ProductController extends BaseController
             return $this->sendNotFound('Product not found');
         }
 
-        return $this->sendResponse($product, 'Product retrieved successfully');
+        return $this->sendResponse(new ProductResource($product), 'Product retrieved successfully');
     }
 
     /**
@@ -212,7 +214,7 @@ class ProductController extends BaseController
         // Clear the products cache since we updated a product
         $this->clearProductsCache();
 
-        return $this->sendResponse($product, 'Product updated successfully');
+        return $this->sendResponse(new ProductResource($product), 'Product updated successfully');
     }
 
     /**
