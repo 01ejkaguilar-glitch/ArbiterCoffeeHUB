@@ -9,6 +9,7 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Event;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductCollection;
 
@@ -145,6 +146,8 @@ class ProductController extends BaseController
      */
     public function store(StoreProductRequest $request)
     {
+        $this->authorize('create', Product::class);
+
         $productData = $request->except('image');
 
         // Handle image upload
@@ -158,8 +161,8 @@ class ProductController extends BaseController
         $product = Product::create($productData);
         $product->load('category');
 
-        // Clear the products cache since we added a new product
-        $this->clearProductsCache();
+        // Fire ProductCreated event to handle cache clearing
+        event(new \App\Events\ProductCreated($product));
 
         return $this->sendCreated(new ProductResource($product), 'Product created successfully');
     }
@@ -179,6 +182,8 @@ class ProductController extends BaseController
             return $this->sendNotFound('Product not found');
         }
 
+        $this->authorize('view', $product);
+
         return $this->sendResponse(new ProductResource($product), 'Product retrieved successfully');
     }
 
@@ -192,6 +197,8 @@ class ProductController extends BaseController
         if (!$product) {
             return $this->sendNotFound('Product not found');
         }
+
+        $this->authorize('update', $product);
 
         $productData = $request->except('image');
 
@@ -211,8 +218,8 @@ class ProductController extends BaseController
         $product->update($productData);
         $product->load('category');
 
-        // Clear the products cache since we updated a product
-        $this->clearProductsCache();
+        // Fire ProductUpdated event to handle cache clearing
+        event(new \App\Events\ProductUpdated($product));
 
         return $this->sendResponse(new ProductResource($product), 'Product updated successfully');
     }
@@ -227,6 +234,8 @@ class ProductController extends BaseController
         if (!$product) {
             return $this->sendNotFound('Product not found');
         }
+
+        $this->authorize('delete', $product);
 
         $product->delete();
 
