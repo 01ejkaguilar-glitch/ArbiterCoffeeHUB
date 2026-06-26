@@ -35,11 +35,24 @@ jobs:
       - name: Build frontend
         run: cd frontend && npm run build
 
+      - name: Test frontend
+        run: cd frontend && npm test -- --watchAll=false --ci
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.2"
           extensions: mbstring, xml, pdo_mysql
+
+      - name: Check for security vulnerabilities in dependencies
+        run: composer audit --format=json
+
+      - name: Run PHPUnit with coverage
+        run: vendor/bin/phpunit --coverage-clover=build/logs/clover.xml
+      - name: Upload coverage report to Coveralls
+        run: vendor/bin/php-coveralls -v
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
       - name: Prepare public_html
         run: |
@@ -116,6 +129,10 @@ jobs:
             php artisan cache:clear
             php artisan route:clear
             php artisan view:clear
+            # Cache configuration, routes, and views for performance
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
             # Force clear everything including compiled
             php artisan clear-compiled 2>/dev/null || true
             # Set proper permissions
