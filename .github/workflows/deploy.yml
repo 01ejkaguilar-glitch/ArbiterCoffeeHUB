@@ -4,6 +4,19 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      action:
+        description: 'Deployment action (deploy or rollback)'
+        required: true
+        default: 'deploy'
+        type: choice
+        options:
+          - deploy
+          - rollback
+      release:
+        description: 'Release timestamp to rollback to (required for rollback action)'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -97,46 +110,139 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            bash -c "
-            cd /home/u843463747/domains/arbitercoffee.shop/public_html/api
-            # Check vendor status
-            echo \"=== Checking vendor directory ===\"
+            # Set base paths
+            BASE_DIR="/home/u843463747/domains/arbitercoffee.shop"
+            RELEASES_DIR="$BASE_DIR/releases"
+            CURRENT_LINK="$BASE_DIR/current"
+            KEPT_RELEASES=5
+
+            # Create timestamp for this release
+            TIMESTAMP=$(date +%Y%m%d%H%M%S)
+
+            if [ "${{ github.event.inputs.action }}" = "rollback" ]; then
+              echo "=== Performing Rollback ==="
+
+              # If specific release provided, use it; otherwise rollback to previous release
+              if [ -n "${{ github.event.inputs.release }}" ]; then
+                TARGET_RELEASE="$RELEASES_DIR/${{ github.event.inputs.release }}"
+                echo "Rolling back to specified release: $TARGET_RELEASE"
+              else
+                # Get the release before current (second most recent)
+                if [ -L "$CURRENT_LINK" ]; then
+                  CURRENT_TARGET=$(readlink -f "$CURRENT_LINK")
+                  # Get list of releases sorted by time (newest first), skip current, take next
+                  TARGET_RELEASE=$(ls -dt "$RELEASES_DIR"/*/ | grep -v "$(basename "$CURRENT_TARGET")$" | head -1 | xargs dirname)
+                  if [ -z "$TARGET_RELEASE" ]; then
+                    echo "Error: No previous release found for rollback"
+                    exit 1
+                  fi
+                  echo "Rolling back to previous release: $TARGET_RELEASE"
+                else
+                  echo "Error: Current symlink not found or not a symlink"
+                  exit 1
+                fi
+              fi
+
+              # Verify target release exists
+              if [ ! -d "$TARGET_RELEASE" ]; then
+                echo "Error: Target release directory does not exist: $TARGET_RELEASE"
+                exit 1
+              fi
+
+              # Update symlink to target release
+              echo "Updating symlink to point to: $TARGET_RELEASE"
+              ln -snf "$TARGET_RELEASE" "$CURRENT_LINK"
+
+              # Run Laravel commands on the rolled-back release
+              cd "$TARGET_RELEASE"
+
+            else
+              # Regular deployment flow
+              echo "=== Starting Deployment ==="
+
+              # Create releases directory if it doesn't exist
+              mkdir -p "$RELEASES_DIR"
+
+              # Create new release directory
+              RELEASE_DIR="$RELEASES_DIR/$TIMESTAMP"
+              echo "Creating release directory: $RELEASE_DIR"
+              mkdir -p "$RELEASE_DIR"
+
+              # Copy the deployed files from public_html to release directory
+              # Note: Files are already FTP deployed to $BASE_DIR/public_html/
+              echo "Copying deployed files to release directory..."
+              cp -r "$BASE_DIR/public_html/"* "$RELEASE_DIR/"
+
+              # Update symlink to point to new release
+              echo "Updating symlink to point to new release: $RELEASE_DIR"
+              ln -snf "$RELEASE_DIR" "$CURRENT_LINK"
+
+              # Change to release directory for Laravel commands
+              cd "$RELEASE_DIR"
+
+              # Clean old releases (keep KEPT_RELEASES most recent)
+              echo "Cleaning old releases (keeping $KEPT_RELEASES most recent)..."
+              cd "$RELEASES_DIR"
+              ls -dt */ | tail -n +$((KEPT_RELEASES + 1)) | xargs rm -rf
+            fi
+
+            # Common Laravel setup steps (for both deploy and rollback)
+            echo "=== Checking vendor directory ==="
             ls -la vendor/ | head -10
+
             # Install composer dependencies if needed
-            if [ ! -d \"vendor/laravel/sanctum\" ]; then
-              echo \"=== Running composer install ===\"
+            if [ ! -d "vendor/laravel/sanctum" ]; then
+              echo "=== Running composer install ==="
               composer install --no-dev --optimize-autoloader --prefer-dist
             else
-              echo \"=== Vendor already exists ===\"
+              echo "=== Vendor already exists ==="
             fi
+
             # Check if .env exists
-            echo \"=== Checking .env ===\"
+            echo "=== Checking .env ==="
             ls -la .env
+
             # Test DB connection
-            echo \"=== Testing DB connection ===\"
-            php artisan tinker --execute=\"DB::connection()->getPdo(); echo 'DB OK';\"
+            echo "=== Testing DB connection ==="
+            php artisan tinker --execute="DB::connection()->getPdo(); echo 'DB OK';"
+
             # Show recent Laravel log errors (full)
-            echo \"=== Full Laravel log (last 100 lines) ===\"
-            tail -100 storage/logs/laravel.log 2>/dev/null || echo \"No log file\"
+            echo "=== Full Laravel log (last 100 lines) ==="
+            tail -100 storage/logs/laravel.log 2>/dev/null || echo "No log file"
+
             # Check for PHP errors in standard log location
-            echo \"=== PHP error log ===\"
-            tail -50 /home/u843463747/domains/arbitercoffee.shop/error_log 2>/dev/null || echo \"No PHP error log found\"
+            echo "=== PHP error log ==="
+            tail -50 /home/u843463747/domains/arbitercoffee.shop/error_log 2>/dev/null || echo "No PHP error log found"
+
             # Test authenticated endpoint with verbose error
-            echo \"=== Testing auth:sanctum middleware ===\"
-            php artisan tinker --execute=\"try { \\\$user = App\\\\Models\\\\User::first(); echo 'User count: ' . App\\\\Models\\\\User::count() . PHP_EOL; echo 'Sanctum token count: ' . App\\\\Models\\\\User::first()?->tokens->count() . PHP_EOL; } catch (Exception \\\$e) { echo 'ERROR: ' . \\\$e->getMessage() . PHP_EOL; }\"
+            echo "=== Testing auth:sanctum middleware ==="
+            php artisan tinker --execute="try { \\\\\$user = App\\\\Models\\\\User::first(); echo 'User count: ' . App\\\\Models\\\\User::count() . PHP_EOL; echo 'Sanctum token count: ' . App\\\\Models\\\\User::first()?->tokens->count() . PHP_EOL; } catch (Exception \\\\\$e) { echo 'ERROR: ' . \\\\\$e->getMessage() . PHP_EOL; }"
+
             # Clear and rebuild caches
             php artisan config:clear
             php artisan cache:clear
             php artisan route:clear
             php artisan view:clear
+
             # Cache configuration, routes, and views for performance
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
+
             # Force clear everything including compiled
             php artisan clear-compiled 2>/dev/null || true
+
             # Set proper permissions
             chmod -R 755 storage bootstrap/cache
+
             # Verify PHP/Artisan works
             php artisan --version
-            "
+
+            if [ "${{ github.event.inputs.action }}" = "deploy" ]; then
+              echo "=== Deployment Successful ==="
+              echo "Deployed release: $TIMESTAMP"
+              echo "Current symlink points to: $(readlink -f "$CURRENT_LINK")"
+            else
+              echo "=== Rollback Successful ==="
+              echo "Current symlink points to: $(readlink -f "$CURRENT_LINK")"
+            fi
