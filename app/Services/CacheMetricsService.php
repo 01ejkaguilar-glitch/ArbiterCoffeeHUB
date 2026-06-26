@@ -8,15 +8,14 @@ use Illuminate\Support\Facades\Cache;
  * Cache Metrics Service
  *
  * Tracks cache hit/miss ratios to provide insights into cache effectiveness.
- * Uses a simple in-memory tracking approach (reset on each request in PHP).
- * For production, consider using a proper monitoring system like Prometheus.
+ * Uses Cache for storage so metrics persist across requests and instances.
  */
 class CacheMetricsService
 {
     /**
      * Track a cache hit
      */
-    public static function hit(): void
+    public function hit(): void
     {
         $hits = Cache::get('metrics:cache:hits', 0);
         Cache::put('metrics:cache:hits', $hits + 1, 86400); // 24 hours
@@ -25,18 +24,18 @@ class CacheMetricsService
     /**
      * Track a cache miss
      */
-    public static function miss(): void
+    public function miss(): void
     {
         $misses = Cache::get('metrics:cache:misses', 0);
         Cache::put('metrics:cache:misses', $misses + 1, 86400); // 24 hours
     }
 
     /**
-     * Get cache hit rate as a percentage
+     * Get cache hit rate as a ratio
      *
-     * @return float Hit rate percentage (0-100)
+     * @return float Hit rate ratio (0.0-1.0)
      */
-    public static function getHitRate(): float
+    public function getHitRate(): float
     {
         $hits = Cache::get('metrics:cache:hits', 0);
         $misses = Cache::get('metrics:cache:misses', 0);
@@ -46,7 +45,7 @@ class CacheMetricsService
             return 0.0;
         }
 
-        return round(($hits / $total) * 100, 2);
+        return $hits / $total;
     }
 
     /**
@@ -54,7 +53,7 @@ class CacheMetricsService
      *
      * @return int Number of cache hits
      */
-    public static function getHits(): int
+    public function getHits(): int
     {
         return Cache::get('metrics:cache:hits', 0);
     }
@@ -64,7 +63,7 @@ class CacheMetricsService
      *
      * @return int Number of cache misses
      */
-    public static function getMisses(): int
+    public function getMisses(): int
     {
         return Cache::get('metrics:cache:misses', 0);
     }
@@ -72,7 +71,7 @@ class CacheMetricsService
     /**
      * Reset metrics (useful for testing or periodic reset)
      */
-    public static function reset(): void
+    public function reset(): void
     {
         Cache::forget('metrics:cache:hits');
         Cache::forget('metrics:cache:misses');

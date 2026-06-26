@@ -15,50 +15,58 @@ class CacheMetricsServiceTest extends TestCase
     {
         parent::setUp();
         // Clear cache metrics before each test
-        CacheMetricsService::reset();
+        Cache::flush();
     }
 
     /** @test */
     public function it_tracks_cache_hits()
     {
+        $service = new CacheMetricsService();
+
         // Simulate a cache hit
         Cache::put('test_key', 'test_value', 10);
         Cache::get('test_key'); // This would be a hit
 
-        CacheMetricsService::hit();
+        $service->hit();
 
-        $this->assertEquals(1, CacheMetricsService::getHits());
-        $this->assertEquals(0, CacheMetricsService::getMisses());
-        $this->assertEquals(100.0, CacheMetricsService::getHitRate());
+        $this->assertEquals(1, $service->getHits());
+        $this->assertEquals(0, $service->getMisses());
+        $this->assertEquals(1.0, $service->getHitRate());
     }
 
     /** @test */
     public function it_tracks_cache_misses()
     {
-        CacheMetricsService::miss();
+        $service = new CacheMetricsService();
 
-        $this->assertEquals(0, CacheMetricsService::getHits());
-        $this->assertEquals(1, CacheMetricsService::getMisses());
-        $this->assertEquals(0.0, CacheMetricsService::getHitRate());
+        $service->miss();
+
+        $this->assertEquals(0, $service->getHits());
+        $this->assertEquals(1, $service->getMisses());
+        $this->assertEquals(0.0, $service->getHitRate());
     }
 
     /** @test */
     public function it_calculates_correct_hit_rate()
     {
-        // Simulate 3 hits and 1 miss
-        CacheMetricsService::hit();
-        CacheMetricsService::hit();
-        CacheMetricsService::miss();
-        CacheMetricsService::hit();
+        $service = new CacheMetricsService();
 
-        $this->assertEquals(3, CacheMetricsService::getHits());
-        $this->assertEquals(1, CacheMetricsService::getMisses());
-        $this->assertEquals(75.0, CacheMetricsService::getHitRate());
+        // Simulate 3 hits and 1 miss
+        $service->hit();
+        $service->hit();
+        $service->miss();
+        $service->hit();
+
+        $this->assertEquals(3, $service->getHits());
+        $this->assertEquals(1, $service->getMisses());
+        $this->assertEquals(0.75, $service->getHitRate());
     }
 
     /** @test */
     public function it_returns_zero_hit_rate_when_no_requests()
     {
-        $this->assertEquals(0.0, CacheMetricsService::getHitRate());
+        $service = new CacheMetricsService();
+
+        $this->assertEquals(0.0, $service->getHitRate());
     }
 }
