@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Api\BaseController;
+use App\Http\Requests\RegisterUserRequest;
 use App\Models\User;
+use App\Services\AuditLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -19,30 +21,12 @@ class AuthController extends BaseController
     /**
      * Register a new user
      */
-    public function register(Request $request)
+    public function register(RegisterUserRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => [
-                'required',
-                'string',
-                'min:8',
-                'confirmed',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/', // At least 1 lowercase, 1 uppercase, 1 number
-            ],
-        ], [
-            'password.regex' => 'Password must contain at least one uppercase letter, one lowercase letter, and one number.',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->sendValidationError($validator->errors()->toArray());
-        }
-
         $user = User::create([
-            'name' => $request->input('name'),
-            'email' => $request->input('email'),
-            'password' => Hash::make($request->input('password')),
+            'name' => $request->validated('name'),
+            'email' => $request->validated('email'),
+            'password' => Hash::make($request->validated('password')),
         ]);
 
         // Assign default role (customer) if it exists — avoid throwing if role missing
@@ -51,6 +35,15 @@ class AuthController extends BaseController
         } catch (RoleDoesNotExist $e) {
             Log::warning('Default role "customer" not found — skipping assignRole during registration.');
         }
+
+        // Log successful registration for audit
+        app(AuditLogService::class)->logDataChangeEvent(
+            'created',
+            'App\Models\User',
+            $user->id,
+            $request,
+            $user
+        );
 
         $token = $user->createToken('auth_token', ['*'], now()->addDays(7))->plainTextToken;
 
@@ -85,16 +78,163 @@ class AuthController extends BaseController
 
         $user = User::where('email', $email)->first();
 
-        if (!$user || !Hash::check($password, $user->password)) {
+        // Check if user exists and password is correct
+        if ($user && Hash::check($password, $user->password)) {
+            // Valid credentials - check if 2FA is required
+            if ($user->two_factor_enabled && $user->isTwoFaConfirmed()) {
+                // 2FA is enabled and confirmed, require verification code
+                $tempToken = $user->createToken('temp_2fa_token', ['2fa_verification'], now()->addMinutes(10))->plainTextToken;
+
+                return $this->sendResponse([
+                    'requires_2fa' => true,
+                    'temp_token' => $tempToken,
+                    'expires_in' => '10 minutes'
+                ], 'Two-factor authentication required', 200);
+            }
+
+            // Proceed with normal login (no 2FA or 2FA not required)
+            $rememberMe = $request->boolean('rememberMe');
+            // Reduce remember-me token expiration to 7 days max (security requirement)
+            $expiresAt = now()->addDays(7);
+            $token = $user->createToken('auth_token', ['*'], $expiresAt)->plainTextToken;
+
+            // Reset failed login attempts on successful login
+            $user->resetFailedLoginAttempts();
+
+            // Get user roles
+            $roles = $user->getRoleNames();
+
+            // Assign default customer role if no roles assigned (guard against missing role)
+            if ($roles->isEmpty()) {
+                try {
+                    $user->assignRole('customer');
+                    $roles = $user->getRoleNames();
+                } catch (RoleDoesNotExist $e) {
+                    Log::warning('Default role "customer" not found — skipping assignRole during login.');
+                    $roles = collect();
+                }
+            }
+
+            $primaryRole = $roles->first() ?? 'customer';
+
+            // Log successful login for audit
+            app(AuditLogService::class)->logAuthEvent(
+                'login',
+                $request,
+                $user,
+                true // Indicates success
+            );
+
+            return $this->sendResponse([
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $primaryRole,
+                    'roles' => $roles
+                ],
+                'token' => $token,
+                'expires_in' => '7 days'
+            ], 'Login successful');
+        } else {
+            // Invalid credentials (either user doesn't exist or password is wrong)
+            // Increment failed login attempts only if user exists (to avoid leaking info about non-existent users)
+            if ($user) {
+                $user->incrementFailedLoginAttempts();
+            }
+
+            // Log failed login attempt for audit
+            app(AuditLogService::class)->logAuthEvent(
+                'failed_login',
+                $request,
+                $user ?? null, // User object if exists, null otherwise
+                false // Indicates failure
+            );
+
             return $this->sendError('Invalid credentials', 401);
         }
+    }
 
-        // Revoke old tokens for security (optional - keep only latest session)
-        // $user->tokens()->delete();
+    /**
+     * Logout user
+     */
+    public function logout(Request $request)
+    {
+        $user = $request->user();
+        $request->user()->currentAccessToken()->delete();
 
-        $rememberMe = $request->boolean('rememberMe');
-        $expiresAt = $rememberMe ? now()->addDays(30) : now()->addDays(7);
-        $token = $user->createToken('auth_token', ['*'], $expiresAt)->plainTextToken;
+        // Log logout for audit
+        app(AuditLogService::class)->logAuthEvent(
+            'logout',
+            $request,
+            $user,
+            true
+        );
+
+        return $this->sendResponse(null, 'Logged out successfully');
+    }
+
+    /**
+     * Verify two-factor authentication code
+     *
+     * @param  Request  $request
+     * @return JsonResponse
+     */
+    public function verifyTwoFa(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'temp_token' => 'required|string',
+            'code' => ['required', 'string', 'regex:/^[0-9]{6}$/'], // 6-digit code
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendValidationError($validator->errors()->toArray());
+        }
+
+        $tempToken = $request->input('temp_token');
+        $code = $request->input('code');
+
+        // Validate the temporary token
+        $user = null;
+        foreach (User::whereNotNull('tokens')->get() as $userCandidate) {
+            foreach ($userCandidate->tokens as $token) {
+                if ($token->plainTextToken == $tempToken && $token->name == 'temp_2fa_token' && $token->can('2fa_verification')) {
+                    // Check if token is not expired (10 minutes)
+                    if ($token->created_at->diffInMinutes(now()) <= 10) {
+                        $user = $userCandidate;
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        if (!$user) {
+            return $this->sendError('Invalid or expired temporary token', 401);
+        }
+
+        // Verify the 2FA code
+        if (!$user->verifyTwoFaCode($code)) {
+            // Log failed 2FA attempt for audit
+            app(AuditLogService::class)->logAuthEvent(
+                'failed_2fa',
+                $request,
+                $user,
+                false // Indicates failure
+            );
+
+            return $this->sendError('Invalid verification code', 401);
+        }
+
+        // Mark 2FA as confirmed if not already
+        if (!$user->isTwoFaConfirmed()) {
+            $user->confirmTwoFaSetup();
+        }
+
+        // Delete the temporary token
+        $user->tokens()->where('name', 'temp_2fa_token')->delete();
+
+        // Generate the actual auth token
+        $token = $user->createToken('auth_token', ['*'], now()->addDays(7))->plainTextToken;
 
         // Get user roles
         $roles = $user->getRoleNames();
@@ -105,12 +245,20 @@ class AuthController extends BaseController
                 $user->assignRole('customer');
                 $roles = $user->getRoleNames();
             } catch (RoleDoesNotExist $e) {
-                Log::warning('Default role "customer" not found — skipping assignRole during login.');
+                Log::warning('Default role "customer" not found — skipping assignRole during 2fa verification.');
                 $roles = collect();
             }
         }
 
         $primaryRole = $roles->first() ?? 'customer';
+
+        // Log successful 2FA verification for audit
+        app(AuditLogService::class)->logAuthEvent(
+            'login_2fa',
+            $request,
+            $user,
+            true // Indicates success
+        );
 
         return $this->sendResponse([
             'user' => [
@@ -121,18 +269,8 @@ class AuthController extends BaseController
                 'roles' => $roles
             ],
             'token' => $token,
-            'expires_in' => $rememberMe ? '30 days' : '7 days'
-        ], 'Login successful');
-    }
-
-    /**
-     * Logout user
-     */
-    public function logout(Request $request)
-    {
-        $request->user()->currentAccessToken()->delete();
-
-        return $this->sendResponse(null, 'Logged out successfully');
+            'expires_in' => '7 days'
+        ], 'Two-factor authentication verified successfully');
     }
 
     /**
@@ -219,12 +357,12 @@ class AuthController extends BaseController
             'password' => [
                 'required',
                 'string',
-                'min:8',
+                'min:12', // Increased from 8 to 12
                 'confirmed',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/', // Added special char requirement
             ],
         ], [
-            'password.regex' => 'Password must contain at least one uppercase letter, one lowercase letter, and one number.',
+            'password.regex' => 'Password must contain at least one uppercase letter, one lowercase letter, one number, one special character, and be at least 12 characters long.',
         ]);
 
         if ($validator->fails()) {
@@ -237,6 +375,10 @@ class AuthController extends BaseController
                 $user->forceFill([
                     'password' => Hash::make($password)
                 ])->setRememberToken(Str::random(60));
+
+                // Add new password to history and reset failed attempts
+                $user->addPasswordToHistory(Hash::make($password));
+                $user->resetFailedLoginAttempts();
 
                 $user->save();
 
