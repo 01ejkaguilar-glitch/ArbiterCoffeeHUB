@@ -30,8 +30,8 @@ class AuthenticationTest extends TestCase
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'Password123',
-            'password_confirmation' => 'Password123',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
         ]);
 
         $response->assertStatus(201)
@@ -57,12 +57,12 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
-            'password' => bcrypt('Password123'),
+            'password' => bcrypt('Password123!'),
         ]);
 
         $response = $this->postJson('/api/v1/auth/login', [
             'email' => 'test@example.com',
-            'password' => 'Password123',
+            'password' => 'Password123!',
         ]);
 
         $response->assertStatus(200)
