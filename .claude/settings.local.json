@@ -181,7 +181,8 @@
       "Bash(mv *.err .archive/logs/)",
       "Bash(vendor/bin/php artisan *)",
       "Bash(composer install *)",
-      "Bash(jobs *)"
+      "Bash(jobs *)",
+      "Bash(git fetch *)"
     ]
   },
   "prefersReducedMotion": false
