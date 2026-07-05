@@ -7,6 +7,8 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Events\OrderStatusUpdated;
 use App\Notifications\OrderStatusNotification;
+use App\Http\Requests\GetUsersRequest;
+use App\Http\Requests\GetAllOrdersRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -18,10 +20,10 @@ class AdminController extends BaseController
     /**
      * Get all users with pagination and filters
      *
-     * @param \Illuminate\Http\Request $request
+     * @param \App\Http\Requests\GetUsersRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getUsers(Request $request)
+    public function getUsers(GetUsersRequest $request)
     {
         try {
             $query = User::with('roles');
@@ -50,12 +52,12 @@ class AdminController extends BaseController
                 });
             }
 
-            // Sort
-            $sortBy = $request->get('sort_by', 'created_at');
-            $sortOrder = $request->get('sort_order', 'desc');
+            // Sort - uses validated sort_by and sort_order
+            $sortBy = $request->validated('sort_by', 'created_at');
+            $sortOrder = $request->validated('sort_order', 'desc');
             $query->orderBy($sortBy, $sortOrder);
 
-            $users = $query->paginate($request->get('per_page', 15));
+            $users = $query->paginate($request->validated('per_page', 15));
 
             // Add status to each user
             $users->getCollection()->transform(function ($user) {
@@ -278,10 +280,10 @@ class AdminController extends BaseController
     /**
      * Get all orders (Admin access)
      *
-     * @param \Illuminate\Http\Request $request
+     * @param \App\Http\Requests\GetAllOrdersRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getAllOrders(Request $request)
+    public function getAllOrders(GetAllOrdersRequest $request)
     {
         try {
             $query = Order::with(['user', 'orderItems.product']);
@@ -321,12 +323,12 @@ class AdminController extends BaseController
                 $query->whereDate('created_at', '<=', $request->input('end_date'));
             }
 
-            // Sort
-            $sortBy = $request->get('sort_by', 'created_at');
-            $sortOrder = $request->get('sort_order', 'desc');
+            // Sort - uses validated sort_by and sort_order
+            $sortBy = $request->validated('sort_by', 'created_at');
+            $sortOrder = $request->validated('sort_order', 'desc');
             $query->orderBy($sortBy, $sortOrder);
 
-            $orders = $query->paginate($request->get('per_page', 15));
+            $orders = $query->paginate($request->validated('per_page', 15));
 
             return $this->sendResponse($orders, 'Orders retrieved successfully');
         } catch (\Exception $e) {

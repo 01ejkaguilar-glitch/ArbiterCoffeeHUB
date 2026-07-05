@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 use Tests\TestHelpers;
 
@@ -21,6 +22,7 @@ class ProductTest extends TestCase
     {
         parent::setUp();
         $this->setupRolesAndPermissions();
+        Cache::flush();
     }
 
     /**
@@ -412,13 +414,24 @@ class ProductTest extends TestCase
      */
     public function test_product_listing_pagination(): void
     {
+        error_log('Starting pagination test');
+
         $category = Category::factory()->create();
+        error_log('Created category: ' . $category->id);
 
         // Create more products than the per_page limit
-        Product::factory()->count(15)->create([
+        $products = Product::factory()->count(15)->create([
             'category_id' => $category->id,
             'is_available' => true,
         ]);
+        error_log('Created products: ' . $products->count());
+
+        // Debug: Check how many products exist in database
+        $dbCount = Product::where('category_id', $category->id)->count();
+        error_log('Database product count for category: ' . $dbCount);
+
+        $allDbCount = Product::count();
+        error_log('Total products in database: ' . $allDbCount);
 
         // Test first page
         $firstPageResponse = $this->getJson('/api/v1/products?per_page=5');
@@ -429,6 +442,9 @@ class ProductTest extends TestCase
             ])
             ->assertJsonCount(5, 'data.data')
             ->assertJsonPath('data.meta.total', 15);
+
+        // Debug: Log the response
+        error_log('First page response: ' . json_encode($firstPageResponse->json()));
 
         // Test second page
         $secondPageResponse = $this->getJson('/api/v1/products?per_page=5&page=2');

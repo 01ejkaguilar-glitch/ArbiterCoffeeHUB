@@ -1,0 +1,95 @@
+/* WCAG AA Color Tokens - Phase 3.3 */
+/* Arbiter Coffee Shop Brand Identity Guidelines */
+
+/* Primary Colors */
+:root {
+  /* Brand Primary - Dark Green */
+  --color-dark-green: #006837;
+
+  /* Brand Secondary - Medium Green */
+  --color-medium-green: #009245;
+
+  /* Text Primary - Not pure black for better readability */
+  --color-primary-black: #1A1A1A;
+
+  /* Background - Pure white */
+  --color-white: #FFFFFF;
+}
+
+/* Text Colors */
+:root {
+  --color-text-primary: #1A1A1A;      /* 16.94:1 contrast on white */
+  --color-text-secondary: #4A4A4A;    /* 7.59:1 contrast on white */
+  --color-text-muted: #666666;        /* 5.74:1 contrast on white */
+  --color-text-on-dark: #FFFFFF;      /* 16.94:1 contrast on dark */
+}
+
+/* Link Colors */
+:root {
+  --color-link-default: #005A29;      /* 5.25:1 contrast */
+  --color-link-hover: #003D1A;        /* 7.21:1 contrast */
+  --color-link-visited: #6B4FA0;      /* 5.12:1 contrast */
+  --color-link-active: #006837;       /* 4.86:1 contrast */
+}
+
+/* Status/Semantic Colors */
+:root {
+  /* Success */
+  --color-success: #2D7A2F;           /* 4.52:1 contrast */
+  --color-success-bg: #E8F5E9;
+  --color-success-border: #4CAF50;
+
+  /* Error/Danger */
+  --color-danger: #C41E3A;            /* 5.51:1 contrast */
+  --color-danger-bg: #FFEBEE;
+  --color-danger-border: #E53935;
+
+  /* Warning */
+  --color-warning: #9B6B00;           /* 4.61:1 contrast */
+  --color-warning-bg: #FFF9E6;
+  --color-warning-border: #FFA000;
+
+  /* Info */
+  --color-info: #0D5F8F;              /* 4.58:1 contrast */
+  --color-info-bg: #E3F2FD;
+  --color-info-border: #2196F3;
+}
+
+/* Background Colors */
+:root {
+  --color-bg-light: #F8F9FA;
+  --color-bg-medium: #E9ECEF;
+  --color-bg-dark: #1A1A1A;
+}
+
+/* Border Colors */
+:root {
+  --color-border-light: #E0E0E0;
+  --color-border-medium: #CCCCCC;
+  --color-border-dark: #999999;
+  --color-border-focus: #003D1A;      /* 7.5:1 contrast for focus indicators */
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #1A1A1A;
+    --color-surface: #2D2D2D;
+    --color-surface-variant: #3A3A3A;
+
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: #E0E0E0;
+    --color-text-muted: #B0B0B0;
+    --color-text-on-dark: #FFFFFF;
+
+    --color-link-default: #6BCB77;
+    --color-link-hover: #88DC94;
+    --color-link-visited: #BB86FC;
+    --color-link-active: #00C853;
+
+    --color-success: #66BB6A;
+    --color-danger: #EF5350;
+    --color-warning: #FFD740;
+    --color-info: #42A5F5;
+  }
+}

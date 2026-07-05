@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Events\OrderStatusUpdated;
 use App\Notifications\OrderStatusNotification;
 use App\Http\Requests\UpdateOrderStatusRequest;
+use App\Http\Requests\StoreCoffeeBeanByBaristaRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -213,26 +214,12 @@ class BaristaController extends BaseController
     /**
      * Add a new coffee bean to inventory (barista access)
      *
-     * @param \Illuminate\Http\Request $request
+     * @param \App\Http\Requests\StoreCoffeeBeanByBaristaRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function addCoffeeBean(Request $request)
+    public function addCoffeeBean(StoreCoffeeBeanByBaristaRequest $request)
     {
         try {
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'origin_country' => 'required|string|max:255',
-                'region' => 'nullable|string|max:255',
-                'elevation' => 'nullable|string|max:255',
-                'processing_method' => 'nullable|string|max:255',
-                'variety' => 'nullable|string|max:255',
-                'tasting_notes' => 'nullable|string',
-                'producer' => 'nullable|string|max:255',
-                'stock_quantity' => 'required|integer|min:0',
-                'is_featured' => 'boolean',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            ]);
-
             $imageUrl = null;
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
@@ -256,8 +243,6 @@ class BaristaController extends BaseController
             ]);
 
             return $this->sendResponse($bean, 'Coffee bean added successfully', 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->sendValidationError($e->errors());
         } catch (\Exception $e) {
             return $this->sendError('Failed to add coffee bean', 500, ['error' => $e->getMessage()]);
         }

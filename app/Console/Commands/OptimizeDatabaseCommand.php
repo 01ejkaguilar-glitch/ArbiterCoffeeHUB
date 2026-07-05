@@ -47,7 +47,7 @@ class OptimizeDatabaseCommand extends Command
     protected function getTables(): array
     {
         $tables = DB::select('SHOW TABLES');
-        $dbName = env('DB_DATABASE');
+        $dbName = config('database.connections.' . config('database.default') . '.database');
         $tableKey = "Tables_in_{$dbName}";
 
         return array_map(function ($table) use ($tableKey) {

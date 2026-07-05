@@ -14,7 +14,7 @@ class NotificationController extends Controller
     public function getVapidKey(): JsonResponse
     {
         try {
-            $vapidPublicKey = config('services.vapid.public_key') ?? env('VAPID_PUBLIC_KEY');
+            $vapidPublicKey = config('services.vapid.public_key');
 
             if (!$vapidPublicKey) {
                 return response()->json([

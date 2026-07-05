@@ -68,7 +68,7 @@ return [
     ],
 
     'payment' => [
-        'default_gateway' => env('PAYMENT_DEFAULT_GATEWAY', 'maya'),
+        'default_gateway' => env('PAYMENT_DEFAULT_GATEWAY', 'gcash'),
         'supported_gateways' => ['gcash', 'maya', 'stripe', 'paypal'],
     ],
 

@@ -54,7 +54,7 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', (string) env('LOG_STACK', 'single')),
+            'channels' => ['single', 'gateway'],
             'ignore_exceptions' => false,
         ],
 
@@ -63,6 +63,13 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            // Add JSON formatting for structured logs in production
+            'formatter' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? \Monolog\Formatter\JsonFormatter::class
+                : null,
+            'formatter_with' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? []
+                : [],
         ],
 
         'daily' => [
@@ -71,6 +78,13 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
+            // Add JSON formatting for structured logs in production
+            'formatter' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? \Monolog\Formatter\JsonFormatter::class
+                : null,
+            'formatter_with' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? []
+                : [],
         ],
 
         // API Request/Response Logging
@@ -81,6 +95,13 @@ return [
             'days' => 30,
             'replace_placeholders' => true,
             'tap' => [App\Logging\ApiLogger::class],
+            // Add JSON formatting for structured logs in production
+            'formatter' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? \Monolog\Formatter\JsonFormatter::class
+                : null,
+            'formatter_with' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? []
+                : [],
         ],
 
         // Performance Monitoring
@@ -90,6 +111,13 @@ return [
             'level' => env('LOG_LEVEL', 'info'),
             'days' => 30,
             'replace_placeholders' => true,
+            // Add JSON formatting for structured logs in production
+            'formatter' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? \Monolog\Formatter\JsonFormatter::class
+                : null,
+            'formatter_with' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? []
+                : [],
         ],
 
         // Security Events
@@ -99,6 +127,13 @@ return [
             'level' => env('LOG_LEVEL', 'warning'),
             'days' => 90,
             'replace_placeholders' => true,
+            // Add JSON formatting for structured logs in production
+            'formatter' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? \Monolog\Formatter\JsonFormatter::class
+                : null,
+            'formatter_with' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? []
+                : [],
         ],
 
         // Business Logic Events
@@ -108,6 +143,13 @@ return [
             'level' => env('LOG_LEVEL', 'info'),
             'days' => 30,
             'replace_placeholders' => true,
+            // Add JSON formatting for structured logs in production
+            'formatter' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? \Monolog\Formatter\JsonFormatter::class
+                : null,
+            'formatter_with' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? []
+                : [],
         ],
 
         // Error Tracking
@@ -117,6 +159,29 @@ return [
             'level' => 'error',
             'days' => 30,
             'replace_placeholders' => true,
+            // Add JSON formatting for structured logs in production
+            'formatter' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? \Monolog\Formatter\JsonFormatter::class
+                : null,
+            'formatter_with' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? []
+                : [],
+        ],
+
+        // Payment Gateway Logging
+        'gateway' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/gateway.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 30,
+            'replace_placeholders' => true,
+            // Add JSON formatting for structured logs in production
+            'formatter' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? \Monolog\Formatter\JsonFormatter::class
+                : null,
+            'formatter_with' => env('LOG_JSON_FORMATTER') && app()->environment('production')
+                ? []
+                : [],
         ],
 
         'slack' => [

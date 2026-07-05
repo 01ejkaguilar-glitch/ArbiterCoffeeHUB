@@ -24,24 +24,24 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
 
-        // Content Security Policy (CSP) - Basic policy for API
-        $csp = "default-src 'self'; " .
-               "script-src 'self'; " .
-               "style-src 'self' 'unsafe-inline'; " .
-               "img-src 'self' data: https:; " .
-               "font-src 'self'; " .
+        // Content Security Policy (CSP) - Strict policy for JSON API endpoints
+        $csp = "default-src 'none'; " .
+               "script-src 'none'; " .
+               "style-src 'none'; " .
+               "img-src 'none'; " .
+               "font-src 'none'; " .
                "connect-src 'self'; " .
                "media-src 'none'; " .
                "object-src 'none'; " .
                "frame-src 'none'; " .
-               "base-uri 'self'; " .
-               "form-action 'self';";
+               "base-uri 'none'; " .
+               "form-action 'none';";
 
         $response->headers->set('Content-Security-Policy', $csp);
 
-        // HSTS (HTTP Strict Transport Security) - Only for HTTPS
+        // HSTS (HTTP Strict Transport Security) - Only for HTTPS with preload
         if ($request->secure()) {
-            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
         }
 
         return $response;

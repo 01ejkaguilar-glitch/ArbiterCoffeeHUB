@@ -14,11 +14,13 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductCollection;
 use App\Http\Controllers\Api\V1\Traits\CacheTaggingTrait;
+use App\Traits\HasCacheKeyGeneration;
+use App\Traits\HasSorting;
 use OpenApi\Attributes as OA;
 
 class ProductController extends BaseController
 {
-    use CacheTaggingTrait;
+    use CacheTaggingTrait, HasCacheKeyGeneration, HasSorting;
 
     // Cache TTL in seconds
     const CACHE_TTL = 300; // 5 minutes
@@ -103,16 +105,21 @@ class ProductController extends BaseController
      */
     public function index(Request $request)
     {
+        error_log('Products index method called');
+        error_log('Request: ' . json_encode($request->all()));
+
         // Create cache key based on request parameters
-        $cacheKey = 'products_list_' . md5(json_encode($request->all()));
+        $cacheKey = $this->generateProductListCacheKey($request->all());
 
         // Try to get from cache (without tags for database cache driver compatibility)
         $callback = function () use ($request) {
+            error_log('Callback executed');
             $query = Product::query();
 
             // Filter by category
             $categoryId = $request->get('category_id');
             if ($categoryId !== null && is_numeric($categoryId)) {
+                error_log('Filtering by category_id: ' . $categoryId);
                 $query->where('category_id', (int)$categoryId);
             }
 
@@ -122,9 +129,11 @@ class ProductController extends BaseController
                 // Convert string boolean values to integers for database comparison
                 $isAvailableValue = filter_var($isAvailable, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                 if ($isAvailableValue !== null) {
+                    error_log('Filtering by is_available (boolean): ' . var_export($isAvailableValue, true));
                     $query->where('is_available', $isAvailableValue ? 1 : 0);
                 } else {
                     // Fallback for numeric values
+                    error_log('Filtering by is_available (numeric): ' . $isAvailable);
                     $query->where('is_available', (int)$isAvailable);
                 }
             }
@@ -132,16 +141,17 @@ class ProductController extends BaseController
             // Search by name
             $search = $request->get('search');
             if ($search !== null) {
+                error_log('Searching for: ' . $search);
                 $query->where('name', 'like', '%' . $search . '%');
             }
 
-            // Sorting
-            $sortBy = $request->get('sort_by', 'created_at');
-            $sortOrder = $request->get('sort_order', 'desc');
-            $query->orderBy($sortBy, $sortOrder);
+            // Apply sorting using trait with product-specific columns
+            error_log('Applying sorting');
+            $this->applySorting($query, $request, ['id', 'name', 'price', 'created_at', 'updated_at', 'is_available', 'is_featured', 'category_id']);
 
             // Pagination
             $perPage = $request->get('per_page', 15);
+            error_log('Per page: ' . $perPage);
 
             // Log the query for debugging (BEFORE pagination to get pristine query)
             Log::debug('Product query SQL: ' . $query->toSql());
@@ -150,18 +160,20 @@ class ProductController extends BaseController
             $products = $query->paginate((int)$perPage);
 
             // Log pagination details (AFTER pagination to get correct paginator values)
-            Log::debug('Pagination total: ' . $products->total());
-            Log::debug('Pagination perPage: ' . $products->perPage());
-            Log::debug('Pagination currentPage: ' . $products->currentPage());
-            Log::debug('Pagination lastPage: ' . $products->lastPage());
+            error_log('Pagination total: ' . $products->total());
+            error_log('Pagination perPage: ' . $products->perPage());
+            error_log('Pagination currentPage: ' . $products->currentPage());
+            error_log('Pagination lastPage: ' . $products->lastPage());
 
             return $products;
         };
         $products = $callback(); // EMPTY TAGS FOR TESTING
+        error_log('Callback returned, got products');
 
         // Log the response data for debugging
-        $responseData = (new ProductCollection($products))->response()->getData(true);
-        Log::debug('Response data: ' . json_encode($responseData));
+        $collection = new ProductCollection($products);
+        $responseData = $collection->response()->getData(true);
+        error_log('Response data: ' . json_encode($responseData));
 
         return $this->sendResponse(new ProductCollection($products), 'Products retrieved successfully');
     }
@@ -249,12 +261,11 @@ class ProductController extends BaseController
             $query->where('is_available', $request->input('is_available'));
         }
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->input('search') . '%');
+            $query->where('name', 'like', '%' . $request->input('search').'%');
         }
 
-        $sortBy    = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
-        $query->orderBy($sortBy, $sortOrder);
+        // Apply sorting using trait with product-specific columns
+        $this->applySorting($query, $request, ['id', 'name', 'price', 'created_at', 'updated_at', 'is_available', 'is_featured', 'category_id']);
 
         // Paginate with a larger default so the admin sees all products
         $perPage  = $request->get('per_page', 100);

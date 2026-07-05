@@ -1,0 +1,21 @@
+$schema: https://raw.githubusercontent.com/CodSpeedHQ/codspeed/refs/heads/main/schemas/codspeed.schema.json
+
+options:
+  warmup-time: "1s"
+  max-time: 5s
+
+benchmarks:
+  - name: "Application Bootstrapping"
+    exec: php -r "require __DIR__.'/bootstrap/app.php';"
+
+  - name: "Database Connection"
+    exec: php artisan tinker --execute="DB::connection()->getPdo();"
+
+  - name: "Route Collection Loading"
+    exec: php artisan route:list --quiet --no-ansi
+
+  - name: "Configuration Loading"
+    exec: php artisan config:cache
+
+  - name: "Cache Operations"
+    exec: php artisan tinker --execute="Cache::store()->put('test', 'value', 10); Cache::store()->get('test');"

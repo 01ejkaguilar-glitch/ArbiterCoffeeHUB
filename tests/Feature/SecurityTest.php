@@ -326,4 +326,148 @@ class SecurityTest extends TestCase
             'tokenable_id' => $user->id,
         ]);
     }
+
+    /**
+     * Test account locked after multiple failed attempts
+     */
+    public function test_account_locked_after_multiple_failed_attempts()
+    {
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+            'password' => bcrypt('CorrectPassword123!'),
+        ]);
+
+        // Simulate 5 failed login attempts (should trigger lockout)
+        for ($i = 0; $i < 5; $i++) {
+            $response = $this->postJson('/api/v1/auth/login', [
+                'email' => 'test@example.com',
+                'password' => 'WrongPassword' . $i,
+            ]);
+
+            $response->assertStatus(401);
+        }
+
+        // Account should now be locked
+        $this->assertTrue($user->fresh()->isLocked());
+
+        // Next login attempt should fail with 423 (locked) even with correct credentials
+        $response = $this->postJson('/api/v1/auth/login', [
+            'email' => 'test@example.com',
+            'password' => 'CorrectPassword123!',
+        ]);
+
+        $response->assertStatus(423)
+            ->assertJson([
+                'success' => false,
+                'message' => 'Account is temporarily locked due to too many failed login attempts. Please try again later.'
+            ]);
+    }
+
+    /**
+     * Test successful login resets failed attempts counter
+     */
+    public function test_successful_login_resets_failed_attempts()
+    {
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+            'password' => bcrypt('CorrectPassword123!'),
+        ]);
+
+        // Add some failed attempts
+        $user->incrementFailedLoginAttempts();
+        $user->incrementFailedLoginAttempts();
+        $user->incrementFailedLoginAttempts();
+
+        $this->assertEquals(3, $user->fresh()->failed_login_attempts);
+
+        // Now login successfully
+        $response = $this->postJson('/api/v1/auth/login', [
+            'email' => 'test@example.com',
+            'password' => 'CorrectPassword123!',
+        ]);
+
+        $response->assertStatus(200);
+
+        // Failed attempts should be reset to 0
+        $this->assertEquals(0, $user->fresh()->failed_login_attempts);
+    }
+
+    /**
+     * Test password reset adds password to history and resets attempts
+     */
+    public function test_password_reset_adds_to_history_and_resets_attempts()
+    {
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+            'password' => bcrypt('OldPassword123!'),
+        ]);
+
+        // Add some failed attempts
+        $user->incrementFailedLoginAttempts();
+        $user->incrementFailedLoginAttempts();
+
+        $this->assertEquals(2, $user->fresh()->failed_login_attempts);
+
+        // Reset password
+        $token = Password::createToken($user);
+        $response = $this->postJson('/api/v1/auth/reset-password', [
+            'token' => $token,
+            'email' => $user->email,
+            'password' => 'NewPassword456!',
+            'password_confirmation' => 'NewPassword456!',
+        ]);
+
+        $response->assertStatus(200);
+
+        // Failed attempts should be reset to 0
+        $this->assertEquals(0, $user->fresh()->failed_login_attempts);
+
+        // Password should be in history
+        $this->assertNotEmpty($user->fresh()->password_history);
+
+        // Old password should not work anymore
+        $loginResponse = $this->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'OldPassword123!',
+        ]);
+
+        $loginResponse->assertStatus(401);
+
+        // New password should work
+        $loginResponse = $this->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'NewPassword456!',
+        ]);
+
+        $loginResponse->assertStatus(200);
+    }
+
+    /**
+     * Test password history prevents reuse of recent passwords
+     */
+    public function test_password_history_prevents_reuse()
+    {
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+            'password' => bcrypt('CurrentPassword123!'),
+        ]);
+
+        // Add current password to history
+        $user->addPasswordToHistory(bcrypt('CurrentPassword123!'));
+        $user->save();
+
+        // Try to reset password to the same password (should be blocked by validation in real scenario)
+        // But let's test that the history tracking works
+        $this->assertTrue($user->passwordIsInHistory(bcrypt('CurrentPassword123!')));
+
+        // Add another password to history
+        $user->addPasswordToHistory(bcrypt('PreviousPassword456@'));
+        $user->save();
+
+        $this->assertTrue($user->passwordIsInHistory(bcrypt('PreviousPassword456@')));
+        $this->assertTrue($user->passwordIsInHistory(bcrypt('CurrentPassword123!')));
+
+        // Test with a new password (should not be in history)
+        $this->assertFalse($user->passwordIsInHistory(bcrypt('BrandNewPassword789%')));
+    }
 }

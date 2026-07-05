@@ -89,6 +89,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/refresh-token', [AuthController::class, 'refreshToken'])
             ->middleware('auth.token-refresh');
 
+        // 2FA verification route
+        Route::post('/verify-2fa', [AuthController::class, 'verifyTwoFa']);
+
         // Test-only debug endpoint to inspect headers during PHPUnit runs
         if (app()->environment('testing')) {
             Route::get('/debug/headers', function (Request $request) {
@@ -646,6 +649,9 @@ Route::prefix('v1')->group(function () {
     
     // Homepage recommendations (public - shows popular for guests, personalized for authenticated users)
     Route::get('/recommendations/homepage', [\App\Http\Controllers\Api\V1\RecommendationController::class, 'getHomepageRecommendations']);
+
+    // Metrics endpoint (for Prometheus scraping)
+    Route::get('/metrics', [\App\Http\Controllers\Api\V1\MetricsController::class, 'index']);
 
 });
 

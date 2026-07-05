@@ -4,14 +4,12 @@ namespace App\Jobs;
 
 use App\Models\Order;
 use App\Notifications\OrderStatusNotification;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class ProcessOrderNotification implements ShouldQueue
+/**
+ * Process order notifications (email + database logging) with exponential backoff retry.
+ */
+class ProcessOrderNotification extends BaseJob
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -28,46 +26,33 @@ class ProcessOrderNotification implements ShouldQueue
     }
 
     /**
-     * Execute the job.
+     * Execute the job logic.
      */
-    public function handle(): void
+    protected function handleJob(): void
     {
-        try {
-            $order = $this->order->load(['user', 'orderItems.product']);
-            
-            // Log the notification
-            Log::channel('orders')->info("Order notification sent", [
-                'order_id' => $order->id,
-                'order_number' => $order->order_number,
-                'type' => $this->notificationType,
-                'customer' => $order->user->email,
-            ]);
+        $order = $this->order->load(['user', 'orderItems.product']);
 
-            // Send notification (writes to database + sends email)
-            $notifType = match ($this->notificationType) {
-                'created'   => 'order_created',
-                'ready'     => 'order_ready',
-                'completed' => 'order_completed',
-                'cancelled' => 'order_cancelled',
-                default     => 'status_update',
-            };
-            $order->user->notify(new OrderStatusNotification($order, $notifType));
-            
-        } catch (\Exception $e) {
-            Log::error("Failed to process order notification", [
-                'order_id' => $this->order->id,
-                'error' => $e->getMessage(),
-            ]);
-            
-            // Optionally retry
-            if ($this->attempts() < 3) {
-                $this->release(60); // Retry after 60 seconds
-            }
-        }
+        // Log the notification
+        Log::channel('orders')->info("Order notification sent", [
+            'order_id' => $order->id,
+            'order_number' => $order->order_number,
+            'type' => $this->notificationType,
+            'customer' => $order->user->email,
+        ]);
+
+        // Send notification (writes to database + sends email)
+        $notifType = match ($this->notificationType) {
+            'created'   => 'order_created',
+            'ready'     => 'order_ready',
+            'completed' => 'order_completed',
+            'cancelled' => 'order_cancelled',
+            default     => 'status_update',
+        };
+        $order->user->notify(new OrderStatusNotification($order, $notifType));
     }
 
     /**
-     * Handle a job failure.
+     * Handle a job failure (called after max attempts exceeded).
      */
     public function failed(\Throwable $exception): void
     {

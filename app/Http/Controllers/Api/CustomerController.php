@@ -9,6 +9,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\AddFavoriteRequest;
+use App\Http\Requests\ChangePasswordRequest;
+use App\Http\Requests\DeactivateAccountRequest;
+use App\Http\Requests\UpdateCustomerProfileRequest;
+use App\Http\Requests\UpdateNotificationPreferencesRequest;
+use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Requests\UpdateTastePreferencesRequest;
+use App\Http\Requests\UploadProfilePictureRequest;
 
 class CustomerController extends BaseController
 {
@@ -109,16 +117,10 @@ class CustomerController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateProfile(Request $request)
+    public function updateProfile(UpdateProfileRequest $request)
     {
         try {
-            $validated = $request->validate([
-                'name' => 'sometimes|string|max:255',
-                'phone' => 'sometimes|nullable|string|max:20',
-                'birthday' => 'sometimes|nullable|date',
-                'address' => 'sometimes|nullable|string|max:500',
-                'taste_preferences' => 'sometimes|nullable|array',
-            ]);
+            $validated = $request->validated();
 
             /** @var User $user */
             /** @var User $user */
@@ -182,11 +184,13 @@ class CustomerController extends BaseController
     /**
      * Get customer taste profile
     /**
-     * Get customer taste preferences
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getTastePreferences()
+ * Get customer taste preferences
+ /**
+ * Get customer taste preferences
+ *
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function getTastePreferences()
     {
         try {
             /** @var User $user */
@@ -211,24 +215,17 @@ class CustomerController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateTastePreferences(Request $request)
+    public function updateTastePreferences(UpdateTastePreferencesRequest $request)
     {
         try {
-            $request->validate([
-                'taste_profile' => 'required|array',
-            ]);
-
-            /** @var User $user */
-            $user = Auth::user();
-
-            // Update or create customer profile with taste preferences
+            $validated = $request->validated();
             $user->customerProfile()->updateOrCreate(
                 ['user_id' => $user->id],
-                ['taste_preferences' => $request->input('taste_profile')]
+                ['taste_preferences' => $validated['taste_profile']]
             );
 
             return $this->sendResponse([
-                'taste_preferences' => $request->input('taste_profile'),
+                'taste_preferences' => $request->validated('taste_profile'),
                 'updated_at' => now(),
             ], 'Taste preferences updated successfully');
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -319,7 +316,7 @@ class CustomerController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function uploadProfilePicture(Request $request)
+    public function uploadProfilePicture(UploadProfilePictureRequest $request)
     {
         try {
             $request->validate([
@@ -362,7 +359,7 @@ class CustomerController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateNotificationPreferences(Request $request)
+    public function updateNotificationPreferences(UpdateNotificationPreferencesRequest $request)
     {
         try {
             $request->validate([
@@ -375,12 +372,7 @@ class CustomerController extends BaseController
             /** @var User $user */
             $user = Auth::user();
 
-            $preferences = $request->only([
-                'email_notifications',
-                'sms_notifications',
-                'order_updates',
-                'promotional_offers'
-            ]);
+            $preferences = $request->validated();
 
             // Get current taste preferences
             $profile = $user->customerProfile;
@@ -463,16 +455,12 @@ class CustomerController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function addFavorite(Request $request)
+    public function addFavorite(AddFavoriteRequest $request)
     {
         try {
-            $request->validate([
-                'product_id' => 'required|integer|exists:products,id'
-            ]);
-
             /** @var User $user */
             $user = Auth::user();
-            $productId = $request->product_id;
+            $productId = $request->validated('product_id');
 
             // Check if product exists and is available
             $product = Product::where('id', $productId)
@@ -550,22 +538,17 @@ class CustomerController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function changePassword(Request $request)
+    public function changePassword(ChangePasswordRequest $request)
     {
         try {
-            $request->validate([
-                'current_password' => 'required|string',
-                'password' => 'required|string|min:8|confirmed',
-            ]);
-
             /** @var User $user */
             $user = Auth::user();
 
-            if (!Hash::check($request->input('current_password'), $user->password)) {
+            if (!Hash::check($request->validated('current_password'), $user->password)) {
                 return $this->sendError('Current password is incorrect', 400);
             }
 
-            $user->password = Hash::make($request->input('password'));
+            $user->password = Hash::make($request->validated('password'));
             $user->save();
 
             return $this->sendResponse(null, 'Password changed successfully');
@@ -582,19 +565,14 @@ class CustomerController extends BaseController
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function deactivateAccount(Request $request)
+    public function deactivateAccount(DeactivateAccountRequest $request)
     {
         try {
-            $request->validate([
-                'reason' => 'sometimes|string|max:500',
-                'password' => 'required|string',
-            ]);
-
             /** @var User $user */
             $user = Auth::user();
 
             // Verify password
-            if (!Hash::check($request->input('password'), $user->password)) {
+            if (!Hash::check($request->validated('password'), $user->password)) {
                 return $this->sendError('Invalid password', 400);
             }
 
@@ -762,7 +740,7 @@ class CustomerController extends BaseController
             }
         }
 
-    public function toggleFavorite(Request $request)
+    public function toggleFavorite(AddFavoriteRequest $request)
     {
         try {
             $user = Auth::user();
@@ -774,11 +752,7 @@ class CustomerController extends BaseController
                 ], 401);
             }
 
-            $request->validate([
-                'product_id' => 'required|integer|exists:products,id'
-            ]);
-
-            $productId = $request->product_id;
+            $productId = $request->validated('product_id');
 
             // Check if product exists and is available
             $product = Product::where('id', $productId)

@@ -70,28 +70,31 @@ class CustomerInsightsService
         $totalOrders = $orders->count();
         $totalSpent = $orders->sum('total_amount');
         $avgOrderValue = $totalSpent / $totalOrders;
-        
-        // Frequency tier
-        $ordersPerMonth = $totalOrders / max(1, $orders->first()->created_at->diffInMonths(now()));
+
+        // Frequency tier - calculates average orders per month since first order
+        // We use max(1, ...) to avoid division by zero for customers with orders in same month
+        $monthsSinceFirstOrder = max(1, $orders->first()->created_at->diffInMonths(now()));
+        $ordersPerMonth = $totalOrders / $monthsSinceFirstOrder;
         $frequencyTier = $this->determineFrequencyTier($ordersPerMonth);
-        
-        // Spending tier
+
+        // Spending tier - categorizes customers based on their average order value
         $spendingTier = $this->determineSpendingTier($avgOrderValue);
-        
-        // Spending trend
+
+        // Spending trend - analyzes whether customer's spending is increasing/decreasing over time
         $spendingTrend = $this->analyzeSpendingTrend($orders);
-        
-        // Time patterns
+
+        // Time patterns - analyzes when customer tends to make purchases (time of day, day of week)
         $timePattern = $this->analyzeTimePatterns($orders);
-        
-        // Order intervals
+
+        // Order intervals - calculates average days between consecutive orders
         $intervals = [];
         for ($i = 1; $i < $totalOrders; $i++) {
+            // Calculate days between current order and previous order
             $intervals[] = $orders[$i]->created_at->diffInDays($orders[$i-1]->created_at);
         }
         $avgInterval = count($intervals) > 0 ? array_sum($intervals) / count($intervals) : null;
-        
-        // Days since last order
+
+        // Days since last order - measures customer recency
         $lastOrderDate = $orders->last()->created_at;
         $daysSinceLastOrder = $lastOrderDate->diffInDays(now());
         
@@ -118,18 +121,18 @@ class CustomerInsightsService
      */
     private function analyzeProductAffinity(int $customerId): array
     {
-        // Get favorite categories
+        // Get favorite categories based on purchase frequency, spending, and recency
         $favoriteCategories = $this->getFavoriteCategories($customerId);
-        
-        // Get favorite products
+
+        // Get favorite products based on purchase quantity and frequency
         $favoriteProducts = $this->getFavoriteProducts($customerId);
-        
-        // Get product combinations (basket analysis)
+
+        // Get product combinations (market basket analysis) - identifies products frequently bought together
         $productCombinations = $this->analyzeProductCombinations($customerId);
-        
-        // Get taste profile
+
+        // Get taste profile - analyzes coffee preferences based on product descriptions
         $tasteProfile = $this->discoverTasteProfile($customerId);
-        
+
         return [
             'favorite_categories' => $favoriteCategories,
             'favorite_products' => $favoriteProducts,

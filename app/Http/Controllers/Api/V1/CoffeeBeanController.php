@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Api\BaseController;
 use App\Models\CoffeeBean;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\StoreCoffeeBeanRequest;
+use App\Http\Requests\UpdateCoffeeBeanRequest;
+use App\Traits\HasSorting;
 
 class CoffeeBeanController extends BaseController
 {
+    use HasSorting;
     /**
      * Display a listing of coffee beans.
      */
@@ -52,9 +55,7 @@ class CoffeeBeanController extends BaseController
         }
 
         // Sorting
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
-        $query->orderBy($sortBy, $sortOrder);
+        $this->applySorting($query, $request, ['id', 'name', 'origin_country', 'region', 'stock_quantity', 'is_featured', 'created_at', 'updated_at']);
 
         // Pagination
         $perPage = $request->get('per_page', 15);
@@ -78,7 +79,7 @@ class CoffeeBeanController extends BaseController
     /**
      * Store a newly created coffee bean.
      */
-    public function store(Request $request)
+    public function store(StoreCoffeeBeanRequest $request)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -131,7 +132,7 @@ class CoffeeBeanController extends BaseController
     /**
      * Update the specified coffee bean.
      */
-    public function update(Request $request, $id)
+    public function update(UpdateCoffeeBeanRequest $request, $id)
     {
         $bean = CoffeeBean::find($id);
 

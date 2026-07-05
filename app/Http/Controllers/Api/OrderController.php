@@ -12,9 +12,16 @@ use App\Http\Requests\StoreOrderRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use App\Http\Controllers\Api\V1\Traits\CacheTaggingTrait;
 
 class OrderController extends BaseController
 {
+    use CacheTaggingTrait;
+
+    // Cache TTL in seconds
+    const CACHE_TTL = 180; // 3 minutes (orders change relatively frequently)
+
     /**
      * Create a new order
      *
@@ -53,7 +60,7 @@ class OrderController extends BaseController
 
                 $orderItems[] = [
                     'product_id' => $product->id,
-                    'quantity' => $quantity,
+                    'quantity' => $item['quantity'],
                     'unit_price' => $unitPrice,
                     'special_instructions' => $item['special_instructions'] ?? null,
                 ];
@@ -110,6 +117,9 @@ class OrderController extends BaseController
             // Queue notification job
             ProcessOrderNotification::dispatch($order, 'created');
 
+            // Clear cache for user's orders when new order is created
+            $this->clearTaggedCache(['orders']);
+
             return $this->sendResponse($order, 'Order created successfully', 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -128,43 +138,51 @@ class OrderController extends BaseController
         try {
             $user = Auth::user();
 
-            $query = Order::where('user_id', $user->id)
-                ->with(['orderItems.product']);
+            // Create cache key based on user ID and request parameters
+            $cacheKey = 'user_orders_' . $user->id . '_' . md5(json_encode($request->all()));
 
-            // Filter by status if provided
-            $status = $request->input('status');
-            if ($status !== null) {
-                $query->where('status', $status);
-            }
+            // Try to get from cache with hit/miss tracking
+            $orders = $this->rememberTagged($cacheKey, self::CACHE_TTL, function () use ($request) {
+                $user = Auth::user();
 
-            // Filter by order type
-            $orderType = $request->input('order_type');
-            if ($orderType !== null) {
-                $query->where('order_type', $orderType);
-            }
+                $query = Order::where('user_id', $user->id)
+                    ->with(['orderItems.product']);
 
-            // Filter by date range
-            if ($request->has('date_from')) {
-                $query->whereDate('created_at', '>=', $request->input('date_from'));
-            }
-            if ($request->has('date_to')) {
-                $query->whereDate('created_at', '<=', $request->input('date_to'));
-            }
+                // Filter by status if provided
+                $status = $request->input('status');
+                if ($status !== null) {
+                    $query->where('status', $status);
+                }
 
-            // Search by order number or product name
-            $search = $request->input('search');
-            if ($search !== null) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('order_number', 'like', '%' . $search . '%')
-                      ->orWhereHas('orderItems.product', function ($productQuery) use ($search) {
-                          $productQuery->where('name', 'like', '%' . $search . '%');
-                      });
-                });
-            }
+                // Filter by order type
+                $orderType = $request->input('order_type');
+                if ($orderType !== null) {
+                    $query->where('order_type', $orderType);
+                }
 
-            // Sort by created_at descending
-            $orders = $query->orderBy('created_at', 'desc')
-                ->paginate(15);
+                // Filter by date range
+                if ($request->has('date_from')) {
+                    $query->whereDate('created_at', '>=', $request->input('date_from'));
+                }
+                if ($request->has('date_to')) {
+                    $query->whereDate('created_at', '<=', $request->input('date_to'));
+                }
+
+                // Search by order number or product name
+                $search = $request->input('search');
+                if ($search !== null) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('order_number', 'like', '%' . $search . '%')
+                          ->orWhereHas('orderItems.product', function ($productQuery) use ($search) {
+                              $productQuery->where('name', 'like', '%' . $search . '%');
+                          });
+                    });
+                }
+
+                // Sort by created_at descending
+                return $query->orderBy('created_at', 'desc')
+                    ->paginate(15);
+            }, ['orders']);
 
             return $this->sendResponse($orders, 'Orders retrieved successfully');
         } catch (\Exception $e) {
@@ -183,10 +201,15 @@ class OrderController extends BaseController
         try {
             $user = Auth::user();
 
-            $order = Order::where('user_id', $user->id)
-                ->where('id', $id)
-                ->with(['orderItems.product', 'user', 'deliveryAddress'])
-                ->first();
+            // Create cache key for individual order
+            $cacheKey = 'order_' . $id;
+
+            $order = $this->rememberTagged($cacheKey, self::CACHE_TTL, function () use ($user, $id) {
+                return Order::where('user_id', $user->id)
+                    ->where('id', $id)
+                    ->with(['orderItems.product', 'user', 'deliveryAddress'])
+                    ->first();
+            }, ['orders']);
 
             if (!$order) {
                 return $this->sendError('Order not found', 404);
@@ -284,6 +307,9 @@ class OrderController extends BaseController
             // Load relationships
             $newOrder->load(['orderItems.product', 'user']);
 
+            // Clear cache for user's orders when reordering
+            $this->clearTaggedCache(['orders']);
+
             return $this->sendResponse($newOrder, 'Order reordered successfully', 201);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -333,6 +359,9 @@ class OrderController extends BaseController
             // 2. Log the cancellation request
             // 3. Create a cancellation record with reason
 
+            // Clear cache for this specific order when cancellation is requested
+            $this->clearTaggedCache(['orders']);
+
             return $this->sendResponse($order, 'Cancellation request submitted successfully. Please wait for admin confirmation.');
         } catch (\Exception $e) {
             return $this->sendError('Failed to request cancellation', 500, ['error' => $e->getMessage()]);
@@ -376,6 +405,9 @@ class OrderController extends BaseController
             }
 
             $order->load(['orderItems.product']);
+
+            // Clear cache for this specific order and user's orders when confirmed
+            $this->clearTaggedCache(['orders']);
 
             return $this->sendResponse($order, 'Order confirmed successfully');
         } catch (\Exception $e) {
@@ -493,6 +525,9 @@ class OrderController extends BaseController
 
             // Load relationships for response
             $order->load(['orderItems.product', 'user', 'deliveryAddress']);
+
+            // Clear cache for this specific order and user's orders when updated
+            $this->clearTaggedCache(['orders']);
 
             return $this->sendResponse($order, 'Order updated successfully');
 

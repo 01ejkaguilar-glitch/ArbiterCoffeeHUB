@@ -7,59 +7,17 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
+use App\Http\Controllers\Api\V1\Traits\CacheTaggingTrait;
 
 class CategoryController extends BaseController
 {
+    use CacheTaggingTrait;
+
     // Cache TTL in seconds
     const CACHE_TTL = 600; // 10 minutes (categories change less frequently)
 
-    /**
-     * Clear the categories cache using Laravel cache tagging.
-     * Since we're using Redis (confirmed in .env), we can leverage tagging
-     * for more efficient cache clearing.
-     */
-    private function clearCategoriesCache()
-    {
-        // Flush all cache entries tagged with 'categories'
-        Cache::tags(['categories'])->flush();
 
-        // Warm up critical category data to prevent cache stampede
-        $this->warmCriticalCategories();
-    }
 
-    /**
-     * Warm up critical category data after cache clearing.
-     */
-    private function warmCriticalCategories()
-    {
-        // Warm up the main categories list (without filters)
-        $mainCategoriesKey = 'categories_list_' . md5(json_encode([]));
-        if (!Cache::tags(['categories'])->has($mainCategoriesKey)) {
-            $categories = Category::withCount('products')
-                ->orderBy('sort_order', 'asc')
-                ->get();
-            Cache::tags(['categories'])->put($mainCategoriesKey, $categories, self::CACHE_TTL);
-        }
-    }
-
-    /**
-     * Cache with tagging support.
-     * Tracks cache hits/misses for metrics.
-     */
-    private function rememberCategory($cacheKey, $ttl, $callback)
-    {
-        // Try to get from cache first to track hits/misses
-        if (Cache::tags(['categories'])->has($cacheKey)) {
-            app(\App\Services\CacheMetricsService::class)->hit();
-            return Cache::tags(['categories'])->get($cacheKey);
-        }
-
-        // Cache miss - generate value and store it
-        app(\App\Services\CacheMetricsService::class)->miss();
-        $value = Cache::tags(['categories'])->remember($cacheKey, $ttl, $callback);
-
-        return $value;
-    }
     
     /**
      * Display a listing of categories.
@@ -69,8 +27,8 @@ class CategoryController extends BaseController
         // Create cache key based on request parameters
         $cacheKey = 'categories_list_' . md5(json_encode($request->all()));
 
-        // Try to get from cache (without tags for database cache driver compatibility)
-        $categories = $this->rememberCategory($cacheKey, self::CACHE_TTL, function () use ($request) {
+        // Try to get from cache with hit/miss tracking
+        $categories = $this->rememberTagged($cacheKey, self::CACHE_TTL, function () use ($request) {
             $query = Category::query();
 
             // Filter by active status
@@ -88,7 +46,7 @@ class CategoryController extends BaseController
             $query->orderBy('sort_order', 'asc');
 
             return $query->get();
-        });
+        }, ['categories']);
 
         return $this->sendResponse($categories, 'Categories retrieved successfully');
     }
@@ -111,9 +69,10 @@ class CategoryController extends BaseController
         }
 
         $category = Category::create($request->all());
-        
+
         // Clear cache after creating
-        $this->clearCategoriesCache();
+        $this->clearTaggedCache(['categories']);
+        $this->warmCriticalCategories();
 
         return $this->sendCreated($category, 'Category created successfully');
     }
@@ -125,9 +84,9 @@ class CategoryController extends BaseController
     {
         $cacheKey = 'category_' . $id;
 
-        $category = $this->rememberCategory($cacheKey, self::CACHE_TTL, function () use ($id) {
+        $category = $this->rememberTagged($cacheKey, self::CACHE_TTL, function () use ($id) {
             return Category::withCount('products')->find($id);
-        });
+        }, ['categories']);
 
         if (!$category) {
             return $this->sendNotFound('Category not found');
@@ -160,9 +119,10 @@ class CategoryController extends BaseController
         }
 
         $category->update($request->all());
-        
+
         // Clear cache after updating
-        $this->clearCategoriesCache();
+        $this->clearTaggedCache(['categories']);
+        $this->warmCriticalCategories();
 
         return $this->sendResponse($category, 'Category updated successfully');
     }
@@ -179,10 +139,26 @@ class CategoryController extends BaseController
         }
 
         $category->delete();
-        
+
         // Clear cache after deleting
-        $this->clearCategoriesCache();
+        $this->clearTaggedCache(['categories']);
+        $this->warmCriticalCategories();
 
         return $this->sendResponse(null, 'Category deleted successfully');
+    }
+
+    /**
+     * Warm up critical category data after cache clearing.
+     */
+    protected function warmCriticalCategories()
+    {
+        // Warm up the main categories list (without filters)
+        $mainCategoriesKey = 'categories_list_' . md5(json_encode([]));
+        if (!Cache::tags(['categories'])->has($mainCategoriesKey)) {
+            $categories = Category::withCount('products')
+                ->orderBy('sort_order', 'asc')
+                ->get();
+            Cache::tags(['categories'])->put($mainCategoriesKey, $categories, self::CACHE_TTL);
+        }
     }
 }

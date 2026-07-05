@@ -50,7 +50,7 @@ class OrderStatusNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $orderUrl = env('FRONTEND_URL', 'http://localhost:3000') . '/customer/orders/' . $this->order->id;
+        $orderUrl = config('app.frontend_url') . '/customer/orders/' . $this->order->id;
 
         $message = (new MailMessage)
             ->subject($this->getSubject())

@@ -8,35 +8,23 @@ use App\Models\User;
 use App\Notifications\NewInquirySubmission;
 use App\Notifications\InquiryAutoReply;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Notification;
+use App\Http\Requests\StoreInquiryRequest;
+use App\Http\Requests\StoreArbiterExpressRequest;
+use App\Http\Requests\UpdateInquiryRequest;
 
 class InquiryController extends BaseController
 {
     /**
      * Store a barista training inquiry (public).
      */
-    public function storeBaristaTraining(Request $request)
+    public function storeBaristaTraining(StoreInquiryRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'full_name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'required|string|max:20',
-            'experience_level' => 'required|string',
-            'preferred_schedule' => 'required|string',
-            'background' => 'nullable|string',
-            'motivation' => 'nullable|string',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->sendValidationError($validator->errors()->toArray());
-        }
-
         $inquiry = Inquiry::create([
             'type' => 'barista_training',
-            'full_name' => $request->input('full_name'),
-            'email' => $request->input('email'),
-            'phone' => $request->input('phone'),
+            'full_name' => $request->validated('full_name'),
+            'email' => $request->validated('email'),
+            'phone' => $request->validated('phone'),
             'details' => $request->only('experience_level', 'preferred_schedule', 'background', 'motivation'),
         ]);
 
@@ -63,31 +51,13 @@ class InquiryController extends BaseController
     /**
      * Store an Arbiter Express inquiry (public).
      */
-    public function storeArbiterExpress(Request $request)
+    public function storeArbiterExpress(StoreArbiterExpressRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'full_name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'required|string|max:20',
-            'event_date' => 'required|date',
-            'event_time' => 'required|string',
-            'location' => 'required|string',
-            'guest_count' => 'required|integer|min:1',
-            'service_type' => 'required|string',
-            'menu_preferences' => 'nullable|string',
-            'budget_range' => 'nullable|string',
-            'special_requests' => 'nullable|string',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->sendValidationError($validator->errors()->toArray());
-        }
-
         $inquiry = Inquiry::create([
             'type' => 'arbiter_express',
-            'full_name' => $request->input('full_name'),
-            'email' => $request->input('email'),
-            'phone' => $request->input('phone'),
+            'full_name' => $request->validated('full_name'),
+            'email' => $request->validated('email'),
+            'phone' => $request->validated('phone'),
             'details' => $request->only('event_date', 'event_time', 'location', 'guest_count', 'service_type', 'menu_preferences', 'budget_range', 'special_requests'),
         ]);
 
@@ -155,7 +125,7 @@ class InquiryController extends BaseController
     /**
      * Update inquiry status (admin only).
      */
-    public function update(Request $request, $id)
+    public function update(UpdateInquiryRequest $request, $id)
     {
         $inquiry = Inquiry::find($id);
 
@@ -163,15 +133,7 @@ class InquiryController extends BaseController
             return $this->sendNotFound('Inquiry not found');
         }
 
-        $validator = Validator::make($request->all(), [
-            'status' => 'required|in:pending,reviewed,approved,rejected',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->sendValidationError($validator->errors()->toArray());
-        }
-
-        $inquiry->update($request->only('status'));
+        $inquiry->update($request->validated('status'));
 
         return $this->sendResponse($inquiry, 'Inquiry status updated successfully');
     }

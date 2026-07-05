@@ -8,9 +8,16 @@ use App\Events\ShiftStarted;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use App\Http\Controllers\Api\V1\Traits\CacheTaggingTrait;
 
 class ShiftController extends BaseController
 {
+    use CacheTaggingTrait;
+
+    // Cache TTL in seconds
+    const CACHE_TTL = 300; // 5 minutes (shift data changes infrequently)
+
     /**
      * Get shifts
      *
@@ -20,27 +27,33 @@ class ShiftController extends BaseController
     public function index(Request $request)
     {
         try {
-            $query = Shift::with(['employee.user']);
+            // Create cache key based on request parameters
+            $cacheKey = 'shifts_list_' . md5(json_encode($request->all()));
 
-            // Filter by employee
-            if ($request->has('employee_id')) {
-                $query->where('employee_id', $request->input('employee_id'));
-            }
+            // Try to get from cache with hit/miss tracking
+            $shifts = $this->rememberTagged($cacheKey, self::CACHE_TTL, function () use ($request) {
+                $query = Shift::with(['employee.user']);
 
-            // Filter by date range
-            if ($request->has('start_date')) {
-                $query->whereDate('date', '>=', $request->input('start_date'));
-            }
-            if ($request->has('end_date')) {
-                $query->whereDate('date', '<=', $request->input('end_date'));
-            }
+                // Filter by employee
+                if ($request->has('employee_id')) {
+                    $query->where('employee_id', $request->input('employee_id'));
+                }
 
-            // Filter by status
-            if ($request->has('status')) {
-                $query->where('status', $request->input('status'));
-            }
+                // Filter by date range
+                if ($request->has('start_date')) {
+                    $query->whereDate('date', '>=', $request->input('start_date'));
+                }
+                if ($request->has('end_date')) {
+                    $query->whereDate('date', '<=', $request->input('end_date'));
+                }
 
-            $shifts = $query->orderBy('date', 'asc')->orderBy('start_time', 'asc')->paginate(50);
+                // Filter by status
+                if ($request->has('status')) {
+                    $query->where('status', $request->input('status'));
+                }
+
+                return $query->orderBy('date', 'asc')->orderBy('start_time', 'asc')->paginate(50);
+            }, ['shifts']);
 
             return $this->sendResponse($shifts, 'Shifts retrieved successfully');
         } catch (\Exception $e) {
@@ -57,7 +70,12 @@ class ShiftController extends BaseController
     public function show($id)
     {
         try {
-            $shift = Shift::with(['employee.user'])->findOrFail($id);
+            // Create cache key for individual shift
+            $cacheKey = 'shift_' . $id;
+
+            $shift = $this->rememberTagged($cacheKey, self::CACHE_TTL, function () use ($id) {
+                return Shift::with(['employee.user'])->findOrFail($id);
+            }, ['shifts']);
 
             return $this->sendResponse($shift, 'Shift retrieved successfully');
         } catch (\Exception $e) {
@@ -114,6 +132,9 @@ class ShiftController extends BaseController
             ]);
 
             $shift->load('employee.user');
+
+            // Clear shift cache when creating new shift
+            $this->clearTaggedCache(['shifts']);
 
             return $this->sendResponse($shift, 'Shift created successfully', 201);
 
@@ -187,6 +208,9 @@ class ShiftController extends BaseController
 
             $shift->load('employee.user');
 
+            // Clear shift cache when updating shift
+            $this->clearTaggedCache(['shifts']);
+
             return $this->sendResponse($shift, 'Shift updated successfully');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -208,6 +232,9 @@ class ShiftController extends BaseController
             $shift = Shift::findOrFail($id);
             $shift->delete();
 
+            // Clear shift cache when deleting shift
+            $this->clearTaggedCache(['shifts']);
+
             return $this->sendResponse(null, 'Shift deleted successfully');
         } catch (\Exception $e) {
             return $this->sendError('Failed to delete shift', 500, ['error' => $e->getMessage()]);
@@ -227,20 +254,25 @@ class ShiftController extends BaseController
                 'week_start' => 'required|date',
             ]);
 
-            $startDate = Carbon::parse($request->input('week_start'))->startOfWeek();
-            $endDate = $startDate->copy()->endOfWeek();
+            // Create cache key for weekly schedule
+            $cacheKey = 'weekly_schedule_' . $request->input('week_start');
 
-            $shifts = Shift::with(['employee.user'])
-                ->whereBetween('date', [$startDate, $endDate])
-                ->where('status', '!=', 'cancelled')
-                ->orderBy('date', 'asc')
-                ->orderBy('start_time', 'asc')
-                ->get();
+            $schedule = $this->rememberTagged($cacheKey, self::CACHE_TTL, function () use ($request) {
+                $startDate = Carbon::parse($request->input('week_start'))->startOfWeek();
+                $endDate = $startDate->copy()->endOfWeek();
 
-            // Group by date
-            $schedule = $shifts->groupBy(function($shift) {
-                return $shift->date;
-            });
+                $shifts = Shift::with(['employee.user'])
+                    ->whereBetween('date', [$startDate, $endDate])
+                    ->where('status', '!=', 'cancelled')
+                    ->orderBy('date', 'asc')
+                    ->orderBy('start_time', 'asc')
+                    ->get();
+
+                // Group by date
+                return $shifts->groupBy(function($shift) {
+                    return $shift->date;
+                });
+            }, ['shifts']);
 
             return $this->sendResponse($schedule, 'Weekly schedule retrieved successfully');
 
@@ -267,17 +299,22 @@ class ShiftController extends BaseController
                 return $this->sendError('Employee record not found', 404);
             }
 
-            $query = Shift::where('employee_id', $employee->id);
+            // Create cache key for user's shifts
+            $cacheKey = 'my_shifts_' . $employee->id . '_' . md5(json_encode($request->all()));
 
-            // Optional month/year filter
-            if ($request->has('month') && $request->has('year')) {
-                $query->whereMonth('date', $request->input('month'))
-                      ->whereYear('date', $request->input('year'));
-            }
+            $shifts = $this->rememberTagged($cacheKey, self::CACHE_TTL, function () use ($request, $employee) {
+                $query = Shift::where('employee_id', $employee->id);
 
-            $shifts = $query->orderBy('date', 'asc')
+                // Optional month/year filter
+                if ($request->has('month') && $request->has('year')) {
+                    $query->whereMonth('date', $request->input('month'))
+                          ->whereYear('date', $request->input('year'));
+                }
+
+                return $query->orderBy('date', 'asc')
                             ->orderBy('start_time', 'asc')
                             ->get();
+            }, ['shifts']);
 
             return $this->sendResponse($shifts, 'My shifts retrieved successfully');
         } catch (\Exception $e) {
@@ -294,12 +331,17 @@ class ShiftController extends BaseController
     public function getEmployeeShifts($employeeId)
     {
         try {
-            $shifts = Shift::where('employee_id', $employeeId)
-                ->where('date', '>=', now())
-                ->where('status', '!=', 'cancelled')
-                ->orderBy('date', 'asc')
-                ->orderBy('start_time', 'asc')
-                ->get();
+            // Create cache key for employee's upcoming shifts
+            $cacheKey = 'employee_upcoming_shifts_' . $employeeId;
+
+            $shifts = $this->rememberTagged($cacheKey, self::CACHE_TTL, function () use ($employeeId) {
+                return Shift::where('employee_id', $employeeId)
+                    ->where('date', '>=', now())
+                    ->where('status', '!=', 'cancelled')
+                    ->orderBy('date', 'asc')
+                    ->orderBy('start_time', 'asc')
+                    ->get();
+            }, ['shifts']);
 
             return $this->sendResponse($shifts, 'Employee shifts retrieved successfully');
         } catch (\Exception $e) {

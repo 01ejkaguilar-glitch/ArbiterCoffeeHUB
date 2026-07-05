@@ -19,6 +19,9 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\ProductUpdated::class => [
             \App\Listeners\ClearProductCache::class,
         ],
+        \App\Events\ProductDeleted::class => [
+            \App\Listeners\ClearProductCache::class,
+        ],
     ];
 
     /**

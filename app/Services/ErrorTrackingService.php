@@ -27,7 +27,13 @@ class ErrorTrackingService
             $context['user_id'] = $request->user()?->id;
         }
 
-        Log::error('Exception: ' . $e->getMessage(), $context);
+        try {
+            Log::error('Exception: ' . $e->getMessage(), $context);
+        } catch (\Exception $ex) {
+            // Fallback to error_log if logging fails
+            error_log('Exception logging failed: ' . $ex->getMessage());
+            error_log('Original exception: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -51,6 +57,18 @@ class ErrorTrackingService
             $context['request_id'] = $request->header('X-Request-ID');
         }
 
-        Log::channel('stack')->error("API Error [{$statusCode}]: {$message}", $context);
+        try {
+            try {
+            Log::channel('stack')->error("API Error [{$statusCode}]: {$message}", $context);
+        } catch (\Exception $ex) {
+            // Fallback to error_log if logging fails
+            error_log('API error logging failed: ' . $ex->getMessage());
+            error_log('Original API error: ' . $message . ' (Status: ' . $statusCode . ')');
+        }
+        } catch (\Exception $e) {
+            // Fallback to error_log if logging fails
+            error_log('API error logging failed: ' . $e->getMessage());
+            error_log('Failed to log API error: [' . $statusCode . '] ' . $message);
+        }
     }
 }

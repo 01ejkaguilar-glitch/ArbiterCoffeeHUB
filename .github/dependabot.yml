@@ -1,0 +1,41 @@
+version: 2
+updates:
+  - package-ecosystem: "composer"
+    directory: "/"  # Location of package manifests
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    # Allow up to 10 open pull requests for version updates
+    # Allow updates to security advisories for this ecosystem
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    # Only update to versions that match the constraints in composer.json
+    # Ignore versions that are not compatible with our PHP version
+    ignore:
+      - dependency-name: "*"
+        versions:
+          - "<8.2"  # Ignore versions that require PHP < 8.2
+    commit-message:
+      # Prefix all commit messages with "deps:"
+      prefix: "deps"
+      # Include the dependency name in the commit message
+      include: "scope"
+    # Pull request behavior
+    pull-request-branch-name:
+      # Separate branches for each dependency update
+      separator: "-"
+    # Disable version updates for dependencies that are not defined in composer.json
+    # (i.e., only update dependencies that are already defined)
+    # This is the default behavior, so we don't need to specify.
+    # However, we want to get security updates for both direct and indirect dependencies.
+    # The "allow" above already covers both.
+    # We can also specify that we want to ignore updates that are not security-related
+    # if we only want security updates, but we want both version and security updates.
+    # So we leave it as is.
+    # Set a target branch for PRs
+    target-branch: "main"
+    # Disable automated security fix PRs if we want to handle them manually? We want them.
+    # The default is to include security updates in the regular update process.
+    # We can also enable security updates separately if we want them on a different schedule.
+    # For simplicity, we'll get both version and security updates weekly.

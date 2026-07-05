@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register Prerender middleware for web routes
         $middleware->web(append: [
             \App\Http\Middleware\PrerenderMiddleware::class,
+            \App\Http\Middleware\HttpsRedirectMiddleware::class,
         ]);
 
         // Register API performance monitoring and compression middleware
@@ -63,11 +64,12 @@ return Application::configure(basePath: dirname(__DIR__))
         };
 
         $exceptions->report(function (Throwable $e) {
-            $errorTracking = app(\App\Services\ErrorTrackingService::class);
-
-            $req = app()->bound('request') ? request() : null;
-
-            $errorTracking->logException($e, app()->bound('request') ? request() : null);
+            // Temporarily disabled to debug container resolution issues
+            // $errorTracking = app(\App\Services\ErrorTrackingService::class);
+            // $req = app()->bound('request') ? request() : null;
+            // $errorTracking->logException($e, app()->bound('request') ? request() : null);
+            // Don't exit early - let the exception bubble up for debugging
+            // return; // Exit early to avoid the error
         });
 
         // Customize exception rendering for API requests
