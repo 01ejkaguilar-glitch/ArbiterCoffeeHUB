@@ -22,7 +22,7 @@ class RegisterUserRequest extends FormRequest
         return [
             'name' => 'required|string|max:255|min:2',
             'email' => 'required|string|email|max:255|unique:users,email',
-            'password' => ['required', 'string', 'min:12', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'],
+            'password' => 'required|string|min:12|confirmed|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
             'phone' => 'nullable|string|regex:/^(\+63|0)[0-9]{10}$/',
             'date_of_birth' => 'nullable|date|before:today|after:1900-01-01',
             'role' => 'sometimes|in:customer,barista,manager,admin',
