@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './Form.css';
-import { HoverEffect } from './HoverEffect';
 
 const Form = ({
   children,
@@ -11,17 +10,42 @@ const Form = ({
   validated = false,
   ...props
 }) => {
+  const formRef = useRef(null);
+
+  useEffect(() => {
+    const node = formRef.current;
+
+    if (!node) {
+      return undefined;
+    }
+
+    const handleMouseEnter = () => {
+      node.classList.add('hover-effect');
+    };
+    const handleMouseLeave = () => {
+      node.classList.remove('hover-effect');
+    };
+
+    node.addEventListener('mouseenter', handleMouseEnter);
+    node.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      node.removeEventListener('mouseenter', handleMouseEnter);
+      node.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
   return (
-    <HoverEffect className={className}>
-      <form
-        className={`form ${className} ${inline ? 'form-inline' : ''} ${validated ? 'was-validated' : ''}`}
-        onSubmit={onSubmit}
-        noValidate={validated}
-        {...props}
-      >
-        {children}
-      </form>
-    </HoverEffect>
+    <form
+      ref={formRef}
+      className={`form ${className} ${inline ? 'form-inline' : ''} ${validated ? 'was-validated' : ''}`}
+      role="form"
+      onSubmit={onSubmit}
+      noValidate={validated}
+      {...props}
+    >
+      {children}
+    </form>
   );
 };
 

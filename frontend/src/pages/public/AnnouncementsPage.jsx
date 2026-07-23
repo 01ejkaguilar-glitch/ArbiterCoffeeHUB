@@ -6,6 +6,8 @@ import {
   ResponsiveCol,
   ResponsiveRow,
   ResponsiveForm,
+  ResponsiveBadge,
+  ResponsivePagination,
 } from '@/components/responsive';
 import { FaFacebookF, FaInstagram, FaSearch, FaCalendar } from 'react-icons/fa';
 import { FaTiktok } from 'react-icons/fa6';
@@ -132,25 +134,25 @@ const AnnouncementsPage = () => {
       {/* Hero Section */}
       <section aria-labelledby="announcements-hero-heading" className="hero-section">
         <ResponsiveContainer>
-          <Row className="align-items-center">
-            <Col lg={8} className="mx-auto text-center">
-              <span className="hero-eyebrow">Stay Updated</span>
-              <h1 id="announcements-hero-heading" className="hero-title">Announcements</h1>
-              <p className="hero-subtitle">
-                Stay updated with our latest news, promotions, and events
-              </p>
-            </Col>
-          </Row>
-        </ResponsiveContainer>
+            <ResponsiveRow className="align-items-center">
+              <ResponsiveCol lg={8} className="mx-auto text-center">
+                <span className="hero-eyebrow">Stay Updated</span>
+                <h1 id="announcements-hero-heading" className="hero-title">Announcements</h1>
+                <p className="hero-subtitle">
+                  Stay updated with our latest news, promotions, and events
+                </p>
+              </ResponsiveCol>
+            </ResponsiveRow>
+          </ResponsiveContainer>
       </section>
 
       <ResponsiveContainer className="py-5">
         {/* Filters and Search */}
-        <Row className="mb-5">
-          <Col md={6} className="mb-3">
-            <Form onSubmit={handleSearch} role="search" aria-label="Search announcements">
-              <Form.Group className="d-flex w-100">
-                <Form.Control
+        <ResponsiveRow className="mb-5">
+          <ResponsiveCol md={6} className="mb-3">
+            <ResponsiveForm onSubmit={handleSearch} role="search" aria-label="Search announcements">
+              <ResponsiveForm.Group className="d-flex w-100">
+                <ResponsiveForm.Control
                   type="text"
                   placeholder="Search announcements..."
                   value={searchTerm}
@@ -161,11 +163,11 @@ const AnnouncementsPage = () => {
                 <ResponsiveButton type="submit" variant="primary" aria-label="Submit search">
                   <FaSearch aria-hidden="true" />
                 </ResponsiveButton>
-              </Form.Group>
-            </Form>
-          </Col>
-          <Col md={6} className="mb-3">
-            <Form.Select
+              </ResponsiveForm.Group>
+            </ResponsiveForm>
+          </ResponsiveCol>
+          <ResponsiveCol md={6} className="mb-3">
+            <ResponsiveForm.Select
               value={selectedCategory}
               onChange={(e) => {
                 setSelectedCategory(e.target.value);
@@ -178,17 +180,17 @@ const AnnouncementsPage = () => {
                   {cat.label}
                 </option>
               ))}
-            </Form.Select>
-          </Col>
-        </Row>
+            </ResponsiveForm.Select>
+          </ResponsiveCol>
+        </ResponsiveRow>
 
         {/* Announcements Grid */}
         <section aria-labelledby="announcements-list-heading">
           <h2 id="announcements-list-heading" className="visually-hidden">Announcements List</h2>
-          <Row className="g-4 mb-5" role="list">
+          <ResponsiveRow className="g-4 mb-5" role="list">
             {announcements.length > 0 ? (
               announcements.map((announcement) => (
-                <Col key={announcement.id} md={6} lg={4} role="listitem">
+                <ResponsiveCol key={announcement.id} md={6} lg={4} role="listitem">
                   <article className="announcement-card">
                     {announcement.featured_image && (
                       <img
@@ -200,9 +202,9 @@ const AnnouncementsPage = () => {
                     )}
                     <div className="announcement-body">
                       <div className="announcement-meta">
-                        <Badge bg={getCategoryBadge(announcement.category)}>
+                        <ResponsiveBadge bg={getCategoryBadge(announcement.category)}>
                           {announcement.category}
-                        </Badge>
+                        </ResponsiveBadge>
                         <span>
                           <FaCalendar className="me-1" aria-hidden="true" />
                           <time dateTime={announcement.published_at || announcement.created_at}>
@@ -247,25 +249,25 @@ const AnnouncementsPage = () => {
                       </div>
                     </div>
                   </article>
-                </Col>
+                </ResponsiveCol>
               ))
             ) : (
-              <Col>
+              <ResponsiveCol>
                 <div className="text-center py-5">
                   <h4 className="text-muted mb-2">No announcements found</h4>
                   <p className="text-muted">Check back later for updates!</p>
                 </div>
-              </Col>
+              </ResponsiveCol>
             )}
-          </Row>
+          </ResponsiveRow>
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <Row>
-              <Col className="d-flex justify-content-center">
-                <Pagination aria-label="Announcement pages navigation">
-                  <Pagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} aria-label="Go to first page" />
-                  <Pagination.Prev onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} aria-label="Go to previous page" />
+            <ResponsiveRow>
+              <ResponsiveCol className="d-flex justify-content-center">
+                <ResponsivePagination aria-label="Announcement pages navigation">
+                  <ResponsivePagination.First onClick={() => setCurrentPage(1)} disabled={currentPage === 1} aria-label="Go to first page" />
+                  <ResponsivePagination.Prev onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} aria-label="Go to previous page" />
                   
                   {(() => {
                     const pages = [];
@@ -273,23 +275,23 @@ const AnnouncementsPage = () => {
                     let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
                     let end = Math.min(totalPages, start + maxVisible - 1);
                     if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
-                    if (start > 1) pages.push(<Pagination.Ellipsis key="start-ellipsis" disabled />);
+                    if (start > 1) pages.push(<ResponsivePagination.Ellipsis key="start-ellipsis" disabled />);
                     for (let i = start; i <= end; i++) {
                       pages.push(
-                        <Pagination.Item key={i} active={currentPage === i} onClick={() => setCurrentPage(i)}>
+                        <ResponsivePagination.Item key={i} active={currentPage === i} onClick={() => setCurrentPage(i)}>
                           {i}
-                        </Pagination.Item>
+                        </ResponsivePagination.Item>
                       );
                     }
-                    if (end < totalPages) pages.push(<Pagination.Ellipsis key="end-ellipsis" disabled />);
+                    if (end < totalPages) pages.push(<ResponsivePagination.Ellipsis key="end-ellipsis" disabled />);
                     return pages;
                   })()}
 
-                  <Pagination.Next onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages} aria-label="Go to next page" />
-                  <Pagination.Last onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} aria-label="Go to last page" />
-                </Pagination>
-              </Col>
-            </Row>
+                  <ResponsivePagination.Next onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages} aria-label="Go to next page" />
+                  <ResponsivePagination.Last onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} aria-label="Go to last page" />
+                </ResponsivePagination>
+              </ResponsiveCol>
+            </ResponsiveRow>
           )}
         </section>
       </ResponsiveContainer>

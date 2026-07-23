@@ -5,6 +5,7 @@ import {
   FaTasks, FaCalendarAlt, FaSignInAlt, FaDollarSign, FaStopwatch,
   FaSync, FaExclamationTriangle, FaBolt, FaList,
   FaBoxes, FaLeaf, FaClipboardList, FaChevronRight,
+  FaEye, FaUsers,
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { API_ENDPOINTS } from '../../config/api';
@@ -14,7 +15,7 @@ import { useNotificationSystem } from '../../components/common/NotificationSyste
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardNavigation';
 import { useSwipeToDismiss } from '../../hooks/useSwipeToDismiss';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
-import { useApiError } from '../../hooks/useApiError';
+import useApiError from '../../hooks/useApiError';
 import ResponsiveButton from '@/components/responsive/Button';
 import ResponsiveCard from '@/components/responsive/Card';
 import ResponsiveForm from '@/components/responsive/Form';
@@ -64,14 +65,14 @@ const ConnChip = ({ isConnected, isConnecting, lastUpdated }) => {
           {connectingSince && (
             <span className="bd-reconnecting-time">
               ({Math.floor((Date.now() - connectingSince) / 1000)}s)
-            )
+            </span>
           )}
         </>
       ) : 'Offline'}
       {lastUpdated && (
         <span className="bd-last-updated ml-2">
           Last updated: {lastUpdated}
-        )
+        </span>
       )}
     </span>
   );
@@ -492,7 +493,7 @@ const BaristaDashboard = () => {
                       <p className="fs-5 fw-bold mb-1">{currentShift.name || 'Shift'}</p>
                       <p className="text-sm mb-0">
                         {currentShift.start_time} – {currentShift.end_time}
-                      </>
+                      </p>
                     </>
                   ) : (
                     <p className="text-muted text-center py-2">No active shift</p>

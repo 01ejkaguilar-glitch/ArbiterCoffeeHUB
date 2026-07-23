@@ -27,9 +27,7 @@ on:
         type: string
 
 permissions:
-  contents: read
-  # Needed for creating Git tags
-  contents: write
+  contents: write  # Grants both read and write access needed for checkout and tag creation
 
 jobs:
   deploy:
@@ -119,21 +117,21 @@ jobs:
             if [ "$HTTP_CODE" -eq 200 ]; then
               echo "✓ $endpoint - Status: $HTTP_CODE - Response Time: ${DURATION}ms"
 
-                # Try to parse JSON response size
-                if [ -s /tmp/response.json ]; then
-                  RESPONSE_SIZE=$(wc -c < /tmp/response.json)
-                  echo "  Response Size: ${RESPONSE_SIZE} bytes"
-                fi
-              else
-                echo "✗ $endpoint - Status: $HTTP_CODE - Response Time: ${DURATION}ms"
+              # Try to parse JSON response size
+              if [ -s /tmp/response.json ]; then
+                RESPONSE_SIZE=$(wc -c < /tmp/response.json)
+                echo "  Response Size: ${RESPONSE_SIZE} bytes"
               fi
-            done
-
-            # Basic performance threshold check (fail if any endpoint > 3s)
-            if [ "$DURATION" -gt 3000 ]; then
-              echo "WARNING: Response time exceeded 3 second threshold"
-              # Don't fail the job for now, just warn
+            else
+              echo "✗ $endpoint - Status: $HTTP_CODE - Response Time: ${DURATION}ms"
             fi
+          done
+
+          # Basic performance threshold check (warn if any endpoint > 3s)
+          # Note: This only checks the last endpoint tested, which is a limitation
+          if [ "$DURATION" -gt 3000 ]; then
+            echo "WARNING: Response time exceeded 3 second threshold"
+            # Don't fail the job for now, just warn
           fi
         }
 
@@ -352,7 +350,7 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Status:*\n${{ job.status }}"" == 'success' && ':white_check_mark: Success' || ':x: Failed'"
+                      "text": "*Status:*\n${{ job.status }}"
                     },
                     {
                       "type": "mrkdwn",

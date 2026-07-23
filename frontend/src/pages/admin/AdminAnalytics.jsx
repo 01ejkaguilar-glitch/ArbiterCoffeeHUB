@@ -10,12 +10,12 @@ import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
 import { BarChart, LineChart, PieChart } from '../../components/common/Charts';
 import { exportToCSV } from '../../utils/exportUtils';
-import ResponsiveButton from '@/components/responsive/Button';
-import ResponsiveCard from '@/components/responsive/Card';
-import ResponsiveTable from '@/components/responsive/Table';
-import ResponsiveForm from '@/components/responsive/Form';
-import ResponsiveModal from '@/components/responsive/Modal';
-import ResponsiveCol from '@/components/responsive/Col';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveCard from '../../components/responsive/Card';
+import ResponsiveTable from '../../components/responsive/Table';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveModal from '../../components/responsive/Modal';
+import ResponsiveCol from '../../components/responsive/Col';
 import './AdminAnalytics.css';
 
 /* ── Helpers ──────────────────────────────────────────────────── */

@@ -66,7 +66,7 @@ function PrivacyPage() {
             {sections.map((s, i) => {
               const Icon = s.icon;
               return (
-                <Col md={6} key={i}>
+                <ResponsiveCol md={6} key={i}>
                   <div className="feature-card h-100" style={{ textAlign: 'left' }}>
                     <div className="feature-icon" aria-hidden="true" style={{ margin: '0 0 var(--spacing-4)' }}>
                       <Icon />
@@ -74,14 +74,14 @@ function PrivacyPage() {
                     <h3 className="h5 fw-semibold mb-2">{s.title}</h3>
                     <p className="mb-0 text-muted" style={{ fontSize: 'var(--font-size-sm)' }}>{s.content}</p>
                   </div>
-                </Col>
+                </ResponsiveCol>
               );
             })}
           </ResponsiveRow>
           <p className="text-center text-muted mt-5" style={{ fontSize: 'var(--font-size-sm)' }}>
             Last updated: January 2026
           </p>
-        </Container>
+        </ResponsiveContainer>
       </section>
     </main>
   );

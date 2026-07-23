@@ -384,9 +384,9 @@ class ProductController extends BaseController
     {
         $cacheKey = 'product_' . $id;
 
-        $product = $this->rememberTagged($cacheKey, self::CACHE_TTL, function () use ($id) {
+        $product = Cache::remember($cacheKey, self::CACHE_TTL, function () use ($id) {
             return Product::with('category')->find($id);
-        }, ['products']);
+        });
 
         if (!$product) {
             return $this->sendNotFound('Product not found');

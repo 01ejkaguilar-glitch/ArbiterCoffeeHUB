@@ -9,7 +9,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ResponsiveContainer } from '@/components/responsive';
+import { ResponsiveContainer } from '../../components/responsive';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaCheckDouble,
@@ -298,7 +298,7 @@ const NotificationCenter = () => {
               </button>
             </div>
           )}
-        </Container>
+        </ResponsiveContainer>
       </main>
     </>
   );

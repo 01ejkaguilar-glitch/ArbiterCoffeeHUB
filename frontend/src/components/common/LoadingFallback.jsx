@@ -2,7 +2,6 @@ import React from 'react';
 import { Spinner, Container } from 'react-bootstrap';
 import RefreshIndicator from '../shared/RefreshIndicator';
 import SkeletonCard from '../shared/SkeletonCard';
-import SkeletonTable from '../shared/SkeletonTable';
 import SkeletonLayout from '../shared/SkeletonLayout';
 
 /**
@@ -43,8 +42,6 @@ const LoadingFallback = ({
 
   // If progress is specified, show the refresh indicator
   if (progress !== null) {
-    const percent = Math.round(progress * 100);
-
     if (fullScreen) {
       return (
         <Container className="d-flex justify-content-center align-items-center min-h-70vh">

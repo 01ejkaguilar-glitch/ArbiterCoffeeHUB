@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import ResponsiveButton from '@/components/responsive/Button';
-import ResponsiveCard from '@/components/responsive/Card';
-import ResponsiveCol from '@/components/responsive/Col';
-import ResponsiveRow from '@/components/responsive/Row';
-import ResponsiveBadge from '@/components/responsive/Badge';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveCard from '../../components/responsive/Card';
+import ResponsiveCol from '../../components/responsive/Col';
+import ResponsiveRow from '../../components/responsive/Row';
+import ResponsiveBadge from '../../components/responsive/Badge';
 import { Link } from 'react-router-dom';
 import { FaShoppingBag, FaUsers, FaBoxes, FaUserCheck, FaUserClock, FaDollarSign, FaBell, FaChartLine, FaArrowRight } from 'react-icons/fa';
 import apiService from '../../services/api.service';

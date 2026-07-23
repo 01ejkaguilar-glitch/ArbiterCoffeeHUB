@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './Button.css';
-import { HoverEffect } from './HoverEffect';
 
 const Button = ({
   children,
@@ -18,6 +17,31 @@ const Button = ({
   ...props
 }) => {
   const Component = asChild ? props.component || 'button' : 'button';
+  const buttonRef = useRef(null);
+
+  useEffect(() => {
+    const node = buttonRef.current;
+
+    if (!node) {
+      return undefined;
+    }
+
+    const wrapper = node.parentElement;
+    const handleMouseEnter = () => {
+      wrapper?.classList.add('hover-effect');
+    };
+    const handleMouseLeave = () => {
+      wrapper?.classList.remove('hover-effect');
+    };
+
+    node.addEventListener('mouseenter', handleMouseEnter);
+    node.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      node.removeEventListener('mouseenter', handleMouseEnter);
+      node.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
 
   // Prevent native button behavior when not rendering as button
   const type = asChild && Component !== 'button' ? undefined : (loading || disabled ? undefined : 'button');
@@ -44,8 +68,9 @@ const Button = ({
   };
 
   return (
-    <HoverEffect className={className}>
+    <div className={className}>
       <Component
+        ref={buttonRef}
         className={`btn btn-${variant} btn-${size} ${block ? 'btn-block' : ''} ${outline ? 'btn-outline' : ''} ${disabled ? 'disabled' : ''} ${loading ? 'loading' : ''}`}
         type={type}
         disabled={disabled || loading}
@@ -72,7 +97,7 @@ const Button = ({
           <span className="btn-icon btn-icon-right">{icon}</span>
         )}
       </Component>
-    </HoverEffect>
+    </div>
   );
 };
 

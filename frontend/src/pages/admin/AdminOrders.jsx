@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import { Container, Row, Col, Breadcrumb, Button } from 'react-bootstrap';
 import { FaExclamationTriangle, FaRedo } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { ResponsiveModal, ResponsiveButton, ResponsiveForm, ResponsiveTable, ResponsiveAlert, ResponsiveCard, ResponsiveRow, ResponsiveCol } from '@/components/responsive';
+import { ResponsiveModal, ResponsiveButton, ResponsiveForm, ResponsiveTable, ResponsiveAlert, ResponsiveCard, ResponsiveRow, ResponsiveCol, ResponsiveSpinner } from '../../components/responsive';
 import {
-  FaEye, FaRedo, FaWifi, FaBell,
+  FaEye, FaWifi, FaBell,
   FaShoppingCart, FaCheckCircle, FaClock, FaBoxOpen,
   FaTimesCircle, FaArrowRight, FaTimes, FaSave,
   FaFileDownload, FaList, FaEllipsisV
@@ -14,7 +14,7 @@ import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import { useBaristaOrders } from '../../hooks/useBroadcast';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
-import { useApiError } from '../../hooks/useApiError';
+import useApiError from '../../hooks/useApiError';
 import PageShell from '../../components/layout/PageShell';
 import { exportToCSV } from '../../utils/exportUtils';
 import './AdminOrders.css';
@@ -80,6 +80,8 @@ const AdminOrders = () => {
   const [visibleEndIndex, setVisibleEndIndex] = useState(0);
   const rowHeightEstimate = 48; // pixels per row (estimated)
   const viewportHeight = 500; // pixels - adjustable
+  const buffer = 5; // extra rows to render for smooth scrolling
+  const tableRef = useRef(null);
 
   // Filters
   const [search, setSearch] = useState('');
@@ -94,12 +96,12 @@ const AdminOrders = () => {
 
   const { showSuccessNotification } = useNotificationSystem();
 
-  // Real-time barista order notifications
-  const { isConnected, pendingOrders } = useBaristaOrders((newOrder) => {
-    setOrders(prevOrders => [newOrder, ...prevOrders]);
+// Real-time barista order notifications
+  const { isConnected, pendingOrders } = useBaristaOrders(({ order }) => {
+    setOrders(prevOrders => [order, ...prevOrders]);
     showSuccessNotification(
       'New Order Received',
-      `Order #${newOrder.order_number} has been placed and needs attention.`
+      `Order #${order.order_number} has been placed and needs attention.`
     );
   });
 
@@ -368,7 +370,7 @@ const AdminOrders = () => {
       } else if (exportFormat === 'pdf') {
         handleExportPDF();
       }
-      setSuccessNotification('Success', `Orders exported successfully as ${exportFormat.toUpperCase()}`);
+      showSuccessNotification('Success', `Orders exported successfully as ${exportFormat.toUpperCase()}`);
     } catch (error) {
       getErrorInfo(error);
     } finally {
@@ -409,7 +411,7 @@ const AdminOrders = () => {
         )
       );
 
-      setSuccessNotification('Success', `Updated ${selectedOrders.length} orders successfully!`);
+      showSuccessNotification('Success', `Updated ${selectedOrders.length} orders successfully!`);
       setShowBatchModal(false);
       setSelectedOrders([]);
       setBatchAction('');

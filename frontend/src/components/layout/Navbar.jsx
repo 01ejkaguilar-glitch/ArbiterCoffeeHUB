@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Badge, Dropdown } from 'react-bootstrap';
-import { FaShoppingCart, FaUser, FaCoffee, FaSignOutAlt, FaTachometerAlt, FaUtensils, FaBars, FaTimes } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaCoffee, FaSignOutAlt, FaTachometerAlt, FaUtensils, FaBars, FaTimes, FaComment } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { useFeedbackModal } from '../../context/FeedbackModalContext';
@@ -29,6 +29,7 @@ const Navbar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [searchProductsLoaded, setSearchProductsLoaded] = useState(false);
+  const { toggleFeedbackModal } = useFeedbackModal(); // Move hook outside of callbacks
 
   // Close on route change
   useEffect(() => { setDrawerOpen(false); }, [location.pathname]);
@@ -117,7 +118,7 @@ const Navbar = () => {
               <Link
                 key={link.to}
                 to={link.to}
-                className={`app-nav-link ${isLinkActive(link) ? 'active' : ''}`}
+                className={`app-nav-link${isLinkActive(link) ? ' active' : ''}`}
               >
                 {link.label}
               </Link>
@@ -162,10 +163,7 @@ const Navbar = () => {
                     <Dropdown.Item as={Link} to="/kitchen"><FaUtensils className="me-2" />Kitchen Staff</Dropdown.Item>
                   )}
                   <Dropdown.Divider />
-                  <Dropdown.Item onClick={() => {
-                    const { toggleFeedbackModal } = useFeedbackModal();
-                    toggleFeedbackModal();
-                  }}>
+                  <Dropdown.Item onClick={() => toggleFeedbackModal()}>
                     <FaComment className="me-2" />Feedback
                   </Dropdown.Item>
                   <Dropdown.Item onClick={handleLogout}>
@@ -194,10 +192,7 @@ const Navbar = () => {
             {isAuthenticated && (
               <button
                 className="app-navbar-feedback-btn"
-                onClick={() => {
-                  const { toggleFeedbackModal } = useFeedbackModal();
-                  toggleFeedbackModal();
-                }}
+                onClick={() => toggleFeedbackModal()}
                 aria-label="Open feedback"
               >
                 <FaComment />
@@ -258,7 +253,7 @@ const Navbar = () => {
             <Link
               key={link.to}
               to={link.to}
-              className={`app-nav-drawer-link ${isLinkActive(link) ? 'active' : ''}`}
+              className={`app-nav-drawer-link${isLinkActive(link) ? ' active' : ''}`}
               onClick={closeDrawer}
             >
               {link.label}
@@ -280,10 +275,7 @@ const Navbar = () => {
                 <Link to="/kitchen" className="app-nav-drawer-link" onClick={closeDrawer}><FaUtensils className="me-2" />Kitchen Staff</Link>
               )}
               {/* Feedback button */}
-              <button className="app-nav-drawer-feedback" onClick={() => {
-                const { toggleFeedbackModal } = useFeedbackModal();
-                toggleFeedbackModal();
-              }}>
+              <button className="app-nav-drawer-feedback" onClick={() => toggleFeedbackModal()}>
                 <FaComment className="me-2" />Feedback
               </button>
               <button className="app-nav-drawer-logout" onClick={handleLogout}>

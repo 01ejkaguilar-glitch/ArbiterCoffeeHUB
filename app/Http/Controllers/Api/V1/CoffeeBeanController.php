@@ -81,36 +81,20 @@ class CoffeeBeanController extends BaseController
      */
     public function store(StoreCoffeeBeanRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'origin_country' => 'required|string|max:255',
-            'region' => 'nullable|string|max:255',
-            'elevation' => 'nullable|string|max:255',
-            'processing_method' => 'nullable|string|max:255',
-            'variety' => 'nullable|string|max:255',
-            'tasting_notes' => 'nullable|string',
-            'producer' => 'nullable|string|max:255',
-            'stock_quantity' => 'required|integer|min:0',
-            'is_featured' => 'boolean',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'image_url' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
-        if ($validator->fails()) {
-            return $this->sendValidationError($validator->errors()->toArray());
-        }
-
-        $data = $request->except('image');
-        
         // Handle file upload
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $imageName = time() . '_' . $image->getClientOriginalName();
             $image->move(public_path('storage/coffee-beans'), $imageName);
-            $data['image_url'] = '/storage/coffee-beans/' . $imageName;
+            $validated['image_url'] = '/storage/coffee-beans/' . $imageName;
         }
 
-        $bean = CoffeeBean::create($data);
+        // Remove the image field from validated data as we don't store it directly
+        unset($validated['image']);
+
+        $bean = CoffeeBean::create($validated);
 
         return $this->sendCreated($bean, 'Coffee bean created successfully');
     }
@@ -140,41 +124,25 @@ class CoffeeBeanController extends BaseController
             return $this->sendNotFound('Coffee bean not found');
         }
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|string|max:255',
-            'origin_country' => 'sometimes|string|max:255',
-            'region' => 'nullable|string|max:255',
-            'elevation' => 'nullable|string|max:255',
-            'processing_method' => 'nullable|string|max:255',
-            'variety' => 'nullable|string|max:255',
-            'tasting_notes' => 'nullable|string',
-            'producer' => 'nullable|string|max:255',
-            'stock_quantity' => 'sometimes|integer|min:0',
-            'is_featured' => 'boolean',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'image_url' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
-        if ($validator->fails()) {
-            return $this->sendValidationError($validator->errors()->toArray());
-        }
-
-        $data = $request->except(['image', '_method']);
-        
         // Handle file upload
         if ($request->hasFile('image')) {
             // Delete old image if exists
             if ($bean->image_url && file_exists(public_path($bean->image_url))) {
                 unlink(public_path($bean->image_url));
             }
-            
+
             $image = $request->file('image');
             $imageName = time() . '_' . $image->getClientOriginalName();
             $image->move(public_path('storage/coffee-beans'), $imageName);
-            $data['image_url'] = '/storage/coffee-beans/' . $imageName;
+            $validated['image_url'] = '/storage/coffee-beans/' . $imageName;
         }
 
-        $bean->update($data);
+        // Remove the image field from validated data as we don't store it directly
+        unset($validated['image']);
+
+        $bean->update($validated);
 
         return $this->sendResponse($bean, 'Coffee bean updated successfully');
     }

@@ -4,7 +4,7 @@ import {
   ResponsiveRow,
   ResponsiveCol,
   ResponsiveCard
-} from '@/components/responsive';
+} from '../components/responsive';
 import { Link } from 'react-router-dom';
 import { FaHome, FaCoffee, FaEnvelope, FaSearch } from 'react-icons/fa';
 import SEO from '../components/SEO';

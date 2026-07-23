@@ -73,7 +73,6 @@ const createFeedback = (type, details, context = {}) => {
 
 export {
   FeedbackService,
-  FEEDBACK_TYPES,
   createFeedback
 };
 

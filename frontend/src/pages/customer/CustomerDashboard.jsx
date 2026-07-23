@@ -8,19 +8,20 @@ import {
   ResponsiveCard,
   ResponsiveRow,
   ResponsiveCol,
-  ResponsiveProgressBar
-} from '@/components/responsive';
+  ResponsiveProgressBar,
+  ResponsiveModal
+} from '../../components/responsive';
 import {
   FaShoppingBag, FaCheckCircle, FaClock, FaWallet,
   FaCoffee, FaClipboardList, FaUser, FaStar,
   FaChevronRight, FaArrowRight, FaFire, FaMoon,
-  FaGift, FaTrophy, FaCalendarAlt
+  FaGift, FaTrophy, FaCalendarAlt, FaChevronUp, FaChevronDown
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
-import { useApiError } from '../../hooks/useApiError';
+import useApiError from '../../hooks/useApiError';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import { AreaMetricChart } from '../../components/charts';
@@ -262,36 +263,6 @@ const QUICK_ACTIONS = [
   { path: '/profile', label: 'Profile', icon: FaUser, color: 'rgba(0,104,55,0.1)', iconColor: 'var(--color-dark-green)', desc: 'Account settings' },
 ];
 
-/* ── motion variants ── */
-const isLowerEndDevice = useMemo(() => {
-    // Check hardware concurrency (number of CPU cores)
-    const hardwareConcurrency = navigator.hardwareConcurrency || 0;
-
-    // Check device memory if available (in GB)
-    const deviceMemory = navigator.deviceMemory || 0;
-
-    // Consider lower-end if:
-    // - Less than 4 CPU cores
-    // - Less than 4GB RAM
-    // - Or if we can't determine, assume it's not lower-end to avoid degrading experience unnecessarily
-    return (hardwareConcurrency > 0 && hardwareConcurrency < 4) ||
-           (deviceMemory > 0 && deviceMemory < 4);
-  }, []);
-
-  const fadeUp = useMemo(() => {
-    // Reduce animation duration and delay for lower-end devices
-    const duration = isLowerEndDevice ? 0.2 : 0.4;
-    const delay = isLowerEndDevice ? 0.03 : 0.06;
-
-    return {
-      hidden: { opacity: 0, y: 20 },
-      visible: (i) => ({
-        opacity: 1,
-        y: 0,
-        transition: { delay: i * delay, duration: duration }
-      })
-    };
-  }, [isLowerEndDevice]);
 
 /* ================================================================ */
 
@@ -304,9 +275,19 @@ const CustomerDashboard = () => {
   const [rewardsLoading, setRewardsLoading] = useState(true);
   const [previewReward, setPreviewReward] = useState(null);
   const [redemptionLoading, setRedemptionLoading] = useState(false);
+  const [expandedDates, setExpandedDates] = useState(new Set());
   const { showSuccessNotification, showErrorNotification } = useNotificationSystem();
   const { errorInfo, getErrorInfo } = useApiError();
+  const { onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(
+    () => {
+      fetchDashboard();
+      fetchAnalytics();
+      fetchRewards();
+    },
+    { threshold: 100 }
+  );
 
+  // ALL HOOKS MUST BE AT THE TOP - Move useMemo hooks here
   const stats = dashboardData?.statistics || {};
   const recentOrders = useMemo(() => dashboardData?.recent_orders || [], [dashboardData]);
   const activeOrder = dashboardData?.active_order;
@@ -324,9 +305,38 @@ const CustomerDashboard = () => {
     return map;
   }, [recentOrders]);
 
-  useEffect(() => { fetchDashboard(); }, []);
-  useEffect(() => { fetchAnalytics(); }, []);
-  useEffect(() => { fetchRewards(); }, []);
+  // Group recent orders by date for collapsible sections
+  const groupedOrders = useMemo(() => {
+    if (!recentOrders || recentOrders.length === 0) return [];
+
+    // Group by date (YYYY-MM-DD)
+    const groups = {};
+
+    recentOrders.forEach(order => {
+      const date = new Date(order.created_at).toISOString().split('T')[0];
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(order);
+    });
+
+    // Convert to array and sort by date (newest first)
+    return Object.entries(groups)
+      .map(([date, orders]) => ({
+        date,
+        orders: orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      }))
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [recentOrders]);
+
+  // Animation variant for motion components
+  const fadeUp = useMemo(() => {
+    return {
+      initial: { y: 20, opacity: 0 },
+      animate: { y: 0, opacity: 1 },
+      transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }
+    };
+  }, []);
 
   const fetchDashboard = async () => {
     try {
@@ -451,43 +461,6 @@ const CustomerDashboard = () => {
   const completionRate = stats.total_orders > 0
     ? ((stats.completed_orders / stats.total_orders) * 100).toFixed(0)
     : 0;
-
-  // Track which date groups are expanded
-  const [expandedDates, setExpandedDates] = useState(new Set());
-
-  // Group recent orders by date for collapsible sections
-  const groupedOrders = useMemo(() => {
-    if (!recentOrders || recentOrders.length === 0) return [];
-
-    // Group by date (YYYY-MM-DD)
-    const groups = {};
-
-    recentOrders.forEach(order => {
-      const date = new Date(order.created_at).toISOString().split('T')[0];
-      if (!groups[date]) {
-        groups[date] = [];
-      }
-      groups[date].push(order);
-    });
-
-    // Convert to array and sort by date (newest first)
-    return Object.entries(groups)
-      .map(([date, orders]) => ({
-        date,
-        orders: orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      }))
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
-  }, [recentOrders]);
-
-  // Set up pull-to-refresh hook
-  const { onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(
-    () => {
-      fetchDashboard();
-      fetchAnalytics();
-      fetchRewards();
-    },
-    { threshold: 100 }
-  );
 
   return (
     <main
@@ -854,8 +827,8 @@ const CustomerDashboard = () => {
                   <p className="cdb-empty-text">No orders yet. Ready for your first cup?</p>
                   <Link to="/products" className="cdb-empty-link">Browse Menu <FaArrowRight className="ms-1" size={12} /></Link>
                 </div>
-              )}
-              </div>
+              )
+              }
             </div>
           </div>
 

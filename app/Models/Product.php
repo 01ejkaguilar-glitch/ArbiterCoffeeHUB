@@ -72,7 +72,7 @@ class Product extends Model
         'recipe_instructions' => 'array',
         'recommended_water_temp' => 'decimal:1',
         'recommended_brew_time' => 'integer',
-        'coffee_to_water_ratio' => 'decimal:2',
+        'coffee_to_water_ratio' => 'string',
     ];
 
     /**

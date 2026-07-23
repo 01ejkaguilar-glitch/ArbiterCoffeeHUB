@@ -11,14 +11,14 @@
   left: 0;
   right: 0;
   height: 64px;
-  background: var(--color-white, #ffffff);
-  border-top: 1px solid var(--color-border-default, #e0e0e0);
+  background: var(--color-white);
+  border-top: 1px solid var(--color-border-light);
   display: none; /* Hidden by default, shown on mobile */
   justify-content: space-around;
   align-items: center;
   z-index: 1000;
   padding-bottom: env(safe-area-inset-bottom, 0);
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -2px 10px var(--shadow-xs);
 }
 
 /* Show on mobile only */
@@ -47,26 +47,26 @@
   align-items: center;
   justify-content: center;
   min-height: 64px;
-  color: var(--color-border-dark, #999999);
+  color: var(--color-text-secondary);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color var(--transition-fast);
   position: relative;
   -webkit-tap-highlight-color: transparent;
 }
 
 .bottom-nav-item:visited {
-  color: var(--color-border-dark, #999999);
+  color: var(--color-text-secondary);
 }
 
 .bottom-nav-item:hover,
 .bottom-nav-item:focus {
-  color: var(--color-dark-green, #006837);
+  color: var(--color-dark-green);
   text-decoration: none;
 }
 
 .bottom-nav-item.active,
 .bottom-nav-item.active:visited {
-  color: var(--color-dark-green, #006837);
+  color: var(--color-dark-green);
 }
 
 /* Icon Wrapper */
@@ -91,12 +91,12 @@
 
 /* Label */
 .bottom-nav-label {
-  font-size: var(--font-size-xs, 0.64rem);
-  font-weight: var(--font-weight-medium, 500);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  margin-top: 2px;
-  transition: opacity 0.2s ease;
+  margin-top: var(--spacing-1);
+  transition: opacity var(--transition-fast);
 }
 
 /* Badge */

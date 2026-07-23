@@ -10,15 +10,16 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FaSearch, 
-  FaTimes, 
-  FaHistory, 
-  FaFire, 
+import {
+  FaSearch,
+  FaTimes,
+  FaHistory,
+  FaFire,
   FaCoffee,
   FaArrowRight,
   FaSpinner
 } from 'react-icons/fa';
+import classNames from 'classnames';
 import useSearch from '../../hooks/useSearch';
 import './SearchDropdown.css';
 
@@ -200,7 +201,7 @@ const SearchDropdown = ({
   );
 
   return (
-    <div className={`search-dropdown-container ${className}`} ref={dropdownRef}>
+    <div className={classNames('search-dropdown-container', className)} ref={dropdownRef}>
       {/* Search Input */}
       <div className="search-input-wrapper">
         <FaSearch className="search-icon" aria-hidden="true" />
@@ -266,7 +267,9 @@ const SearchDropdown = ({
                   {displayedResults.map((product, index) => (
                     <li
                       key={product.id}
-                      className={`search-result-item ${index === selectedIndex ? 'selected' : ''}`}
+                      className={classNames('search-result-item', {
+                        selected: index === selectedIndex
+                      })}
                       onClick={() => handleResultClick(product)}
                       onMouseEnter={() => setSelectedIndex(index)}
                       role="option"

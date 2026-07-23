@@ -17,7 +17,7 @@ import ProductGrid from '../../components/product/ProductGrid';
 import {
   ResponsiveButton,
   ResponsiveContainer,
-  ResponsiveResponsiveCol,
+  ResponsiveCol,
   ResponsiveForm,
   ResponsiveInputGroup,
   ResponsiveDropdown,
@@ -246,7 +246,7 @@ const ProductsPage = () => {
               </ResponsiveDropdown.Menu>
             </ResponsiveDropdown>
           </ResponsiveCol>
-        </Row>
+        </ResponsiveRow>
 
         {/* Inline ResponsiveCollapsible Filters */}
         {showFilters && (

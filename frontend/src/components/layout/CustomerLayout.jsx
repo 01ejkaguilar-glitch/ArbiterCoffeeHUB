@@ -9,7 +9,7 @@ import LoadingFallback from '../common/LoadingFallback';
  * Layout for authenticated customer pages: Navbar + content + Footer.
  * Redirects to /login if not authenticated.
  */
-function CustomerLayout() {
+function CustomerLayout({ children }) {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) return <LoadingFallback />;
@@ -20,7 +20,7 @@ function CustomerLayout() {
       <a href="#main-content" className="skip-link">Skip to main content</a>
       <Navbar />
       <div id="main-content" className="flex-grow-1">
-        <Outlet />
+        {children || <Outlet />}
       </div>
       <Footer />
     </div>

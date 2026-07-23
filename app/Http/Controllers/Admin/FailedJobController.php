@@ -28,6 +28,16 @@ class FailedJobController extends Controller
         $sortDirection = $request->input('sort_direction', 'desc');
         $perPage = $request->input('per_page', 25);
 
+        // Validate sort parameters to prevent SQL injection
+        $allowedSortColumns = ['id', 'connection', 'queue', 'failed_at', 'exception'];
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'failed_at';
+        }
+
+        if (!in_array(strtolower($sortDirection), ['asc', 'desc'])) {
+            $sortDirection = 'desc';
+        }
+
         // Build query
         $query = DB::table('failed_jobs');
 

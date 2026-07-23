@@ -12,7 +12,7 @@ import {
   ResponsiveForm,
   ResponsiveModal,
   ResponsiveTable
-} from '@/components/responsive';
+} from '../../components/responsive';
 import './AdminWorkforce.css';
 
 const blankForm = () => ({

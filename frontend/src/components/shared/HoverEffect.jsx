@@ -7,6 +7,8 @@ export const HoverEffect = ({ children, className = '', ...props }) => {
   return (
     <div
       className={`${className} ${isHovered ? 'hover-effect' : ''}`}
+      onMouseEnterCapture={() => setIsHovered(true)}
+      onMouseLeaveCapture={() => setIsHovered(false)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       {...props}

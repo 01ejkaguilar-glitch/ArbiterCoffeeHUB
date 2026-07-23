@@ -107,12 +107,12 @@ const AnnouncementDetailPage = () => {
       {/* Hero */}
       <section className="hero-section" aria-labelledby="announcement-detail-heading">
         <ResponsiveContainer>
-          <Row className="align-items-center">
-            <Col lg={8} className="mx-auto text-center">
+          <ResponsiveRow className="align-items-center">
+            <ResponsiveCol lg={8} className="mx-auto text-center">
               <span className="hero-eyebrow">
-                <Badge bg={getCategoryBadge(announcement.category)} className="text-capitalize">
+                <ResponsiveBadge bg={getCategoryBadge(announcement.category)} className="text-capitalize">
                   {announcement.category}
-                </Badge>
+                </ResponsiveBadge>
               </span>
               <h1 id="announcement-detail-heading" className="hero-title mt-2">
                 {announcement.title}
@@ -127,15 +127,15 @@ const AnnouncementDetailPage = () => {
                   })}
                 </time>
               </p>
-            </Col>
-          </Row>
+            </ResponsiveCol>
+          </ResponsiveRow>
         </ResponsiveContainer>
       </section>
 
       <ResponsiveContainer className="py-5">
         {/* Back link */}
-        <Row className="mb-4">
-          <Col>
+        <ResponsiveRow className="mb-4">
+          <ResponsiveCol>
             <ResponsiveButton
               variant="link"
               className="p-0 text-muted d-flex align-items-center gap-2"
@@ -144,11 +144,11 @@ const AnnouncementDetailPage = () => {
             >
               <FaArrowLeft /> Back to Announcements
             </ResponsiveButton>
-          </Col>
-        </Row>
+          </ResponsiveCol>
+        </ResponsiveRow>
 
-        <Row className="justify-content-center">
-          <Col lg={8}>
+        <ResponsiveRow className="justify-content-center">
+          <ResponsiveCol lg={8}>
             <article className="announcement-card" style={{ border: 'none', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
               {/* Featured image */}
               {announcement.featured_image && (
@@ -210,8 +210,8 @@ const AnnouncementDetailPage = () => {
                 <FaArrowLeft className="me-2" /> All Announcements
               </ResponsiveButton>
             </div>
-          </Col>
-        </Row>
+          </ResponsiveCol>
+        </ResponsiveRow>
       </ResponsiveContainer>
     </main>
   );

@@ -10,7 +10,7 @@ const Badge = ({
   ...props
 }) => {
   return (
-    <span className={`badge badge-${variant} ${pill ? 'badge-pill' : ''} ${className}`} {...props}>
+    <span className={`badge badge-${variant}${pill ? ' badge-pill' : ''}${className ? ` ${className}` : ''}`} {...props}>
       {children}
     </span>
   );

@@ -7,8 +7,8 @@
 .swipeable-gallery {
   position: relative;
   width: 100%;
-  background-color: var(--surface, #f5f5f5);
-  border-radius: var(--border-radius-lg, 12px);
+  background-color: var(--color-bg-light);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   -webkit-user-select: none;
   user-select: none;
@@ -23,8 +23,8 @@
 }
 
 .swipeable-gallery-placeholder {
-  color: var(--text-secondary, #666);
-  font-size: var(--font-size-sm, 0.8rem);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
 }
 
 /* Viewport */
@@ -65,15 +65,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(var(--color-white-rgb), 0.9);
   border: none;
   border-radius: 50%;
-  color: var(--text-primary, #333);
-  font-size: var(--font-size-base, 1rem);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
   cursor: pointer;
   z-index: 10;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
   opacity: 0;
 }
 
@@ -83,17 +83,17 @@
 }
 
 .swipeable-gallery-nav.prev {
-  left: 8px;
+  left: var(--spacing-2);
 }
 
 .swipeable-gallery-nav.next {
-  right: 8px;
+  right: var(--spacing-2);
 }
 
 .swipeable-gallery-nav:hover:not(:disabled) {
-  background: white;
+  background: var(--color-white);
   transform: translateY(-50%) scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .swipeable-gallery-nav:disabled {
@@ -119,21 +119,21 @@
 /* Expand Button */
 .swipeable-gallery-expand {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 44px;
-  height: 44px;
+  top: var(--spacing-3);
+  right: var(--spacing-3);
+  width: var(--button-size-md);
+  height: var(--button-size-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(var(--color-black-rgb), 0.6);
   border: none;
-  border-radius: 8px;
-  color: white;
-  font-size: var(--font-size-sm, 0.8rem);
+  border-radius: var(--radius-lg);
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
   cursor: pointer;
   z-index: 10;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
   opacity: 0;
 }
 
@@ -143,20 +143,20 @@
 }
 
 .swipeable-gallery-expand:hover {
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(var(--color-black-rgb), 0.8);
   transform: scale(1.05);
 }
 
 .swipeable-gallery-expand:focus-visible {
-  outline: 2px solid white;
+  outline: 2px solid var(--color-white);
   outline-offset: 2px;
 }
 
 @media (max-width: 768px) {
   .swipeable-gallery-expand {
     opacity: 0.8;
-    top: 8px;
-    right: 8px;
+    top: var(--spacing-2);
+    right: var(--spacing-2);
   }
 }
 

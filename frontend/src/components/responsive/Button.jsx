@@ -34,7 +34,7 @@ const ResponsiveButton = ({
   return (
     <button
       type="button"
-      className={`btn btn-${variant} btn-${size} ${disabled ? 'disabled' : ''} ${block ? 'w-100' : ''}`}
+      className={`btn btn-${variant} btn-${size}${disabled ? ' disabled' : ''}${block ? ' btn-block' : ''}`}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       disabled={disabled}

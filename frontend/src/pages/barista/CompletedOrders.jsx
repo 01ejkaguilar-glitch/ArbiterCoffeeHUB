@@ -194,6 +194,11 @@ const CompletedOrders = () => {
   );
 
   // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Set up pull-to-refresh hook
+  const { onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(
+    () => fetchCompletedOrders(false),
+    { threshold: 100 }
+  );
   return (
     <ResponsiveContainer className="co-page">
 
@@ -417,20 +422,6 @@ const CompletedOrders = () => {
       )}
     </ResponsiveContainer>
   );
+};
 
-// Set up pull-to-refresh hook
-const { onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(
-  () => fetchCompletedOrders(false),
-  { threshold: 100 }
-);
-
-return (
-  <ResponsiveContainer className="co-page"
-    onTouchStart={onTouchStart}
-    onTouchMove={onTouchMove}
-    onTouchEnd={onTouchEnd}
-    style={{ touchAction: 'manipulation' }}
-  >
-
-    {/* Top bar */}
-    <div className="co-topbar">
+export default CompletedOrders;

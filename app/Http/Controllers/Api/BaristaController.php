@@ -220,6 +220,10 @@ class BaristaController extends BaseController
     public function addCoffeeBean(StoreCoffeeBeanByBaristaRequest $request)
     {
         try {
+            $request->validate([
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            ]);
+
             $imageUrl = null;
             if ($request->hasFile('image')) {
                 $image = $request->file('image');

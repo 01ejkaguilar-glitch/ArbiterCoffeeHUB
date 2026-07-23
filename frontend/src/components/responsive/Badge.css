@@ -1,52 +1,54 @@
+/* Badge Component - Updated to follow Brand Identity Guidelines */
 .ai-badge {
   display: inline-block;
-  padding: 0.25em 0.5em;
-  font-size: 0.75em;
-  font-weight: 700;
-  line-height: 1;
+  padding: var(--spacing-1) var(--spacing-3); /* 4px 12px */
+  font-size: var(--font-size-sm); /* 12.8px */
+  font-weight: var(--font-weight-semibold); /* 600 */
+  line-height: 1.2;
   text-align: center;
   white-space: nowrap;
   vertical-align: baseline;
-  border-radius: 0.25rem;
-  margin-left: 0.25rem;
+  border-radius: var(--radius-full); /* 9999px for pill shape */
 }
 
-.ai-badge-primary {
-  background-color: #0d6efd;
-  color: #fff;
-}
-
-.ai-badge-secondary {
-  background-color: #6c757d;
-  color: #fff;
-}
-
+/* Status/Semantic Colors - Using brand colors from colors.css */
 .ai-badge-success {
-  background-color: #28a745;
-  color: #fff;
+  background-color: var(--color-success); /* #2D7A2F */
+  color: var(--color-white);
 }
 
 .ai-badge-danger {
-  background-color: #dc3545;
-  color: #fff;
+  background-color: var(--color-danger); /* #C41E3A */
+  color: var(--color-white);
 }
 
 .ai-badge-warning {
-  background-color: #ffc107;
-  color: #212529;
+  background-color: var(--color-warning); /* #9B6B00 */
+  color: var(--color-white);
 }
 
 .ai-badge-info {
-  background-color: #17a2b8;
-  color: #fff;
+  background-color: var(--color-info); /* #0D5F8F */
+  color: var(--color-white);
+}
+
+/* Additional variant styles */
+.ai-badge-primary {
+  background-color: var(--color-dark-green); /* #006837 */
+  color: var(--color-white);
+}
+
+.ai-badge-secondary {
+  background-color: var(--color-medium-green); /* #009245 */
+  color: var(--color-white);
 }
 
 .ai-badge-light {
-  background-color: #f8f9fa;
-  color: #212529;
+  background-color: var(--color-bg-light); /* #F8F9FA */
+  color: var(--color-text-primary); /* #1A1A1A */
 }
 
 .ai-badge-dark {
-  background-color: #343a40;
-  color: #fff;
+  background-color: var(--color-bg-dark); /* #1A1A1A */
+  color: var(--color-white);
 }

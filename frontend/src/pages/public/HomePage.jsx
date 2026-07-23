@@ -123,8 +123,8 @@ const HomePage = () => {
       {/* ── Hero Section ── */}
       <section aria-labelledby="hero-heading" className="hero-section">
         <ResponsiveContainer>
-          <Row className="align-items-center">
-            <Col lg={8} className="mx-auto text-center">
+          <ResponsiveRow className="align-items-center">
+            <ResponsiveCol lg={8} className="mx-auto text-center">
               <span className="hero-eyebrow">Specialty Coffee Experience</span>
               <h1 id="hero-heading" className="hero-title fade-in">
                 Welcome to<br />Arbiter Coffee
@@ -137,27 +137,27 @@ const HomePage = () => {
                 <ResponsiveButton to="/products" variant="outline-secondary" size="lg" aria-label="Browse our coffee products">
                   <FaCoffee className="me-2" aria-hidden="true" />
                   Browse Products
-                </Button>
+                </ResponsiveButton>
                 <ResponsiveButton as={Link} to="/about" variant="outline-secondary" size="lg" aria-label="Learn more about Arbiter Coffee">
                   Our Story
-                </Button>
+                </ResponsiveButton>
               </div>
-            </Col>
-          </Row>
+            </ResponsiveCol>
+          </ResponsiveRow>
         </ResponsiveContainer>
       </section>
 
       {/* ── Stats Bar ── */}
       <section className="stats-bar" aria-label="Key statistics">
         <ResponsiveContainer>
-          <Row className="g-0 text-center">
+          <ResponsiveRow className="g-0 text-center">
             {stats.map((stat, i) => (
-              <Col xs={6} md={3} key={i} className="stats-bar-item">
+              <ResponsiveCol xs={6} md={3} key={i} className="stats-bar-item">
                 <span className="stats-bar-value">{stat.value}</span>
                 <span className="stats-bar-label">{stat.label}</span>
-              </Col>
+              </ResponsiveCol>
             ))}
-          </Row>
+          </ResponsiveRow>
         </ResponsiveContainer>
       </section>
 
@@ -169,11 +169,11 @@ const HomePage = () => {
             <div className="section-divider" />
             <p>We bring you the best coffee experience through quality, sustainability, and craft</p>
           </div>
-          <Row className="g-4" role="list">
+          <ResponsiveRow className="g-4" role="list">
             {features.map((feat, i) => {
               const Icon = feat.icon;
               return (
-                <Col md={6} lg={3} key={i} role="listitem">
+                <ResponsiveCol md={6} lg={3} key={i} role="listitem">
                   <ResponsiveCard className="h-100">
                     <div className="feature-icon" aria-hidden="true">
                       <Icon />
@@ -181,10 +181,10 @@ const HomePage = () => {
                     <h3>{feat.title}</h3>
                     <p>{feat.text}</p>
                   </ResponsiveCard>
-                </Col>
+                </ResponsiveCol>
               );
             })}
-          </Row>
+          </ResponsiveRow>
         </ResponsiveContainer>
       </section>
 
@@ -196,11 +196,11 @@ const HomePage = () => {
             <div className="section-divider" />
             <p>From your first click to your first sip — it's effortless</p>
           </div>
-          <Row className="g-4 justify-content-center">
+          <ResponsiveRow className="g-4 justify-content-center">
             {steps.map((step, i) => {
               const Icon = step.icon;
               return (
-                <Col sm={6} lg={3} key={i}>
+                <ResponsiveCol sm={6} lg={3} key={i}>
                   <div className="process-step">
                     <div className="process-step-number">{i + 1}</div>
                     <div className="process-step-icon" aria-hidden="true">
@@ -209,10 +209,10 @@ const HomePage = () => {
                     <h3>{step.title}</h3>
                     <p>{step.text}</p>
                   </div>
-                </Col>
+                </ResponsiveCol>
               );
             })}
-          </Row>
+          </ResponsiveRow>
         </ResponsiveContainer>
       </section>
 
@@ -242,11 +242,11 @@ const HomePage = () => {
             <div className="section-divider" />
             <p>More than coffee — we're building a community rooted in quality and care</p>
           </div>
-          <Row className="g-4" role="list">
+          <ResponsiveRow className="g-4" role="list">
             {values.map((val, i) => {
               const Icon = val.icon;
               return (
-                <Col md={6} lg={3} key={i} role="listitem">
+                <ResponsiveCol md={6} lg={3} key={i} role="listitem">
                   <ResponsiveCard className="h-100">
                     <div className="feature-icon" aria-hidden="true">
                       <Icon />
@@ -254,33 +254,33 @@ const HomePage = () => {
                     <h3>{val.title}</h3>
                     <p>{val.text}</p>
                   </ResponsiveCard>
-                </Col>
+                </ResponsiveCol>
               );
             })}
-          </Row>
+          </ResponsiveRow>
         </ResponsiveContainer>
       </section>
 
       {/* ── Call to Action ── */}
       <section aria-labelledby="cta-heading" className="cta-section">
         <ResponsiveContainer>
-          <Row className="align-items-center">
-            <Col lg={7}>
+          <ResponsiveRow className="align-items-center">
+            <ResponsiveCol lg={7}>
               <h2 id="cta-heading">Start Your Coffee Journey Today</h2>
               <p className="lead mb-lg-0">
                 Join thousands of satisfied coffee lovers enjoying premium, freshly-roasted
                 coffee delivered right to their door. Sign up and get exclusive offers.
               </p>
-            </Col>
-            <Col lg={5} className="text-lg-end mt-4 mt-lg-0 d-flex gap-3 justify-content-lg-end justify-content-center flex-wrap">
+            </ResponsiveCol>
+            <ResponsiveCol lg={5} className="text-lg-end mt-4 mt-lg-0 d-flex gap-3 justify-content-lg-end justify-content-center flex-wrap">
               <ResponsiveButton to="/register" variant="outline-secondary" size="lg" aria-label="Sign up for an Arbiter Coffee account">
                 Sign Up Free <FaArrowRight className="ms-2" aria-hidden="true" />
               </ResponsiveButton>
               <ResponsiveButton to="/products" variant="outline-secondary" size="lg" aria-label="Browse products">
                 Shop Now
               </ResponsiveButton>
-            </Col>
-          </Row>
+            </ResponsiveCol>
+          </ResponsiveRow>
         </ResponsiveContainer>
       </section>
     </main>

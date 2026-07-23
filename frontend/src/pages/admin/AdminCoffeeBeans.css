@@ -11,8 +11,8 @@
 }
 
 .acb-stat-card {
-  background: #fff;
-  border: 1px solid #e9ecef;
+  background: var(--color-white);
+  border: 1px solid var(--color-bg-medium);
   border-radius: 12px;
   padding: 1.1rem 1.4rem;
   display: flex;
@@ -32,10 +32,10 @@
   font-size: 1rem;
   flex-shrink: 0;
 }
-.acb-stat-icon.green  { background: var(--color-success-bg); color: #2D7A2F; }
-.acb-stat-icon.amber  { background: #FFF8E6; color: #9B6B00; }
+.acb-stat-icon.green  { background: var(--color-success-bg); color: var(--color-success); }
+.acb-stat-icon.amber  { background: var(--color-warning-bg); color: var(--color-warning); }
 .acb-stat-icon.orange { background: #FFF3E0; color: #E65100; }
-.acb-stat-icon.red    { background: #FFEBEE; color: #C41E3A; }
+.acb-stat-icon.red    { background: var(--color-danger-bg); color: var(--color-danger); }
 
 .acb-stat-value {
   font-size: 1.5rem;

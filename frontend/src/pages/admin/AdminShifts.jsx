@@ -2,22 +2,22 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   FaCalendarAlt, FaSearch, FaPlus, FaEdit, FaTrash,
   FaTimes, FaSync, FaClock, FaUsers, FaChevronLeft, FaChevronRight,
-  FaExchangeAlt, FaStopwatch,
+  FaExchangeAlt, FaStopwatch, FaClipboardList, FaSignInAlt,
 } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
-import ResponsiveButton from '@/components/responsive/Button';
-import ResponsiveForm from '@/components/responsive/Form';
-import ResponsiveModal from '@/components/responsive/Modal';
-import ResponsiveTable from '@/components/responsive/Table';
-import ResponsiveCard from '@/components/responsive/Card';
-import ResponsiveAlert from '@/components/responsive/Alert';
-import ResponsiveSpinner from '@/components/responsive/Spinner';
-import ResponsiveBadge from '@/components/responsive/Badge';
-import ResponsiveContainer from '@/components/responsive/Container';
-import ResponsiveRow from '@/components/responsive/Row';
-import ResponsiveCol from '@/components/responsive/Col';
+import ResponsiveButton from '../../components/responsive/Button';
+import ResponsiveForm from '../../components/responsive/Form';
+import ResponsiveModal from '../../components/responsive/Modal';
+import ResponsiveTable from '../../components/responsive/Table';
+import ResponsiveCard from '../../components/responsive/Card';
+import ResponsiveAlert from '../../components/responsive/Alert';
+import ResponsiveSpinner from '../../components/responsive/Spinner';
+import ResponsiveBadge from '../../components/responsive/Badge';
+import ResponsiveContainer from '../../components/responsive/Container';
+import ResponsiveRow from '../../components/responsive/Row';
+import ResponsiveCol from '../../components/responsive/Col';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
 import './AdminWorkforce.css';
 

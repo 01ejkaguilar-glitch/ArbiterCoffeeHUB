@@ -63,7 +63,7 @@
 }
 
 .btn-outline:hover {
-  background-color: rgba(0, 0, 0, 0.02);
+  background-color: rgba(var(--color-black-rgb), 0.02);
 }
 
 /* Variant colors */
@@ -102,7 +102,7 @@
 }
 
 .btn-ghost:hover {
-  background-color: rgba(0, 104, 55, 0.08);
+  background-color: rgba(var(--color-dark-green-rgb), 0.08);
 }
 
 .btn-danger {
@@ -111,7 +111,7 @@
 }
 
 .btn-danger:hover {
-  background-color: #a3182f;
+  background-color: var(--color-danger-dark);
 }
 
 .btn-success {
@@ -120,7 +120,7 @@
 }
 
 .btn-success:hover {
-  background-color: #286326;
+  background-color: var(--color-medium-green);
 }
 
 .btn-warning {
@@ -129,7 +129,7 @@
 }
 
 .btn-warning:hover {
-  background-color: #7c5500;
+  background-color: var(--color-warning-dark);
 }
 
 .btn-info {
@@ -138,7 +138,7 @@
 }
 
 .btn-info:hover {
-  background-color: #0b4c72;
+  background-color: var(--color-info-dark);
 }
 
 .btn-link {

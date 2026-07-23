@@ -1,18 +1,20 @@
 // src/components/common/FeedbackModal.js
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FeedbackService, FEEDBACK_TYPES, createFeedback } from '@/utils/feedback';
-import { useSentry } from '@/hooks/useSentry';
-import { ResponsiveModal, ResponsiveForm, ResponsiveButton, ResponsiveAlert } from '@/components/responsive';
+import { FeedbackService, FEEDBACK_TYPES, createFeedback } from '../../utils/feedback';
+import { useSentry } from '../../hooks/useSentry';
+import { useFeedbackModal } from '../../context/FeedbackModalContext';
+import { ResponsiveModal, ResponsiveForm, ResponsiveButton, ResponsiveAlert } from '../../components/responsive';
 import { FaStar, FaComment, FaBug, FaLightbulb, FaTimes, FaCheck, FaSpinner } from 'react-icons/fa';
 
-const FeedbackModal = ({ show = false, onHide }) => {
+const FeedbackModal = () => {
+  const { showFeedbackModal, toggleFeedbackModal } = useFeedbackModal();
   const { t } = useTranslation();
   const { reportError } = useSentry();
   const [feedbackType, setFeedbackType] = useState(FEEDBACK_TYPES.GENERAL_FEEDBACK);
   const [rating, setRating] = useState(0);
   const [description, setDescription] = useState('');
-  const [ submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState(null);
 
@@ -90,7 +92,7 @@ const FeedbackModal = ({ show = false, onHide }) => {
   };
 
   const handleClose = () => {
-    onHide();
+    toggleFeedbackModal();
     setSubmitSuccess(false);
     setSubmitError(null);
     setRating(0);
@@ -98,14 +100,14 @@ const FeedbackModal = ({ show = false, onHide }) => {
     setFeedbackType(FEEDBACK_TYPES.GENERAL_FEEDBACK);
   };
 
-  if (!show) {
+  if (!showFeedbackModal) {
     return null;
   }
 
   return (
     <ResponsiveModal
-      show={show}
-      onHide={onHide}
+      show={showFeedbackModal}
+      onHide={toggleFeedbackModal}
       size="md"
       centered
       modalClassName="feedback-modal"

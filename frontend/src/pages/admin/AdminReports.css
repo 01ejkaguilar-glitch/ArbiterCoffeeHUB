@@ -5,14 +5,14 @@
 
 /* -- Filter Bar ----------------------------------- */
 .ar-filter-bar {
-  background: #fff;
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.25rem;
+  background: var(--color-white);
+  border: var(--border-width) solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4) var(--spacing-5);
+  margin-bottom: var(--spacing-5);
   display: flex;
   flex-wrap: wrap;
-  gap: .75rem;
+  gap: var(--spacing-3);
   align-items: flex-end;
 }
 
@@ -23,24 +23,24 @@
 }
 
 .ar-filter-label {
-  font-size: .72rem;
+  font-size: var(--font-size-xs);
   font-weight: 700;
-  color: #4A4A4A;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: var(--letter-spacing-wider);
 }
 
 .ar-input,
 .ar-select {
-  padding: .42rem .75rem;
-  border: 1.5px solid #d1d5db;
-  border-radius: 8px;
-  font-size: .875rem;
-  background: #fff;
-  color: #1A1A1A;
+  padding: var(--spacing-2) var(--spacing-3);
+  border: var(--border-width-medium) solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  background: var(--color-white);
+  color: var(--color-primary-black);
   outline: none;
-  transition: border-color .15s, box-shadow .15s;
-  height: 36px;
+  height: var(--button-size-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 .ar-input:focus,
 .ar-select:focus {
@@ -50,7 +50,7 @@
 
 .ar-filter-actions {
   display: flex;
-  gap: .5rem;
+  gap: var(--spacing-2);
   align-items: flex-end;
   margin-left: auto;
 }
@@ -165,9 +165,9 @@
 }
 
 .ar-stat-card {
-  background: #fff;
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
+  background: var(--color-white);
+  border: 1px solid var(--color-bg-medium);
+  border-radius: var(--radius-lg);
   padding: 1.1rem 1.4rem;
   display: flex;
   align-items: center;
@@ -187,9 +187,9 @@
   flex-shrink: 0;
 }
 .ar-stat-icon.blue   { background: var(--color-success-bg); color: var(--color-dark-green); }
-.ar-stat-icon.green  { background: var(--color-success-bg); color: #2D7A2F; }
-.ar-stat-icon.amber  { background: #FFF9E6; color: #9B6B00; }
-.ar-stat-icon.red    { background: #FFEBEE; color: #C41E3A; }
+.ar-stat-icon.green  { background: var(--color-success-bg); color: var(--color-success); }
+.ar-stat-icon.amber  { background: var(--color-warning-bg); color: var(--color-warning); }
+.ar-stat-icon.red    { background: var(--color-danger-bg); color: var(--color-danger); }
 .ar-stat-icon.teal   { background: var(--color-success-bg); color: var(--color-medium-green); }
 .ar-stat-icon.orange { background: #FFF3E0; color: #E65100; }
 

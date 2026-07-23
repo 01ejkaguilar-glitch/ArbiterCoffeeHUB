@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ResponsiveButton, ResponsiveForm, ResponsiveModal, ResponsiveAlert, ResponsiveCard } from '@/components/responsive';
+import { ResponsiveButton, ResponsiveForm, ResponsiveModal, ResponsiveAlert, ResponsiveCard } from '../../components/responsive';
 import {
   FaHistory, FaUsers, FaPlus, FaEdit, FaTrash, FaTimes,
   FaChevronUp, FaChevronDown, FaSave, FaUserCircle, FaSync,
@@ -7,7 +7,7 @@ import {
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
-import { useApiError } from '../../hooks/useApiError';
+import useApiError from '../../hooks/useApiError';
 import './AdminSettings.css';
 
 // ─── Blank helpers ────────────────────────────────────────────────────────────
@@ -77,40 +77,6 @@ const validateTeamMemberField = (field, value) => {
   return error;
 };
 
-const validateTimeline = () => {
-  const errors = {};
-  const isValid = true;
-
-  // Validate year
-  const yearError = validateTimelineField('year', tlForm.year);
-  if (yearError) errors.year = yearError;
-
-  // Validate title
-  const titleError = validateTimelineField('title', tlForm.title);
-  if (titleError) errors.title = titleError;
-
-  setTlErrors(errors);
-  return Object.keys(errors).length === 0;
-};
-
-const validateTeamMember = () => {
-  const errors = {};
-
-  // Validate name
-  const nameError = validateTeamMemberField('name', tmForm.name);
-  if (nameError) errors.name = nameError;
-
-  // Validate photo_url
-  const photoError = validateTeamMemberField('photo_url', tmForm.photo_url);
-  if (photoError) errors.photo_url = photoError;
-
-  // Validate display_order
-  const orderError = validateTeamMemberField('display_order', tmForm.display_order);
-  if (orderError) errors.display_order = orderError;
-
-  setTmErrors(errors);
-  return Object.keys(errors).length === 0;
-};
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const AdminSettings = () => {
@@ -130,6 +96,41 @@ const AdminSettings = () => {
   const [selected, setSelected]   = useState(null);
   const [tlForm, setTlForm]       = useState(blankTimeline());
   const [tmForm, setTmForm]       = useState(blankMember());
+
+  const validateTimeline = () => {
+    const errors = {};
+    const isValid = true;
+
+    // Validate year
+    const yearError = validateTimelineField('year', tlForm.year);
+    if (yearError) errors.year = yearError;
+
+    // Validate title
+    const titleError = validateTimelineField('title', tlForm.title);
+    if (titleError) errors.title = titleError;
+
+    setTlErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const validateTeamMember = () => {
+    const errors = {};
+
+    // Validate name
+    const nameError = validateTeamMemberField('name', tmForm.name);
+    if (nameError) errors.name = nameError;
+
+    // Validate photo_url
+    const photoError = validateTeamMemberField('photo_url', tmForm.photo_url);
+    if (photoError) errors.photo_url = photoError;
+
+    // Validate display_order
+    const orderError = validateTeamMemberField('display_order', tmForm.display_order);
+    if (orderError) errors.display_order = orderError;
+
+    setTmErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const clearAlert = (key) => setAlert(p => ({ ...p, [key]: null }));
   const showAlert = (key, msg, type = 'success') => {
@@ -299,23 +300,25 @@ const AdminSettings = () => {
                     <div className="as-entries">
                       {timeline.map((item, idx) => (
                         <div className="as-entry-card" key={item.id || idx}>
-                          <div className="as-entry-head">
-                            <div className="as-entry-num">{idx + 1}</div>
-                            <span className="as-entry-pill">{item.year}</span>
-                            <span className={`as-entry-title ${item.title ? '' : 'muted'}`}>{item.title || 'Untitled entry'}</span>
-                            <div className="as-entry-actions">
-                              <button className="as-icon-btn" title="Move up"   disabled={idx === 0}                   onClick={() => moveTl(idx, -1)}><FaChevronUp /></button>
-                              <button className="as-icon-btn" title="Move down" disabled={idx === timeline.length - 1} onClick={() => moveTl(idx, +1)}><FaChevronDown /></button>
-                              <button className="as-icon-btn" title="Edit" onClick={() => openTlEdit(item)}><FaEdit /></button>
-                              <button className="as-icon-btn danger" title="Delete" onClick={() => deleteTl(item)}><FaTrash /></button>
+                          <>
+                            <div className="as-entry-head">
+                              <div className="as-entry-num">{idx + 1}</div>
+                              <span className="as-entry-pill">{item.year}</span>
+                              <span className={`as-entry-title ${item.title ? '' : 'muted'}`}>{item.title || 'Untitled entry'}</span>
+                              <div className="as-entry-actions">
+                                <button className="as-icon-btn" title="Move up"   disabled={idx === 0}                   onClick={() => moveTl(idx, -1)}><FaChevronUp /></button>
+                                <button className="as-icon-btn" title="Move down" disabled={idx === timeline.length - 1} onClick={() => moveTl(idx, +1)}><FaChevronDown /></button>
+                                <button className="as-icon-btn" title="Edit" onClick={() => openTlEdit(item)}><FaEdit /></button>
+                                <button className="as-icon-btn" danger title="Delete" onClick={() => deleteTl(item)}><FaTrash /></button>
+                              </div>
                             </div>
-                          </div>
                             {item.description && (
-                            <div className="as-entry-body">
-                              <p style={{ margin: 0, fontSize: '.875rem', color: '#6b7280' }}>{item.description}</p>
-                            </div> )}
+                              <div className="as-entry-body">
+                                <p style={{ margin: 0, fontSize: '.875rem', color: '#6b7280' }}>{item.description}</p>
+                              </div> )}
+                          </>
                         </div>
-                      </div>
+                    ))}
                     ))}
                   </div>
                 )}

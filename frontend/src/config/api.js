@@ -23,36 +23,42 @@ const isLocalhostApiUrl = (value) => typeof value === 'string'
   && (value.includes('localhost:8000') || value.includes('127.0.0.1:8000'));
 
 const resolveApiBaseUrl = () => {
+  // If we're running on localhost, always use local API regardless of env var
+  if (isLocalRuntime) {
+    return 'http://localhost:8000/api/v1';
+  }
+
+  // If we're on production host, use env var or production default
   if (isProductionFrontendHost) {
     return apiBaseFromEnv && !isLocalhostApiUrl(apiBaseFromEnv)
       ? apiBaseFromEnv
       : productionApiBase;
   }
 
+  // For any other host, use env var if it's not a localhost URL, else fallback
   if (apiBaseFromEnv && !isLocalhostApiUrl(apiBaseFromEnv)) {
     return apiBaseFromEnv;
-  }
-
-  if (isLocalRuntime) {
-    return 'http://localhost:8000/api/v1';
   }
 
   return sameOriginApiBase;
 };
 
 const resolveBackendBaseUrl = () => {
+  // If we're running on localhost, always use local backend regardless of env var
+  if (isLocalRuntime) {
+    return 'http://localhost:8000';
+  }
+
+  // If we're on production host, use env var or production default
   if (isProductionFrontendHost) {
     return backendBaseFromEnv && !isLocalhostApiUrl(backendBaseFromEnv)
       ? backendBaseFromEnv
       : productionBackendBase;
   }
 
+  // For any other host, use env var if it's not a localhost URL, else fallback
   if (backendBaseFromEnv && !isLocalhostApiUrl(backendBaseFromEnv)) {
     return backendBaseFromEnv;
-  }
-
-  if (isLocalRuntime) {
-    return 'http://localhost:8000';
   }
 
   return window.location.origin;

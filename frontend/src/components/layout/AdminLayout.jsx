@@ -10,7 +10,7 @@ import '../../styles/admin.css';
  * Layout for admin pages: Sidebar + content area.
  * Redirects to /login if not authenticated, or / if not admin.
  */
-function AdminLayout() {
+function AdminLayout({ children }) {
   const { user, isAuthenticated, loading } = useAuth();
 
   if (loading) return <LoadingFallback />;
@@ -32,7 +32,7 @@ function AdminLayout() {
         ]}
       />
       <div className="flex-grow-1 min-vh-100 admin-content-area" style={{minWidth: 0}}>
-        <Outlet />
+        {children || <Outlet />}
       </div>
     </div>
   );

@@ -37,7 +37,7 @@ function Sidebar({ items, title, groups }) {
       <NavLink
         key={item.path}
         to={item.path}
-        className={`sidebar-link ${isActive ? 'active' : ''}`}
+        className={`sidebar-link${isActive ? ' active' : ''}`}
         title={!inDrawer && collapsed ? item.label : undefined}
         onClick={inDrawer ? closeDrawer : undefined}
       >
@@ -51,7 +51,7 @@ function Sidebar({ items, title, groups }) {
     <nav className="sidebar-nav">
       <NavLink
         to={`/${title.toLowerCase()}`}
-        className={({ isActive }) => `sidebar-link sidebar-dashboard-link ${isActive ? 'active' : ''}`}
+        className={({ isActive }) => `sidebar-link sidebar-dashboard-link${isActive ? ' active' : ''}`}
         title={!inDrawer && collapsed ? 'Dashboard' : undefined}
         onClick={inDrawer ? closeDrawer : undefined}
       >

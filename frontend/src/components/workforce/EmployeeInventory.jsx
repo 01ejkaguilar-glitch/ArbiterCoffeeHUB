@@ -343,8 +343,8 @@ const EmployeeInventory = ({
                     <p className="ic-item-name">{item.name}</p>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '.25rem' }}>
-                    <span className={`ic-type-badge ${item.type}`}>{item.type}</span>
-                    <span className={`ic-status ${stockInfo.cls}`}>{stockInfo.label}</span>
+                    <span className={`ic-type-badge${item.type ? ` ${item.type}` : ''}`}>{item.type}</span>
+                    <span className={`ic-status${stockInfo.cls ? ` ${stockInfo.cls}` : ''}`}>{stockInfo.label}</span>
                   </div>
                 </div>
 
@@ -357,7 +357,7 @@ const EmployeeInventory = ({
                     <span className="ic-reorder-label">reorder ≤ {item.reorder_level} {item.unit}</span>
                   </div>
                   <div className="ic-stock-bar-track">
-                    <div className={`ic-stock-bar-fill ${stockInfo.cls}`} style={{ width: `${stockInfo.barPct}%` }} />
+                    <div className={`ic-stock-bar-fill${stockInfo.cls ? ` ${stockInfo.cls}` : ''}`} style={{ width: `${stockInfo.barPct}%` }} />
                   </div>
                   {hasChange && (
                     <div className={`ic-delta${delta > 0 ? ' pos' : delta < 0 ? ' neg' : ''}`}>

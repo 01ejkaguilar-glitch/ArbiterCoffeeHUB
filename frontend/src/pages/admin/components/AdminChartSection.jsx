@@ -1,5 +1,5 @@
 import React from 'react';
-import ResponsiveCard from '@/components/responsive/Card';
+import ResponsiveCard from '../../../components/responsive/Card';
 
 const AdminChartSection = ({ stats, analyticsData }) => {
   return (

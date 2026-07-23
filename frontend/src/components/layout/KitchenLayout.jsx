@@ -9,7 +9,7 @@ import LoadingFallback from '../common/LoadingFallback';
  * Layout for kitchen staff pages: Sidebar + content area.
  * Redirects to /login if not authenticated, or / if not kitchen-staff.
  */
-function KitchenLayout() {
+function KitchenLayout({ children }) {
   const { user, isAuthenticated, loading } = useAuth();
 
   if (loading) return <LoadingFallback />;
@@ -31,7 +31,7 @@ function KitchenLayout() {
         ]}
       />
       <div className="flex-grow-1 min-vh-100 kitchen-content-area" style={{minWidth: 0}}>
-        <Outlet />
+        {children || <Outlet />}
       </div>
     </div>
   );

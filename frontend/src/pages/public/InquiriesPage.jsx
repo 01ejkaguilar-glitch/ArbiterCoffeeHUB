@@ -161,7 +161,7 @@ const InquiriesPage = () => {
               <p className="hero-subtitle">
                 Join our training program or book our mobile coffee service
               </p>
-            </Col>
+            </ResponsiveCol>
           </ResponsiveRow>
         </ResponsiveContainer>
       </section>
@@ -193,12 +193,11 @@ const InquiriesPage = () => {
           activeKey={activeTab}
           onSelect={(k) => setActiveTab(k)}
           className="mb-4"
-          fill
           role="tablist"
           aria-label="Service inquiry forms"
         >
           {/* Be A Barista Tab */}
-          <Tab
+          <ResponsiveTab
             eventKey="barista"
             title={
               <span>
@@ -229,7 +228,7 @@ const InquiriesPage = () => {
                           placeholder="Enter your full name"
                         />
                       </ResponsiveForm.Group>
-                    </Col>
+                    </ResponsiveCol>
                     <ResponsiveCol md={6}>
                       <ResponsiveForm.Group className="mb-3">
                         <ResponsiveForm.Label>Email Address *</ResponsiveForm.Label>
@@ -242,7 +241,7 @@ const InquiriesPage = () => {
                           placeholder="your.email@example.com"
                         />
                       </ResponsiveForm.Group>
-                    </Col>
+                    </ResponsiveCol>
                   </ResponsiveRow>
 
                   <ResponsiveRow>
@@ -258,7 +257,7 @@ const InquiriesPage = () => {
                           placeholder="+63 917 123 4567"
                         />
                       </ResponsiveForm.Group>
-                    </Col>
+                    </ResponsiveCol>
                     <ResponsiveCol md={6}>
                       <ResponsiveForm.Group className="mb-3">
                         <ResponsiveForm.Label>Experience Level *</ResponsiveForm.Label>
@@ -274,7 +273,7 @@ const InquiriesPage = () => {
                           <option value="advanced">Advanced - Professional experience</option>
                         </ResponsiveForm.Select>
                       </ResponsiveForm.Group>
-                    </Col>
+                    </ResponsiveCol>
                   </ResponsiveRow>
 
                   <ResponsiveForm.Group className="mb-3">
@@ -326,10 +325,10 @@ const InquiriesPage = () => {
                 </ResponsiveForm>
             </div>
             </section>
-          </Tab>
+          </ResponsiveTab>
 
           {/* Arbiter Express Tab */}
-          <Tab
+          <ResponsiveTab
             eventKey="express"
             title={
               <span>
@@ -361,7 +360,7 @@ const InquiriesPage = () => {
                           aria-required="true"
                         />
                       </ResponsiveForm.Group>
-                    </Col>
+                    </ResponsiveCol>
                     <ResponsiveCol md={6}>
                       <ResponsiveForm.Group className="mb-3">
                         <ResponsiveForm.Label htmlFor="express-email">Email Address *</ResponsiveForm.Label>
@@ -375,7 +374,7 @@ const InquiriesPage = () => {
                           placeholder="your.email@example.com"
                         />
                       </ResponsiveForm.Group>
-                    </Col>
+                    </ResponsiveCol>
                   </ResponsiveRow>
 
                   <ResponsiveRow>
@@ -391,7 +390,7 @@ const InquiriesPage = () => {
                           placeholder="+63 917 123 4567"
                         />
                       </ResponsiveForm.Group>
-                    </Col>
+                    </ResponsiveCol>
                     <ResponsiveCol md={6}>
                       <ResponsiveForm.Group className="mb-3">
                         <ResponsiveForm.Label>Event Date *</ResponsiveForm.Label>
@@ -404,7 +403,7 @@ const InquiriesPage = () => {
                           min={new Date().toISOString().split('T')[0]}
                         />
                       </ResponsiveForm.Group>
-                    </Col>
+                    </ResponsiveCol>
                   </ResponsiveRow>
 
                   <ResponsiveRow>
@@ -419,7 +418,7 @@ const InquiriesPage = () => {
                           required
                         />
                       </ResponsiveForm.Group>
-                    </Col>
+                    </ResponsiveCol>
                     <ResponsiveCol md={6}>
                       <ResponsiveForm.Group className="mb-3">
                         <ResponsiveForm.Label>Number of Guests *</ResponsiveForm.Label>
@@ -433,7 +432,7 @@ const InquiriesPage = () => {
                           placeholder="Expected number of guests"
                         />
                       </ResponsiveForm.Group>
-                    </Col>
+                    </ResponsiveCol>
                   </ResponsiveRow>
 
                   <ResponsiveForm.Group className="mb-3">
@@ -464,7 +463,7 @@ const InquiriesPage = () => {
                           <option value="custom">Custom - Tailored Package</option>
                         </ResponsiveForm.Select>
                       </ResponsiveForm.Group>
-                    </Col>
+                    </ResponsiveCol>
                     <ResponsiveCol md={6}>
                       <ResponsiveForm.Group className="mb-3">
                         <ResponsiveForm.Label>Budget Range</ResponsiveForm.Label>
@@ -480,7 +479,7 @@ const InquiriesPage = () => {
                           <option value="50000+">₱50,000+</option>
                         </ResponsiveForm.Select>
                       </ResponsiveForm.Group>
-                    </Col>
+                    </ResponsiveCol>
                   </ResponsiveRow>
 
                   <ResponsiveForm.Group className="mb-3">
@@ -520,7 +519,7 @@ const InquiriesPage = () => {
                 </ResponsiveForm>
             </div>
             </section>
-          </Tab>
+          </ResponsiveTab>
         </ResponsiveTabs>
       </ResponsiveContainer>
     </main>

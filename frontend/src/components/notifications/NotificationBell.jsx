@@ -121,11 +121,11 @@ const NotificationBell = ({ className = '' }) => {
   };
 
   return (
-    <div className={`nt-bell-wrap ${className}`}>
+    <div className={`nt-bell-wrap${className ? ` ${className}` : ''}`}>
       {/* ── Bell button ── */}
       <button
         ref={bellRef}
-        className={`nt-bell-btn ${isOpen ? 'nt-bell-btn--active' : ''}`}
+        className={`nt-bell-btn${isOpen ? ' nt-bell-btn--active' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
         aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
         aria-expanded={isOpen}

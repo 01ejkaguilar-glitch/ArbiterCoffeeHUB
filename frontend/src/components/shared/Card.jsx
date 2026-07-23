@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './Card.css';
-import { HoverEffect } from './HoverEffect';
 
 const Card = ({
   children,
@@ -15,9 +14,38 @@ const Card = ({
   footer,
   ...props
 }) => {
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const node = cardRef.current;
+
+    if (!node) {
+      return undefined;
+    }
+
+    const handleMouseEnter = () => {
+      node.classList.add('hover-effect');
+    };
+    const handleMouseLeave = () => {
+      node.classList.remove('hover-effect');
+    };
+
+    node.addEventListener('mouseenter', handleMouseEnter);
+    node.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      node.removeEventListener('mouseenter', handleMouseEnter);
+      node.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
   return (
-    <HoverEffect className={className}>
-      <div className={`card ${className}`} {...props}>
+    <div
+      ref={cardRef}
+      className={`card ${className}`}
+      role="region"
+      {...props}
+    >
         {imgProps && (
           <div className="card-img-top">
             <img {...imgProps} alt="" />
@@ -40,8 +68,7 @@ const Card = ({
             {footer}
           </div>
         ) : null}
-      </div>
-    </HoverEffect>
+    </div>
   );
 };
 

@@ -8,7 +8,7 @@
  */
 
 import React, { useState } from 'react';
-import { ResponsiveContainer } from '@/components/responsive';
+import { ResponsiveContainer } from '../../components/responsive';
 import { Link } from 'react-router-dom';
 import {
   FaBell,
@@ -106,7 +106,7 @@ const NotificationPreferences = () => {
       <SEO title="Notification Settings" description="Manage your notification preferences" />
 
       <main className="np-page">
-        <Container className="np-container">
+        <ResponsiveContainer className="np-container">
           {/* ── Back link ── */}
           <Link to="/notifications" className="np-back">
             <HiOutlineArrowLeft /> Back to Notifications
@@ -213,7 +213,7 @@ const NotificationPreferences = () => {
               You can manage email notification preferences in your account settings.
             </p>
           </div>
-        </Container>
+        </ResponsiveContainer>
       </main>
     </>
   );

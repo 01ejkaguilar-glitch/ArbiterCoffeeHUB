@@ -73,8 +73,8 @@ const ImageGallery = ({
   return (
     <div className="image-gallery" role="region" aria-label={`Image gallery for ${productName}`}>
       {/* Main Image Container */}
-      <div 
-        className={`main-image-container ${isZoomed ? 'zoomed' : ''}`}
+      <div
+        className={`main-image-container${isZoomed ? ' zoomed' : ''}`}
         onMouseEnter={() => setIsZoomed(true)}
         onMouseLeave={() => {
           setIsZoomed(false);
@@ -161,7 +161,7 @@ const ImageGallery = ({
           {galleryImages.map((image, index) => (
             <motion.button
               key={index}
-              className={`thumbnail ${index === activeIndex ? 'active' : ''}`}
+              className={`thumbnail${index === activeIndex ? ' active' : ''}`}
               onClick={() => setActiveIndex(index)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -293,7 +293,7 @@ const ImageGallery = ({
               {galleryImages.map((image, index) => (
                 <button
                   key={index}
-                  className={`fullscreen-thumbnail ${index === activeIndex ? 'active' : ''}`}
+                  className={`fullscreen-thumbnail${index === activeIndex ? ' active' : ''}`}
                   onClick={() => setActiveIndex(index)}
                   aria-label={`View image ${index + 1}`}
                 >

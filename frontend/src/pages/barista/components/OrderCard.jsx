@@ -149,7 +149,7 @@ const OrderCard = ({
   }, [isSwiping, swipeStartX]);
 
   // Handle touch end for swipe-to-dismiss
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = useCallback((e) => {
     if (!isSwiping || window.innerWidth > 768) return;
 
     const endX = e.changedTouches ? e.changedTouches[0].clientX : 0;

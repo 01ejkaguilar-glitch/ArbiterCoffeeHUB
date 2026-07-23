@@ -6,7 +6,7 @@ import {
   ResponsiveModal,
   ResponsiveSpinner,
   ResponsiveForm,
-} from '@/components/responsive';
+} from '../../components/responsive';
 import {
   FaUser, FaCoffee, FaBell, FaShieldAlt, FaCamera,
   FaTrash, FaCalendarAlt, FaCheck, FaExclamationCircle,
@@ -15,7 +15,7 @@ import { useAuth } from '../../context/AuthContext';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS, BACKEND_BASE_URL } from '../../config/api';
 import { useEscapeKey, useFocusTrap } from '../../hooks/useKeyboardNavigation';
-import { useApiError } from '../../hooks/useApiError';
+import useApiError from '../../hooks/useApiError';
 import './CustomerProfile.css';
 
 /* ── Constants ────────────────────────────── */
@@ -513,6 +513,7 @@ const CustomerProfile = () => {
                   <button type="submit" className="cpf-btn cpf-btn-primary" disabled={saving}>
                     {saving ? <ResponsiveSpinner animation="border" size="sm" /> : 'Save Preferences'}
                   </button>
+                </div>
                 </form>
               </div>
             </motion.div>
@@ -642,10 +643,10 @@ const CustomerProfile = () => {
         {/* ── Deactivation Modal ─────────── */}
       <ResponsiveModal show={showDeactivateModal} onHide={() => setShowDeactivateModal(false)} centered className="cpf-modal">
         <div ref={deactivateModalRef}>
-          <Modal.Header closeButton>
-            <Modal.Title>Deactivate Account</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
+          <ResponsiveModal.Header closeButton>
+            <ResponsiveModal.Title>Deactivate Account</ResponsiveModal.Title>
+          </ResponsiveModal.Header>
+          <ResponsiveModal.Body>
             <div className="cpf-alert cpf-alert-error" style={{ marginBottom: '1rem' }}>
               <FaExclamationCircle /> This action cannot be undone. Your account will be permanently deactivated.
             </div>
@@ -672,11 +673,10 @@ const CustomerProfile = () => {
                 placeholder="Tell us why you're leaving…"
               />
             </div>
-          </Modal.Body>
-          <Modal.Footer>
+          </ResponsiveModal.Body>
+          <ResponsiveModal.Footer>
             <button type="button" className="cpf-btn cpf-btn-outline" onClick={() => setShowDeactivateModal(false)}>
-              Cancel
-            </button>
+              )}</button>
             <button
               type="button"
               className="cpf-btn cpf-btn-danger"
@@ -685,7 +685,7 @@ const CustomerProfile = () => {
             >
               {saving ? <ResponsiveSpinner animation="border" size="sm" /> : 'Deactivate Account'}
             </button>
-          </Modal.Footer>
+          </ResponsiveModal.Footer>
         </div>
       </ResponsiveModal>
       </PullToRefresh>

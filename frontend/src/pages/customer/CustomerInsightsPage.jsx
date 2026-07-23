@@ -1,5 +1,5 @@
 import React from 'react';
-import { ResponsiveContainer, ResponsiveButton } from '@/components/responsive';
+import { ResponsiveContainer, ResponsiveButton } from '../../components/responsive';
 import { Link } from 'react-router-dom';
 
 const CustomerInsightsPage = () => {

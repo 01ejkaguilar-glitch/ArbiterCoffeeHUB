@@ -11,6 +11,9 @@
   --color-background: #F8F9FA;
   --color-surface: #FFFFFF;
   --color-surface-variant: #F0F0F0;
+  --color-white-rgb: 255, 255, 255;
+  --color-black-rgb: 0, 0, 0;
+  --color-primary-black: #1A1A1A;
 
   --color-on-primary: #FFFFFF;
   --color-on-secondary: #000000;
@@ -23,6 +26,8 @@
   --color-text-primary: #212529;
   --color-text-secondary: #4b5563;
   --color-text-muted: #6b7280;
+  --color-dark-green: #006837;
+  --color-dark-green-rgb: 0, 104, 55;
 
   --color-success: #28A745;
   --color-success-light: #d4edda;
@@ -30,12 +35,46 @@
   --color-warning-light: #ffeeba;
   --color-error: #DC3545;
   --color-error-light: #f8d7da;
+  --color-error-bg: #fee2e2;
+  --color-error-border: #fecaca;
   --color-info: #17A2B8;
   --color-info-light: #d1ecf1;
+  --color-medium-green: #286326;
+  --color-medium-green-dark: #007a38;
+  --color-success-dark: #256e28;
+  --color-danger-dark: #a8192e;
+  --color-warning-dark: #855a00;
+  --color-info-dark: #0a537a;
+  --color-light-light: #e2e6ea;
+  --color-dark-dark: #151c1c;
+  --color-primary-hover: #004c2a;
+  /* Workforce specific colors */
+  --color-success-bg: var(--color-success-light);
+  --color-error-bg: var(--color-error-light);
+  --color-error-dark: #b91c1c;
+  --color-success-green: #16a34a;
+  --color-success-dark-green: #15803d;
+  --color-warning-amber: #b45309;
+  --color-gray-100: #f8f9fa;
+  --color-gray-200: #e9ecef;
+  --color-gray-300: #dee2e6;
+  --color-gray-400: #ced4da;
+  --color-gray-500: #adb5bd;
+  --color-gray-600: #6c757d;
+  --color-gray-700: #495057;
+  --color-gray-800: #343a40;
+  --color-gray-900: #212529;
 
   --color-border: #DEE2E6;
   --color-border-light: #E9ECEF;
+  --color-border-light-2: #f0f0f5;
+  --color-border-light-3: #f3f4f6;
+  --color-border-light-4: #f9fafb;
+  --color-border-light-5: #e5e7eb;
   --color-border-dark: #CED4DA;
+  --color-error-dark: #b91c1c;
+  --color-success-border: var(--color-success);
+  --color-error-border: #fecaca;
 
   /* Typography */
   --font-primary: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

@@ -14,7 +14,7 @@ import {
   ResponsiveInputGroup,
   ResponsiveDropdown,
   ResponsivePagination
-} from '@/components/responsive';
+} from '../../components/responsive';
 import { FaEye, FaRedo, FaWifi, FaExclamationTriangle, FaSearch, FaFilter, FaDownload, FaRedoAlt, FaCalendarAlt, FaTimes } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -335,66 +335,66 @@ Thank you for your business!
       {/* Search and Filters */}
       <ResponsiveRow className="mb-4">
         <ResponsiveCol lg={6}>
-          <InputGroup>
+          <ResponsiveInputGroup>
             <ResponsiveInputGroup.Text>
               <FaSearch />
-            </InputGroup.Text>
+            </ResponsiveInputGroup.Text>
             <ResponsiveForm.Control
               type="text"
               placeholder="Search by order number..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </InputGroup>
+          </ResponsiveInputGroup>
         </ResponsiveCol>
         <ResponsiveCol lg={6} className="d-flex gap-2 justify-content-end">
           <ResponsiveDropdown>
             <ResponsiveDropdown.Toggle variant="outline-secondary" size="sm">
               <FaFilter className="me-2" />
               Status: {statusFilter === 'all' ? 'All' : statusFilter}
-            </Dropdown.Toggle>
+            </ResponsiveDropdown.Toggle>
             <ResponsiveDropdown.Menu>
-              <ResponsiveDropdown.Item onClick={() => setStatusFilter('all')}>All Status</Dropdown.Item>
-              <ResponsiveDropdown.Item onClick={() => setStatusFilter('pending')}>Pending</Dropdown.Item>
-              <ResponsiveDropdown.Item onClick={() => setStatusFilter('confirmed')}>Confirmed</Dropdown.Item>
-              <ResponsiveDropdown.Item onClick={() => setStatusFilter('preparing')}>Preparing</Dropdown.Item>
-              <ResponsiveDropdown.Item onClick={() => setStatusFilter('ready')}>Ready</Dropdown.Item>
-              <ResponsiveDropdown.Item onClick={() => setStatusFilter('completed')}>Completed</Dropdown.Item>
-              <ResponsiveDropdown.Item onClick={() => setStatusFilter('cancelled')}>Cancelled</Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
+              <ResponsiveDropdown.Item onClick={() => setStatusFilter('all')}>All Status</ResponsiveDropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setStatusFilter('pending')}>Pending</ResponsiveDropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setStatusFilter('confirmed')}>Confirmed</ResponsiveDropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setStatusFilter('preparing')}>Preparing</ResponsiveDropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setStatusFilter('ready')}>Ready</ResponsiveDropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setStatusFilter('completed')}>Completed</ResponsiveDropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setStatusFilter('cancelled')}>Cancelled</ResponsiveDropdown.Item>
+            </ResponsiveDropdown.Menu>
+          </ResponsiveDropdown>
 
           <ResponsiveDropdown>
             <ResponsiveDropdown.Toggle variant="outline-secondary" size="sm">
               <FaCalendarAlt className="me-2" />
               Date: {dateFilter === 'all' ? 'All' : dateFilter}
-            </Dropdown.Toggle>
+            </ResponsiveDropdown.Toggle>
             <ResponsiveDropdown.Menu>
-              <ResponsiveDropdown.Item onClick={() => setDateFilter('all')}>All Time</Dropdown.Item>
-              <ResponsiveDropdown.Item onClick={() => setDateFilter('today')}>Today</Dropdown.Item>
-              <ResponsiveDropdown.Item onClick={() => setDateFilter('yesterday')}>Yesterday</Dropdown.Item>
-              <ResponsiveDropdown.Item onClick={() => setDateFilter('week')}>Last 7 days</Dropdown.Item>
-              <ResponsiveDropdown.Item onClick={() => setDateFilter('month')}>Last 30 days</Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
+              <ResponsiveDropdown.Item onClick={() => setDateFilter('all')}>All Time</ResponsiveDropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setDateFilter('today')}>Today</ResponsiveDropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setDateFilter('yesterday')}>Yesterday</ResponsiveDropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setDateFilter('week')}>Last 7 days</ResponsiveDropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setDateFilter('month')}>Last 30 days</ResponsiveDropdown.Item>
+            </ResponsiveDropdown.Menu>
+          </ResponsiveDropdown>
 
           <ResponsiveDropdown>
             <ResponsiveDropdown.Toggle variant="outline-secondary" size="sm">
               Type: {typeFilter === 'all' ? 'All' : typeFilter}
-            </Dropdown.Toggle>
+            </ResponsiveDropdown.Toggle>
             <ResponsiveDropdown.Menu>
-              <ResponsiveDropdown.Item onClick={() => setTypeFilter('all')}>All Types</Dropdown.Item>
-              <ResponsiveDropdown.Item onClick={() => setTypeFilter('dine-in')}>Dine In</Dropdown.Item>
-              <ResponsiveDropdown.Item onClick={() => setTypeFilter('take-out')}>Take Out</Dropdown.Item>
-              <ResponsiveDropdown.Item onClick={() => setTypeFilter('delivery')}>Delivery</Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
+              <ResponsiveDropdown.Item onClick={() => setTypeFilter('all')}>All Types</ResponsiveDropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setTypeFilter('dine-in')}>Dine In</ResponsiveDropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setTypeFilter('take-out')}>Take Out</ResponsiveDropdown.Item>
+              <ResponsiveDropdown.Item onClick={() => setTypeFilter('delivery')}>Delivery</ResponsiveDropdown.Item>
+            </ResponsiveDropdown.Menu>
+          </ResponsiveDropdown>
 
           <ResponsiveButton variant="outline-secondary" size="sm" onClick={clearFilters}>
             Clear
           </ResponsiveButton>
         </ResponsiveCol>
-      </Row>
+      </ResponsiveRow>
 
       {/* Results Summary */}
       <ResponsiveRow className="mb-3">
@@ -404,9 +404,9 @@ Thank you for your business!
               Showing {paginatedOrders.length} of {filteredAndSortedOrders.length} orders
               {searchTerm && ` matching "${searchTerm}"`}
             </small>
-          </Alert>
+          </ResponsiveAlert>
         </ResponsiveCol>
-      </Row>
+      </ResponsiveRow>
 
       {/* Last update indicator */}
       {lastUpdate && (
@@ -416,9 +416,9 @@ Thank you for your business!
               <small>
                 Last updated: {lastUpdate.toLocaleTimeString()}
               </small>
-            </Alert>
+            </ResponsiveAlert>
           </ResponsiveCol>
-        </Row>
+        </ResponsiveRow>
       )}
 
       {/* Error message */}
@@ -427,9 +427,9 @@ Thank you for your business!
           <ResponsiveCol>
             <ResponsiveAlert variant="danger" dismissible onClose={() => setError(null)}>
               {error}
-            </Alert>
+            </ResponsiveAlert>
           </ResponsiveCol>
-        </Row>
+        </ResponsiveRow>
       )}
 
       <ResponsiveRow>
@@ -441,8 +441,8 @@ Thank you for your business!
                 <ResponsiveButton variant="primary" href="/products">
                   Start Shopping
                 </ResponsiveButton>
-              </Card.Body>
-            </Card>
+              </ResponsiveCard.Body>
+            </ResponsiveCard>
           ) : filteredAndSortedOrders.length === 0 ? (
             <ResponsiveCard className="shadow-sm">
               <ResponsiveCard.Body className="text-center py-5">
@@ -450,8 +450,8 @@ Thank you for your business!
                 <ResponsiveButton variant="outline-primary" onClick={clearFilters}>
                   Clear Filters
                 </ResponsiveButton>
-              </Card.Body>
-            </Card>
+              </ResponsiveCard.Body>
+            </ResponsiveCard>
           ) : (
             <ResponsiveCard className="shadow-sm">
               <ResponsiveCard.Body>
@@ -504,7 +504,7 @@ Thank you for your business!
                               title="Reorder"
                             >
                               {reordering === order.id ? (
-                                <Spinner animation="border" size="sm" />
+                                <ResponsiveSpinner animation="border" size="sm" />
                               ) : (
                                 <FaRedoAlt />
                               )}
@@ -537,7 +537,7 @@ Thank you for your business!
                                 title="Cancellation Pending Admin Approval"
                               >
                                 Pending
-                              </Button>
+                              </ResponsiveButton>
                             )}
                           </div>
                         </td>
@@ -545,7 +545,7 @@ Thank you for your business!
                     ))
                     )}
                   </tbody>
-                </Table>
+                </ResponsiveTable>
 
                 {/* Pagination */}
                 {totalPages > 1 && (
@@ -599,12 +599,12 @@ Thank you for your business!
                     </ResponsiveButton>
                   </div>
                 )}
-              </Card.Body>
-            </Card>
+              </ResponsiveCard.Body>
+            </ResponsiveCard>
           )}
-        </Col>
-      </Row>
-    </Container>
+        </ResponsiveCol>
+      </ResponsiveRow>
+    </ResponsiveContainer>
   </PullToRefresh>
     </main>
   );

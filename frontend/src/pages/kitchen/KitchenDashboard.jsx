@@ -21,7 +21,7 @@ import {
   ResponsiveContainer,
   ResponsiveCol,
   ResponsiveRow,
-} from '@/components/responsive';
+} from '../../components/responsive';
 import './KitchenDashboard.css';
 
 const POLL_INTERVAL = 30000; // 30 s fallback polling
@@ -58,20 +58,24 @@ const ConnChip = ({ isConnected, isConnecting, lastUpdated }) => {
           animation: isConnected && !isConnecting ? 'kd-pulse 1.6s infinite' : 'none'
         }}
       />
-      {isConnected ? 'Live' : isConnecting ? (
+      {isConnected ? (
+        'Live'
+      ) : isConnecting ? (
         <>
           Reconnecting...
           {connectingSince && (
             <span className="kd-reconnecting-time">
-              ({Math.floor((Date.now() - connectingSince) / 1000)}s)
-            )
+              {Math.floor((Date.now() - connectingSince) / 1000)}s
+            </span>
           )}
         </>
-      ) : 'Offline'}
+      ) : (
+        'Offline'
+      )}
       {lastUpdated && (
         <span className="kd-last-updated ml-2">
           Last updated: {lastUpdated.toLocaleTimeString()}
-        )
+        </span>
       )}
     </span>
   );
@@ -401,7 +405,7 @@ const KitchenDashboard = () => {
                     {currentShift ? (
                       <p className="mb-0 fw-medium">
                         {currentShift.start_time} – {currentShift.end_time}
-                      )
+                      </p>
                     ) : (
                       <p className="mb-0 text-muted">No shift today</p>
                     )}
@@ -490,7 +494,7 @@ const KitchenDashboard = () => {
                 </ResponsiveCard.Body>
               </ResponsiveCard>
             </ResponsiveCol>
-          </div>
+          </ResponsiveRow>
 
           {/* Today's Tasks */}
           <ResponsiveCard className="border-0 shadow-sm h-100">
@@ -505,21 +509,23 @@ const KitchenDashboard = () => {
               <Link to="/kitchen/tasks" className="text-muted text-decoration-none">
                 See all <FaChevronRight size={10} />
               </Link>
-            </ResponsiveCard.Body>
-            {todaysTasks.length === 0 ? (
-              <p className="text-muted text-center">No tasks assigned for today.</p>
-            ) : (
-              <div className="list-group">
-                {todaysTasks.slice(0, 6).map((task, i) => (
-                  <div key={task.id || i} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    <div className="d-flex align-items-center">
-                      <span className={`badge bg-${task.status === 'in_progress' ? 'primary' : task.status === 'completed' ? 'success' : 'secondary'} me-2`}></span>
-                      <span className="me-2">{task.title || task.name || 'Unnamed task'}</span>
-                      {task.priority && (
-                        <span className={`badge bg-${task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'info'} ms-auto`}>{task.priority}</span>
-                      )}
+            </ResponsiveCard.Header>
+            <ResponsiveCard.Body className="p-3">
+              {todaysTasks.length === 0 ? (
+                <p className="text-muted text-center">No tasks assigned for today.</p>
+              ) : (
+                <div className="list-group">
+                  {todaysTasks.slice(0, 6).map((task, i) => (
+                    <div key={task.id || i} className="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                      <div className="d-flex align-items-center">
+                        <span className={`badge bg-${task.status === 'in_progress' ? 'primary' : task.status === 'completed' ? 'success' : 'secondary'} me-2`}></span>
+                        <span className="me-2">{task.title || task.name || 'Unnamed task'}</span>
+                        {task.priority && (
+                          <span className={`badge bg-${task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'info'} ms-auto`}>{task.priority}</span>
+                        )}
+                      </div>
                     </div>
-                  )}
+                  ))}
                 </div>
               )}
             </ResponsiveCard.Body>

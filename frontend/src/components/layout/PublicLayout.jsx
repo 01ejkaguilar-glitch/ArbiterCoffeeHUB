@@ -8,7 +8,7 @@ const Footer = lazy(() => import('./Footer'));
 /**
  * Layout for public (unauthenticated) pages: Navbar + content + Footer + BottomNav.
  */
-function PublicLayout() {
+function PublicLayout({ children }) {
   const [showFooter, setShowFooter] = useState(false);
   const [showBottomNavigation, setShowBottomNavigation] = useState(false);
 
@@ -65,7 +65,7 @@ function PublicLayout() {
       <a href="#main-content" className="skip-link">Skip to main content</a>
       <Navbar />
       <div id="main-content" className="flex-grow-1">
-        <Outlet />
+        {children || <Outlet />}
       </div>
       {showFooter ? (
         <Suspense fallback={null}>

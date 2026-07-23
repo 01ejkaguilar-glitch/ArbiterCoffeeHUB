@@ -25,38 +25,74 @@
       "@/*": [
         "src/*"
       ],
+      "@": [
+        "src"
+      ],
       "@components/*": [
         "components/*"
+      ],
+      "@components": [
+        "components"
       ],
       "@components/shared/*": [
         "components/shared/*"
       ],
+      "@components/shared": [
+        "components/shared"
+      ],
       "@components/responsive/*": [
         "components/responsive/*"
+      ],
+      "@components/responsive": [
+        "components/responsive"
       ],
       "@pages/*": [
         "pages/*"
       ],
+      "@pages": [
+        "pages"
+      ],
       "@pages/admin/*": [
         "pages/admin/*"
+      ],
+      "@pages/admin": [
+        "pages/admin"
       ],
       "@styles/*": [
         "styles/*"
       ],
+      "@styles": [
+        "styles"
+      ],
       "@utils/*": [
         "utils/*"
+      ],
+      "@utils": [
+        "utils"
       ],
       "@services/*": [
         "services/*"
       ],
+      "@services": [
+        "services"
+      ],
       "@hooks/*": [
         "hooks/*"
+      ],
+      "@hooks": [
+        "hooks"
       ],
       "@contexts/*": [
         "contexts/*"
       ],
+      "@contexts": [
+        "contexts"
+      ],
       "@assets/*": [
         "assets/*"
+      ],
+      "@assets": [
+        "assets"
       ]
     }
   },

@@ -5,7 +5,7 @@ import {
   ResponsiveCard,
   ResponsiveButton,
   ResponsiveTable
-} from '@/components/responsive';
+} from '../../components/responsive';
 import { Link } from 'react-router-dom';
 import PageShell from '../../components/layout/PageShell';
 import PullToRefresh from '../../components/mobile/PullToRefresh';
@@ -75,14 +75,14 @@ const CartPage = () => {
                           </data>
                         </td>
                         <td className="align-middle">
-                          <Button
+                          <ResponsiveButton
                             variant="danger"
                             size="sm"
                             onClick={() => handleRemove(item.id)}
                             aria-label={`Remove ${item.product?.name} from cart`}
                           >
                             <FaTrash aria-hidden="true" />
-                          </Button>
+                          </ResponsiveButton>
                         </td>
                       </tr>
                     ))}

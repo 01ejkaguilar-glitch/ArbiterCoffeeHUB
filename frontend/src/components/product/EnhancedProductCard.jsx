@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { FaShoppingCart, FaHeart, FaRegHeart, FaEye, FaCheckCircle, FaTimesCircle, FaStar } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { resolveMediaUrl } from '../../config/api';
+import classNames from 'classnames';
 import './EnhancedProductCard.css';
 
 /**
@@ -94,7 +95,9 @@ const EnhancedProductCard = ({
           {/* Favorite Button */}
           {onToggleFavorite && (
             <motion.button
-              className={`favorite-btn ${isFavorite ? 'active' : ''}`}
+              className={classNames('favorite-btn', {
+                active: isFavorite
+              })}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -118,7 +121,9 @@ const EnhancedProductCard = ({
                 <img
                   src={productImage}
                   alt={product.name}
-                  className={`product-image ${imageLoaded ? 'loaded' : ''}`}
+                  className={classNames('product-image', {
+                    loaded: imageLoaded
+                  })}
                   width="400"
                   height="300"
                   loading="lazy"
@@ -198,7 +203,10 @@ const EnhancedProductCard = ({
             {/* Stock Status */}
             <div className="stock-status mb-3">
               {isInStock ? (
-                <span className={`stock-indicator ${isLowStock ? 'low' : 'in-stock'}`}>
+                <span className={classNames('stock-indicator', {
+                  low: isLowStock,
+                  'in-stock': !isLowStock
+                })}>
                   <FaCheckCircle className="me-1" />
                   {isLowStock ? `Only ${product.stock_quantity} left` : 'In Stock'}
                 </span>

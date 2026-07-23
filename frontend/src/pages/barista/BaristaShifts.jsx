@@ -19,7 +19,7 @@ import ResponsiveContainer from '@/components/responsive/Container';
 import ResponsiveRow from '@/components/responsive/Row';
 import ResponsiveCol from '@/components/responsive/Col';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
-import { useApiError } from '../../hooks/useApiError';
+import useApiError from '../../hooks/useApiError';
 import './BaristaShifts.css';
 
 const DAYS   = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

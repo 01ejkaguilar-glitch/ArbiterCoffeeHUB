@@ -27,7 +27,7 @@ const ResponsiveTabs = ({
           key: child.props.eventKey || index
         };
 
-        return React.clone(child, tabProps);
+        return React.cloneElement(child, tabProps);
       })}
     </div>
   );

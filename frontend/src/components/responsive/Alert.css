@@ -4,51 +4,48 @@
   margin-bottom: var(--spacing-4);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-  color: var(--color-white);
-  background-color: var(--color-dark-green);
-  border-color: var(--color-dark-green);
 }
 
 .ai-alert-success {
   color: var(--color-white);
-  background-color: var(--color-success-green);
-  border-color: var(--color-success-green);
+  background-color: var(--color-success);
+  border-color: var(--color-success);
 }
 
 .ai-alert-info {
   color: var(--color-white);
-  background-color: var(--color-info-blue);
-  border-color: var(--color-info-blue);
+  background-color: var(--color-info);
+  border-color: var(--color-info);
 }
 
 .ai-alert-warning {
   color: var(--color-white);
-  background-color: var(--color-warning-amber);
-  border-color: var(--color-warning-amber);
+  background-color: var(--color-warning);
+  border-color: var(--color-warning);
 }
 
 .ai-alert-danger {
   color: var(--color-white);
-  background-color: var(--color-danger-red);
-  border-color: var(--color-danger-red);
+  background-color: var(--color-danger);
+  border-color: var(--color-danger);
 }
 
 .ai-alert-secondary {
-  color: var(--color-white);
-  background-color: var(--color-secondary-gray);
-  border-color: var(--color-secondary-gray);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-medium);
+  border-color: var(--color-bg-medium);
 }
 
 .ai-alert-light {
-  color: var(--color-dark-gray);
-  background-color: var(--color-light-gray);
-  border-color: var(--color-light-gray);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-light);
+  border-color: var(--color-bg-light);
 }
 
 .ai-alert-dark {
-  color: var(--color-white);
-  background-color: var(--color-dark-gray);
-  border-color: var(--color-dark-gray);
+  color: var(--color-text-on-dark);
+  background-color: var(--color-bg-dark);
+  border-color: var(--color-bg-dark);
 }
 
 .ai-alert-dismissible {

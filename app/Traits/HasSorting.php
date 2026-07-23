@@ -17,8 +17,8 @@ trait HasSorting
             $sortBy = 'created_at';
         }
 
-        // Default to desc if empty
-        if (empty($sortOrder)) {
+        // Validate sort direction to prevent injection
+        if (!in_array(strtolower($sortOrder), ['asc', 'desc'])) {
             $sortOrder = 'desc';
         }
 

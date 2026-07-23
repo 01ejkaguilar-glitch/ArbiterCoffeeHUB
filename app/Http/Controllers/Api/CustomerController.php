@@ -320,7 +320,7 @@ public function getTastePreferences()
     {
         try {
             $request->validate([
-                'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             ]);
 
             /** @var User $user */
@@ -331,7 +331,7 @@ public function getTastePreferences()
                 $image = $request->file('profile_picture');
                 $imageName = 'profile_' . $user->id . '_' . time() . '.' . $image->getClientOriginalExtension();
                 $imagePath = $image->storeAs('profiles', $imageName, 'public');
-                
+
                 $profilePictureUrl = '/storage/' . $imagePath;
 
                 // Update profile picture

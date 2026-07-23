@@ -3,6 +3,7 @@ import {
   FaCheckCircle, FaSearch,
   FaEye, FaSync, FaTimes,
   FaSpinner, FaChevronLeft, FaChevronRight,
+  FaClock, FaMoneyBillWave, FaCalendarAlt
 } from 'react-icons/fa';
 import { API_ENDPOINTS } from '../../config/api';
 import apiService from '../../services/api.service';
@@ -15,7 +16,7 @@ import {
   ResponsiveRow,
   ResponsiveModal,
   ResponsiveTable,
-} from '@/components/responsive';
+} from '../../components/responsive';
 import './CompletedFoodOrders.css';
 
 const todayStr = () => new Date().toISOString().split('T')[0];
@@ -260,13 +261,12 @@ const CompletedFoodOrders = () => {
               </thead>
               <tbody>
                 {filtered.map(order => {
-                  const prep = (order.created_at && order.completed_at)
-                    ? (() => {
-                        const ms = new Date(order.completed_at) - new Date(order.created_at);
-                        const m = Math.round(ms / 60000);
-                        return m >= 60 ? `${Math.floor(m/60)}h ${m%60}m` : `${m}m`;
-                      })()
-                    : '—';
+                  let prep = '—';
+                  if (order.created_at && order.completed_at) {
+                    const ms = new Date(order.completed_at) - new Date(order.created_at);
+                    const m = Math.round(ms / 60000);
+                    prep = m >= 60 ? `${Math.floor(m/60)}h ${m%60}m` : `${m}m`;
+                  }
                   return (
                     <tr key={order.id}>
                       <td><span className="cfo-order-num">#{order.order_number || order.id}</span></td>
@@ -293,32 +293,36 @@ const CompletedFoodOrders = () => {
       </ResponsiveCard>
 
         {/* Pagination */}
-        {lastPage > 1 && (
-          <div className="cfo-pagination">
-            <span>Page {page} of {lastPage}</span>
-            <div className="cfo-page-btns">
-              <ResponsiveButton
-                variant="outline-secondary"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => setPage(p => p - 1)}
-              >
-                <FaChevronLeft size={11} /> Prev
-              </ResponsiveButton>
-              <ResponsiveButton
-                variant="outline-secondary"
-                size="sm"
-                disabled={page >= lastPage}
-                onClick={() => setPage(p => p + 1)}
-              >
-                Next <FaChevronRight size={11} />
-              </ResponsiveButton>
-            </div>
+      {lastPage > 1 && (
+        <div className="cfo-pagination">
+          <span>Page {page} of {lastPage}</span>
+          <div className="cfo-page-btns">
+            <ResponsiveButton
+              variant="outline-secondary"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage(p => p - 1)}
+            >
+              <FaChevronLeft size={11} /> Prev
+            </ResponsiveButton>
+            <ResponsiveButton
+              variant="outline-secondary"
+              size="sm"
+              disabled={page >= lastPage}
+              onClick={() => setPage(p => p + 1)}
+            >
+              Next <FaChevronRight size={11} />
+            </ResponsiveButton>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {selectedOrder && <DetailModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />}
+      {selectedOrder ? (
+        <DetailModal
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+        />
+      ) : null}
     </div>
   );
 };

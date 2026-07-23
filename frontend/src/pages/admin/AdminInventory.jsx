@@ -8,7 +8,7 @@ import {
   ResponsiveProgressBar,
   ResponsiveSpinner,
   ResponsiveTable
-} from '@/components/responsive';
+} from '../../components/responsive';
 import {
   FaPlus, FaEdit, FaTrash, FaBoxes, FaCoffee, FaUtensils, FaBox, FaSprayCan,
   FaPencilAlt, FaSort, FaSortUp, FaSortDown, FaHistory, FaLayerGroup, FaTimesCircle,

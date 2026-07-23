@@ -6,7 +6,7 @@ import {
   ResponsiveCol,
   ResponsiveButton,
   ResponsiveSpinner
-} from '@/components/responsive';
+} from '../../components/responsive';
 import {
   FaArrowLeft, FaSync, FaUtensils, FaShoppingBag, FaTruck,
   FaMapMarkerAlt, FaClock, FaCalendarAlt, FaReceipt,
@@ -155,9 +155,9 @@ const OrderDetailPage = () => {
         {/* ── Header ── */}
         <div className="od-header">
           <div className="od-header-left">
-            <Button as={Link} to="/orders" variant="outline-primary" size="sm" className="od-back-btn">
+            <ResponsiveButton as={Link} to="/orders" variant="outline-primary" size="sm" className="od-back-btn">
               <FaArrowLeft className="me-2" /> Orders
-            </Button>
+            </ResponsiveButton>
             <div>
               <h1 className="od-title">Order #{order?.order_number}</h1>
               <p className="od-date"><FaCalendarAlt className="me-1" /> {formatDate(order?.created_at)}</p>
@@ -167,7 +167,7 @@ const OrderDetailPage = () => {
             <span className={`od-status-pill ${status.cls}`}>
               <StatusIcon className="me-1" /> {status.label}
             </span>
-            <Button
+            <ResponsiveButton
               variant="outline-primary"
               size="sm"
               onClick={() => fetchOrder(true)}
@@ -175,7 +175,7 @@ const OrderDetailPage = () => {
               className="od-refresh-btn"
             >
               <FaSync className={refreshing ? 'fa-spin' : ''} />
-            </Button>
+            </ResponsiveButton>
           </div>
         </div>
 
@@ -281,24 +281,24 @@ const OrderDetailPage = () => {
               {/* Action Buttons */}
               <div className="d-grid gap-2 mt-3">
                 {['pending', 'confirmed'].includes(order?.status) && (
-                  <Button
+                  <ResponsiveButton
                     variant="outline-danger"
                     size="sm"
                     onClick={handleCancelOrder}
                     disabled={actionLoading}
                   >
                     <FaTimesCircle className="me-1" /> Cancel Order
-                  </Button>
+                  </ResponsiveButton>
                 )}
                 {['completed', 'cancelled'].includes(order?.status) && (
-                  <Button
+                  <ResponsiveButton
                     variant="outline-primary"
                     size="sm"
                     onClick={handleReorder}
                     disabled={actionLoading}
                   >
                     <FaRedo className="me-1" /> Reorder
-                  </Button>
+                  </ResponsiveButton>
                 )}
               </div>
             </div>

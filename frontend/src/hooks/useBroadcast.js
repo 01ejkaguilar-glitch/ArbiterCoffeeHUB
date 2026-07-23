@@ -11,6 +11,12 @@ export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false)
   const [isConnecting, setIsConnecting] = useState(false);
   const channelRef = useRef(null);
   const prevEventHandlersRef = useRef(eventHandlers);
+  const eventHandlersRef = useRef(eventHandlers);
+
+  // Update the ref when eventHandlers change
+  useEffect(() => {
+    eventHandlersRef.current = eventHandlers;
+  }, [eventHandlers]);
 
   useEffect(() => {
     if (!broadcastService.isEnabled()) {
@@ -24,7 +30,7 @@ export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false)
     // Subscribe to channel only if channelName is provided
     if (channelName) {
       const subscribeMethod = isPrivate ? 'subscribePrivate' : 'subscribe';
-      channelRef.current = broadcastService[subscribeMethod](channelName, eventHandlers);
+      channelRef.current = broadcastService[subscribeMethod](channelName, eventHandlersRef.current);
     }
 
     // Detect the underlying pusher-protocol socket (works for both Reverb and Pusher)
@@ -72,7 +78,7 @@ export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false)
           connection.unbind('connected',    handleConnected);
           connection.unbind('disconnected', handleDisconnected);
         } catch (err) {
-          //'Error during broadcast cleanup:', err);
+          console.error('Error during broadcast cleanup:', err);
         }
       };
     } else {
@@ -83,7 +89,7 @@ export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false)
         try {
           if (channelName && broadcastService.getEcho()) broadcastService.unsubscribe(channelName);
         } catch (err) {
-          //'Error during broadcast cleanup:', err);
+          console.error('Error during broadcast cleanup:', err);
         }
       };
     }
@@ -119,6 +125,7 @@ export const useBroadcast = (channelName, eventHandlers = {}, isPrivate = false)
     prevEventHandlersRef.current = newHandlers;
   }, [eventHandlers]);
 
+
   return {
     isConnected,
     isConnecting,
@@ -134,20 +141,20 @@ export const useOrderUpdates = (userId, onOrderUpdate) => {
 
   const eventHandlers = useMemo(() => ({
     'order.created': (event) => {
-      //'New order created:', event);
+      // console.log('New order created:', event);
       setLastUpdate(new Date());
       if (onOrderUpdate) {
         onOrderUpdate('created', event.order);
       }
     },
     'order.status.updated': (event) => {
-      //'Order status updated:', event);
+      // console.log('Order status updated:', event);
       setLastUpdate(new Date());
       if (onOrderUpdate) {
         onOrderUpdate('status_updated', event.order);
       }
     }
-  }), [userId, onOrderUpdate]);
+  }), [onOrderUpdate]);
 
   const { isConnected, isConnecting } = useBroadcast(`user-orders-${userId}`, eventHandlers, true);
 
@@ -166,7 +173,7 @@ export const useBaristaOrders = (onNewOrder) => {
 
   const eventHandlers = useMemo(() => ({
     'order.created': (event) => {
-      //'New order for barista:', event);
+      // console.log('New order for barista:', event);
       setPendingOrders(prev => [...prev, event.order].slice(-50));
       if (onNewOrder) {
         onNewOrder(event.order);
@@ -189,7 +196,7 @@ export const useBaristaOrders = (onNewOrder) => {
 export const useInventoryAlerts = (onLowStock) => {
   const eventHandlers = useMemo(() => ({
     'inventory.low-stock': (event) => {
-      //'Low stock alert:', event);
+      // console.log('Low stock alert:', event);
       if (onLowStock) {
         onLowStock(event.item);
       }
@@ -209,7 +216,7 @@ export const useKitchenOrders = (onNewOrder) => {
 
   const eventHandlers = useMemo(() => ({
     'order.created': (event) => {
-      //'New food order for kitchen:', event);
+      // console.log('New food order for kitchen:', event);
       setPendingOrders(prev => [...prev, event.order].slice(-50));
       if (onNewOrder) {
         onNewOrder(event.order);
@@ -232,7 +239,7 @@ export const useKitchenOrders = (onNewOrder) => {
 export const useTaskAssignments = (onTaskAssigned) => {
   const eventHandlers = useMemo(() => ({
     'task.assigned': (event) => {
-      //'Task assigned:', event);
+      // console.log('Task assigned:', event);
       if (onTaskAssigned) {
         onTaskAssigned(event);
       }
@@ -250,7 +257,7 @@ export const useTaskAssignments = (onTaskAssigned) => {
 export const useShiftNotifications = (onShiftStarted) => {
   const eventHandlers = useMemo(() => ({
     'shift.started': (event) => {
-      //'Shift started:', event);
+      // console.log('Shift started:', event);
       if (onShiftStarted) {
         onShiftStarted(event);
       }
@@ -268,12 +275,12 @@ export const useShiftNotifications = (onShiftStarted) => {
 export const useNotifications = (userId, onNotification) => {
   const eventHandlers = useMemo(() => ({
     'notification.received': (event) => {
-      //'New notification:', event);
+      // console.log('New notification:', event);
       if (onNotification) {
         onNotification(event.notification);
       }
     }
-  }), [userId, onNotification]);
+  }), [onNotification]);
 
   // Always call useBroadcast but with conditional channel name
   const channelName = userId ? `user-notifications-${userId}` : null;

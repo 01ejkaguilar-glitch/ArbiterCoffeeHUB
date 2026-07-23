@@ -12,15 +12,15 @@
 }
 
 .au-stat-card {
-  background: #fff;
+  background: var(--color-white);
   border-radius: 12px;
   padding: 1.1rem 1.4rem;
   display: flex;
   align-items: center;
   gap: 1rem;
   box-shadow: 0 1px 4px rgba(0,0,0,.07);
-  border: 1px solid rgba(0,0,0,.06);
-  transition: box-shadow .2s;
+  border: 1px solid var(--border-light);
+transition: box-shadow .2s;
 }
 
 .au-stat-card:hover {
@@ -39,40 +39,40 @@
 }
 
 .au-stat-icon.blue   { background: var(--color-success-bg); color: var(--color-dark-green); }
-.au-stat-icon.green  { background: #e8f8f0; color: #2ecc71; }
-.au-stat-icon.red    { background: #fdecea; color: #e74c3c; }
+.au-stat-icon.green  { background: var(--color-success-bg); color: var(--color-success); }
+.au-stat-icon.red    { background: var(--color-danger-bg); color: var(--color-danger); }
 .au-stat-icon.purple { background: var(--color-success-bg); color: var(--color-dark-green); }
-.au-stat-icon.amber  { background: #fff8e1; color: #f39c12; }
-.au-stat-icon.teal   { background: var(--color-success-bg); color: var(--color-medium-green); }
+.au-stat-icon.amber  { background: var(--color-warning-bg); color: var(--color-warning); }
+.au-stat-icon.teal   { background: var(--color-info-bg); color: var(--color-info); }
 
 .au-stat-label {
   font-size: .72rem;
-  color: #888;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: .3px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .au-stat-value {
   font-size: 1.5rem;
-  font-weight: 700;
-  color: #1A1A1A;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
   line-height: 1;
   margin-top: 2px;
 }
 
 /* ── Filter Bar ─────────────────────────────────────────────── */
 .au-filter-bar {
-  background: #fff;
-  border-radius: 12px;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
   padding: .85rem 1.1rem;
   margin-bottom: 1.25rem;
   display: flex;
   flex-wrap: wrap;
   gap: .65rem;
   align-items: center;
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
-  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
 }
 
 .au-search-wrap {
@@ -85,7 +85,7 @@
   left: .75rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #aaa;
+  color: var(--color-text-muted);
   font-size: .85rem;
   pointer-events: none;
 }
@@ -93,17 +93,17 @@
 .au-search {
   width: 100%;
   padding: .48rem .75rem .48rem 2.1rem;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1.5px solid var(--color-border-light);
+  border-radius: var(--input-radius);
   font-size: .875rem;
   outline: none;
   transition: border-color .2s;
-  background: #fafafa;
+  background: var(--color-bg-light);
 }
 
 .au-search:focus {
-  border-color: #2ecc71;
-  background: #fff;
+  border-color: var(--color-success-dark);
+  background: var(--color-white);
 }
 
 .au-select {

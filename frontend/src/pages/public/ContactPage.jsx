@@ -9,7 +9,7 @@ import {
   ResponsiveListGroup,
   ResponsiveRow,
 } from '@/components/responsive';
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock, FaFacebookF, FaInstagram } from 'react-icons/fa';
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock, FaFacebookF, FaInstagram, FaTiktok } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import SEO from '../../components/SEO';
@@ -125,44 +125,44 @@ const ContactPage = () => {
       />
       
       <header>
-      <Row className="mb-5">
-        <Col lg={8} className="mx-auto text-center">
+      <ResponsiveRow className="mb-5">
+        <ResponsiveCol lg={8} className="mx-auto text-center">
           <h1 className="display-4 fw-bold mb-3">Contact Us</h1>
           <p className="lead text-muted">
             Have a question or feedback? We'd love to hear from you!
           </p>
-        </Col>
-      </Row>
+        </ResponsiveCol>
+      </ResponsiveRow>
       </header>
 
-      <Row className="g-4">
-        <Col lg={8}>
+      <ResponsiveRow className="g-4">
+        <ResponsiveCol lg={8}>
           <section aria-labelledby="contact-form-heading">
-          <Card className="shadow-sm">
-            <Card.Body className="p-4">
+          <ResponsiveCard className="shadow-sm">
+            <ResponsiveCard.Body className="p-4">
               <h2 id="contact-form-heading" className="h3 mb-4">Send us a Message</h2>
 
               {success && (
-                <Alert variant="success" onClose={() => setSuccess(false)} dismissible role="alert">
+                <ResponsiveAlert variant="success" onClose={() => setSuccess(false)} dismissible role="alert">
                   Thank you for your message! We'll get back to you soon.
-                </Alert>
+                </ResponsiveAlert>
               )}
 
               {error && (
-                <Alert variant="danger" onClose={() => setError('')} dismissible role="alert">
+                <ResponsiveAlert variant="danger" onClose={() => setError('')} dismissible role="alert">
                   {error}
-                </Alert>
+                </ResponsiveAlert>
               )}
 
-              <Form onSubmit={handleSubmit} aria-labelledby="contact-form-heading" noValidate>
+              <ResponsiveForm onSubmit={handleSubmit} aria-labelledby="contact-form-heading" noValidate>
                 <fieldset className="border-0 p-0">
                   <legend className="visually-hidden">Contact Information</legend>
                   
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label htmlFor="contact-name">Full Name <span aria-label="required">*</span></Form.Label>
-                        <Form.Control
+                  <ResponsiveRow>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label htmlFor="contact-name">Full Name <span aria-label="required">*</span></ResponsiveForm.Label>
+                        <ResponsiveForm.Control
                           id="contact-name"
                           type="text"
                           name="name"
@@ -172,12 +172,12 @@ const ContactPage = () => {
                           placeholder="Enter your name"
                           aria-required="true"
                         />
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label htmlFor="contact-email">Email Address <span aria-label="required">*</span></Form.Label>
-                        <Form.Control
+                      </ResponsiveForm.Group>
+                    </ResponsiveCol>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label htmlFor="contact-email">Email Address <span aria-label="required">*</span></ResponsiveForm.Label>
+                        <ResponsiveForm.Control
                           id="contact-email"
                           type="email"
                           name="email"
@@ -187,15 +187,15 @@ const ContactPage = () => {
                           placeholder="your@email.com"
                           aria-required="true"
                         />
-                      </Form.Group>
-                    </Col>
-                  </Row>
+                      </ResponsiveForm.Group>
+                    </ResponsiveCol>
+                  </ResponsiveRow>
 
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label htmlFor="contact-phone">Phone Number</Form.Label>
-                        <Form.Control
+                  <ResponsiveRow>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label htmlFor="contact-phone">Phone Number</ResponsiveForm.Label>
+                        <ResponsiveForm.Control
                           id="contact-phone"
                           type="tel"
                           name="phone"
@@ -203,19 +203,19 @@ const ContactPage = () => {
                           onChange={handleChange}
                           placeholder="+63 912 345 6789"
                         />
-                      </Form.Group>
-                    </Col>
-                  </Row>
+                      </ResponsiveForm.Group>
+                    </ResponsiveCol>
+                  </ResponsiveRow>
                 </fieldset>
 
                 <fieldset className="border-0 p-0">
                   <legend className="visually-hidden">Inquiry Details</legend>
                   
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label htmlFor="inquiry-type">Inquiry Type <span aria-label="required">*</span></Form.Label>
-                        <Form.Select
+                  <ResponsiveRow>
+                    <ResponsiveCol md={6}>
+                      <ResponsiveForm.Group className="mb-3">
+                        <ResponsiveForm.Label htmlFor="inquiry-type">Inquiry Type <span aria-label="required">*</span></ResponsiveForm.Label>
+                        <ResponsiveForm.Select
                           id="inquiry-type"
                           name="inquiry_type"
                           value={formData.inquiry_type}
@@ -227,13 +227,13 @@ const ContactPage = () => {
                           <option value="catering">Catering Services</option>
                           <option value="training">Barista Training</option>
                           <option value="feedback">Feedback</option>
-                        </Form.Select>
-                      </Form.Group>
-                    </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label htmlFor="contact-subject">Subject <span aria-label="required">*</span></Form.Label>
-                      <Form.Control
+                        </ResponsiveForm.Select>
+                      </ResponsiveForm.Group>
+                    </ResponsiveCol>
+                  <ResponsiveCol md={6}>
+                    <ResponsiveForm.Group className="mb-3">
+                      <ResponsiveForm.Label htmlFor="contact-subject">Subject <span aria-label="required">*</span></ResponsiveForm.Label>
+                      <ResponsiveForm.Control
                         id="contact-subject"
                         type="text"
                         name="subject"
@@ -243,13 +243,13 @@ const ContactPage = () => {
                         placeholder="What is this about?"
                         aria-required="true"
                       />
-                    </Form.Group>
-                  </Col>
-                </Row>
+                    </ResponsiveForm.Group>
+                </ResponsiveCol>
+              </ResponsiveRow>
 
-                <Form.Group className="mb-4">
-                  <Form.Label htmlFor="contact-message">Message <span aria-label="required">*</span></Form.Label>
-                  <Form.Control
+                <ResponsiveForm.Group className="mb-4">
+                  <ResponsiveForm.Label htmlFor="contact-message">Message <span aria-label="required">*</span></ResponsiveForm.Label>
+                  <ResponsiveForm.Control
                     id="contact-message"
                     as="textarea"
                     rows={5}
@@ -260,22 +260,22 @@ const ContactPage = () => {
                     placeholder="Tell us more..."
                     aria-required="true"
                   />
-                </Form.Group>
+                </ResponsiveForm.Group>
                 </fieldset>
 
-                <Button type="submit" variant="primary" size="lg" disabled={loading}>
+                <ResponsiveButton type="submit" variant="primary" size="lg" disabled={loading}>
                   {loading ? 'Sending...' : 'Send Message'}
-                </Button>
-              </Form>
-            </Card.Body>
-          </Card>
+                </ResponsiveButton>
+              </ResponsiveForm>
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
           </section>
-        </Col>
+        </ResponsiveCol>
 
-        <Col lg={4}>
+        <ResponsiveCol lg={4}>
           {/* Contact Information */}
-          <Card className="shadow-sm mb-4">
-            <Card.Body>
+          <ResponsiveCard className="shadow-sm mb-4">
+            <ResponsiveCard.Body>
               <h5 className="mb-3">
                 <FaMapMarkerAlt className="text-primary me-2" />
                 Visit Us
@@ -295,11 +295,11 @@ const ContactPage = () => {
                   </>
                 )}
               </p>
-            </Card.Body>
-          </Card>
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
 
-          <Card className="shadow-sm mb-4">
-            <Card.Body>
+          <ResponsiveCard className="shadow-sm mb-4">
+            <ResponsiveCard.Body>
               <h5 className="mb-3">
                 <FaPhone className="text-primary me-2" />
                 Call Us
@@ -309,11 +309,11 @@ const ContactPage = () => {
                   {contactInfo?.phone || '+63 917 123 4567'}
                 </a>
               </p>
-            </Card.Body>
-          </Card>
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
 
-          <Card className="shadow-sm mb-4">
-            <Card.Body>
+          <ResponsiveCard className="shadow-sm mb-4">
+            <ResponsiveCard.Body>
               <h5 className="mb-3">
                 <FaEnvelope className="text-primary me-2" />
                 Email Us
@@ -323,38 +323,38 @@ const ContactPage = () => {
                   {contactInfo?.email || 'hello@arbitercoffee.com'}
                 </a>
               </p>
-            </Card.Body>
-          </Card>
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
 
           {/* Operating Hours */}
-          <Card className="shadow-sm mb-4">
-            <Card.Body>
+          <ResponsiveCard className="shadow-sm mb-4">
+            <ResponsiveCard.Body>
               <h5 className="mb-3">
                 <FaClock className="text-primary me-2" />
                 Operating Hours
               </h5>
               {operatingHours ? (
-                <ListGroup variant="flush">
+                <ul className="list-group list-group-flush">
                   {Object.entries(operatingHours).map(([day, hours]) => (
-                    <ListGroup.Item key={day} className="px-0 d-flex justify-content-between">
+                    <li key={day} className="px-0 d-flex justify-content-between">
                       <span className="text-capitalize fw-bold">{day}</span>
                       <span className={!hours.is_open ? 'text-danger' : ''}>
                         {hours.is_open
                           ? `${formatTime12Hour(hours.open)} - ${formatTime12Hour(hours.close)}`
                           : 'Closed'}
                       </span>
-                    </ListGroup.Item>
+                    </li>
                   ))}
-                </ListGroup>
+                </ul>
               ) : (
                 <p className="text-muted">Loading hours...</p>
               )}
-            </Card.Body>
-          </Card>
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
 
           {/* Social Media */}
-          <Card className="shadow-sm">
-            <Card.Body>
+          <ResponsiveCard className="shadow-sm">
+            <ResponsiveCard.Body>
               <h5 className="mb-3">Follow Us</h5>
               <div className="d-flex gap-3 flex-wrap">
                 <a
@@ -375,35 +375,24 @@ const ContactPage = () => {
                 >
                   <FaInstagram />
                 </a>
-                {contactInfo?.social_media?.tiktok && (
-                  <a
-                    href={contactInfo.social_media.tiktok}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-outline-dark rounded-circle p-2 social-icon"
-                    title="TikTok"
-                  >
-                    <span className="fw-bold" style={{ fontSize: '1.1rem' }}>&#9834;</span>
-                  </a>
-                )}
               </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+            </ResponsiveCard.Body>
+          </ResponsiveCard>
+        </ResponsiveCol>
+      </ResponsiveRow>
 
       {/* Google Map */}
       {contactInfo?.map_coordinates && (
-        <Row className="mt-5">
-          <Col>
-            <Card className="shadow-sm">
-              <Card.Header className="bg-white">
+        <ResponsiveRow className="mt-5">
+          <ResponsiveCol>
+            <ResponsiveCard className="shadow-sm">
+              <ResponsiveCard.Header className="bg-white">
                 <h5 className="mb-0">
                   <FaMapMarkerAlt className="text-primary me-2" />
                   Find Us on the Map
                 </h5>
-              </Card.Header>
-              <Card.Body className="p-0">
+              </ResponsiveCard.Header>
+              <ResponsiveCard.Body className="p-0">
                 <iframe
                   title="Arbiter Coffee Location"
                   src={`https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d1000!2d${contactInfo.map_coordinates.longitude}!3d${contactInfo.map_coordinates.latitude}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sph!4v1`}
@@ -414,8 +403,8 @@ const ContactPage = () => {
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 ></iframe>
-              </Card.Body>
-              <Card.Footer className="bg-white text-center">
+              </ResponsiveCard.Body>
+              <ResponsiveCard.Footer className="bg-white text-center">
                 <a
                   href={`https://www.google.com/maps/dir/?api=1&destination=${contactInfo.map_coordinates.latitude},${contactInfo.map_coordinates.longitude}`}
                   target="_blank"
@@ -425,10 +414,10 @@ const ContactPage = () => {
                   <FaMapMarkerAlt className="me-2" />
                   Get Directions
                 </a>
-              </Card.Footer>
-            </Card>
-          </Col>
-        </Row>
+              </ResponsiveCard.Footer>
+            </ResponsiveCard>
+          </ResponsiveCol>
+        </ResponsiveRow>
       )}
     </ResponsiveContainer>
     </main>

@@ -11,38 +11,38 @@
 /* Color variants */
 .alert-primary {
   color: var(--color-dark-green);
-  background-color: rgba(0, 104, 55, 0.1);
-  border-color: rgba(0, 104, 55, 0.2);
+  background-color: rgba(var(--color-dark-green-rgb), 0.1);
+  border-color: rgba(var(--color-dark-green-rgb), 0.2);
 }
 
 .alert-secondary {
   color: var(--color-medium-green);
-  background-color: rgba(0, 146, 69, 0.1);
-  border-color: rgba(0, 146, 69, 0.2);
+  background-color: rgba(var(--color-medium-green-rgb), 0.1);
+  border-color: rgba(var(--color-medium-green-rgb), 0.2);
 }
 
 .alert-success {
   color: var(--color-success);
-  background-color: rgba(40, 167, 69, 0.1);
-  border-color: rgba(40, 167, 69, 0.2);
+  background-color: rgba(var(--color-success-rgb), 0.1);
+  border-color: rgba(var(--color-success-rgb), 0.2);
 }
 
 .alert-danger {
   color: var(--color-danger);
-  background-color: rgba(196, 30, 58, 0.1);
-  border-color: rgba(196, 30, 58, 0.2);
+  background-color: rgba(var(--color-danger-rgb), 0.1);
+  border-color: rgba(var(--color-danger-rgb), 0.2);
 }
 
 .alert-warning {
   color: var(--color-warning);
-  background-color: rgba(155, 107, 0, 0.1);
-  border-color: rgba(155, 107, 0, 0.2);
+  background-color: rgba(var(--color-alert-warning-rgb), 0.1);
+  border-color: rgba(var(--color-alert-warning-rgb), 0.2);
 }
 
 .alert-info {
   color: var(--color-info);
-  background-color: rgba(13, 95, 143, 0.1);
-  border-color: rgba(13, 95, 143, 0.2);
+  background-color: rgba(var(--color-info-rgb), 0.1);
+  border-color: rgba(var(--color-info-rgb), 0.2);
 }
 
 .alert-light {

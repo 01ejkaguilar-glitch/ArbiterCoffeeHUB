@@ -7,6 +7,7 @@ import {
   ResponsiveRow,
 } from '@/components/responsive';
 import { FaCoffee, FaAward, FaUsers, FaLeaf } from 'react-icons/fa';
+import { Badge } from 'react-bootstrap';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS, BACKEND_BASE_URL } from '../../config/api';
 // Loading removed — static content renders immediately
@@ -159,8 +160,8 @@ const AboutPage = () => {
                 <ResponsiveCol key={member.id} md={6} lg={4}>
                   <article className="team-card">
                     {member.photo_url && (
-                      <img 
-                        className="team-photo" 
+                      <img
+                        className="team-photo"
                         src={member.photo_url.startsWith('http') ? member.photo_url : `${BACKEND_BASE_URL}${member.photo_url}`}
                         alt={`${member.name}, ${member.position}`}
                         width="520"
@@ -186,7 +187,7 @@ const AboutPage = () => {
                   </article>
                 </ResponsiveCol>
               ))}
-            </Row>
+            </ResponsiveRow>
           </ResponsiveContainer>
         </section>
       )}
@@ -200,8 +201,8 @@ const AboutPage = () => {
               <div className="section-divider" />
               <p>Milestones that shaped Arbiter Coffee</p>
             </div>
-            <Row>
-              <Col lg={10} className="mx-auto">
+            <ResponsiveRow>
+              <ResponsiveCol lg={10} className="mx-auto">
                 <div className="timeline-modern">
                   {timeline.map((event) => (
                     <article key={event.id} className="timeline-item">
@@ -216,7 +217,7 @@ const AboutPage = () => {
                   ))}
                 </div>
               </ResponsiveCol>
-            </Row>
+            </ResponsiveRow>
           </ResponsiveContainer>
         </section>
       )}
@@ -224,26 +225,26 @@ const AboutPage = () => {
       {/* Detailed Values */}
       <section aria-labelledby="detailed-values-heading" className="section-modern">
         <ResponsiveContainer>
-          <Row>
-            <Col lg={10} className="mx-auto">
+          <ResponsiveRow>
+            <ResponsiveCol lg={10} className="mx-auto">
               <div className="values-grid">
                 <div className="section-header">
                   <h2 id="detailed-values-heading">Our Values</h2>
                   <div className="section-divider" />
                 </div>
-                <Row className="g-4">
+                <ResponsiveRow className="g-4">
                   {detailedValues.map((val, i) => (
-                    <Col md={4} key={i}>
+                    <ResponsiveCol md={4} key={i}>
                       <article>
                         <h3 className="h5 fw-semibold mb-2" style={{ color: 'var(--color-dark-green)' }}>{val.title}</h3>
                         <p className="mb-0 text-muted">{val.text}</p>
                       </article>
                     </ResponsiveCol>
                   ))}
-                </Row>
+                </ResponsiveRow>
               </div>
             </ResponsiveCol>
-          </Row>
+          </ResponsiveRow>
         </ResponsiveContainer>
       </section>
     </main>
