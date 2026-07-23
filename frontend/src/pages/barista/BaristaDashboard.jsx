@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import {
-  FaClock, FaCheckCircle, FaUtensils, FaChartLine, FaCoffee,
-  FaTasks, FaCalendarAlt, FaSignInAlt, FaDollarSign, FaStopwatch,
-  FaSync, FaExclamationTriangle, FaBolt, FaList,
-  FaBoxes, FaLeaf, FaClipboardList, FaChevronRight,
-  FaEye, FaUsers,
+  FaClock,
+  FaUtensils,
+  FaChartLine,
+  FaTasks,
+  FaCalendarAlt,
+  FaDollarSign,
+  FaStopwatch,
+  FaSync,
+  FaExclamationTriangle,
+  FaClipboardList,
+  FaUsers,
+  FaCheckCircle,
+  FaEye,
 } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 import { API_ENDPOINTS } from '../../config/api';
@@ -13,13 +20,10 @@ import apiService from '../../services/api.service';
 import { useBaristaOrders } from '../../hooks/useBroadcast';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardNavigation';
-import { useSwipeToDismiss } from '../../hooks/useSwipeToDismiss';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import useApiError from '../../hooks/useApiError';
 import ResponsiveButton from '@/components/responsive/Button';
 import ResponsiveCard from '@/components/responsive/Card';
-import ResponsiveForm from '@/components/responsive/Form';
-import ResponsiveModal from '@/components/responsive/Modal';
 import ResponsiveRow from '@/components/responsive/Row';
 import ResponsiveCol from '@/components/responsive/Col';
 import './BaristaDashboard.css';
@@ -190,7 +194,7 @@ const BaristaDashboard = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [getErrorInfo]);
 
   useEffect(() => { fetchDashboardData(); }, [fetchDashboardData]);
 

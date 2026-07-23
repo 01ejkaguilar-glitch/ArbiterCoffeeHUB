@@ -41,4 +41,5 @@ export const parseRetryAfterHeader = (headerValue) => {
   return 0;
 };
 
-export default { calculateBackoffDelay, parseRetryAfterHeader };
+const retryUtils = { calculateBackoffDelay, parseRetryAfterHeader };
+export default retryUtils;

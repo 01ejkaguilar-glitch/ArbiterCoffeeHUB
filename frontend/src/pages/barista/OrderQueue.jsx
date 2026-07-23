@@ -8,7 +8,7 @@ import { API_ENDPOINTS } from '@/config/api';
 import apiService from '@/services/api.service';
 import { useBaristaOrders } from '@/hooks/useBroadcast';
 import { useNotificationSystem } from '@/components/common/NotificationSystem';
-import { ResponsiveButton, ResponsiveContainer, ResponsiveRow, ResponsiveCol, ResponsiveCard } from '@/components/responsive';
+import { ResponsiveButton, ResponsiveContainer, ResponsiveRow, ResponsiveCol } from '@/components/responsive';
 import OrderCard from '@/pages/barista/components/OrderCard';
 import OrderDetailModal from '@/pages/barista/components/OrderDetailModal';
 import '@/pages/barista/OrderQueue.css';

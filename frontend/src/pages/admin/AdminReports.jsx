@@ -4,7 +4,6 @@ import {
   ResponsiveCard,
   ResponsiveForm,
   ResponsiveTable,
-  ResponsiveModal,
   ResponsiveAlert,
   ResponsiveSpinner,
   ResponsiveBadge,

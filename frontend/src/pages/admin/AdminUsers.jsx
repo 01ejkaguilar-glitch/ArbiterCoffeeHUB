@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   FaBan, FaCheckCircle, FaEdit, FaEye, FaPlus, FaSearch,
   FaUsers, FaUserCheck, FaUserShield, FaUserTimes, FaTimes,
@@ -10,17 +10,9 @@ import PageShell from '../../components/layout/PageShell';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
 import ResponsiveButton from '@/components/responsive/Button';
 import ResponsiveForm from '@/components/responsive/Form';
-import ResponsiveModal from '@/components/responsive/Modal';
 import ResponsiveTable from '@/components/responsive/Table';
 import ResponsiveCard from '@/components/responsive/Card';
-import ResponsiveAlert from '@/components/responsive/Alert';
-import ResponsiveSpinner from '@/components/responsive/Spinner';
 import ResponsiveBadge from '@/components/responsive/Badge';
-import ResponsiveContainer from '@/components/responsive/Container';
-import ResponsiveRow from '@/components/responsive/Row';
-import ResponsiveCol from '@/components/responsive/Col';
-import ResponsiveTabs from '@/components/responsive/Tabs';
-import ResponsiveTab from '@/components/responsive/Tab';
 import './AdminUsers.css';
 
 const PER_PAGE_OPTIONS = [10, 15, 25, 50];
@@ -90,9 +82,7 @@ const AdminUsers = () => {
   });
   const [editSaving, setEditSaving] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState([]);
-  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
-  const addressInputRef = useRef(null);
 
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmUser, setConfirmUser] = useState(null);
@@ -319,15 +309,7 @@ const AdminUsers = () => {
     }
   };
 
-  const getStepDescription = (step) => {
-    switch (step) {
-      case 1: return 'Basic account details and login information';
-      case 2: return 'Profile picture and document upload';
-      case 3: return 'Contact and address information';
-      default: return '';
-    }
-  };
-
+  
   /* ── debounce ── */
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 350);
@@ -399,8 +381,7 @@ const AdminUsers = () => {
     setShowEdit(true);
   };
 
-  const handleEditChange = (field, val) => setEditForm(f => ({ ...f, [field]: val }));
-
+  
   const handleSaveUser = async () => {
     // Validate form before submitting
     if (!validateForm()) {
@@ -463,63 +444,7 @@ const AdminUsers = () => {
 
   // Mock address autocomplete function
   // In a real application, this would call an address validation/autocomplete service like Google Maps Places API
-  const fetchAddressSuggestions = async (addressData) => {
-    // Don't fetch suggestions if we don't have enough data
-    if (!addressData.address_line_1 && !addressData.city) {
-      setAddressSuggestions([]);
-      return;
-    }
-
-    // Simulate API delay
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Mock suggestions based on input
-        const suggestions = [
-          {
-            id: 1,
-            formatted_address: '123 Main Street, San Francisco, CA 94105, USA',
-            address_line_1: '123 Main Street',
-            address_line_2: '',
-            city: 'San Francisco',
-            state: 'CA',
-            postal_code: '94105',
-            country: 'USA'
-          },
-          {
-            id: 2,
-            formatted_address: '456 Oak Avenue, Los Angeles, CA 90210, USA',
-            address_line_1: '456 Oak Avenue',
-            address_line_2: '',
-            city: 'Los Angeles',
-            state: 'CA',
-            postal_code: '90210',
-            country: 'USA'
-          },
-          {
-            id: 3,
-            formatted_address: '789 Pine Road, New York, NY 10001, USA',
-            address_line_1: '789 Pine Road',
-            address_line_2: 'Suite 100',
-            city: 'New York',
-            state: 'NY',
-            postal_code: '10001',
-            country: 'USA'
-          }
-        ];
-
-        // Filter suggestions based on input (simple mock filtering)
-        const filteredSuggestions = suggestions.filter(suggestion => {
-          const inputValues = Object.values(addressData).join(' ').toLowerCase();
-          const suggestionValues = Object.values(suggestion).join(' ').toLowerCase();
-          return suggestionValues.includes(inputValues.substring(0, Math.min(3, inputValues.length)));
-        });
-
-        setAddressSuggestions(filteredSuggestions.length > 0 ? filteredSuggestions : []);
-        resolve();
-      }, 500); // Simulate 500ms API delay
-    });
-  };
-
+  
   /* ── pagination buttons ── */
   const pageButtons = useMemo(() => {
     const { last_page, current_page } = meta;

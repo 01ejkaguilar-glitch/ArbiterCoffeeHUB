@@ -7,22 +7,12 @@ import {
   FaPrint, FaDownload, FaPercent, FaHistory, FaExclamationTriangle,
   FaUser, FaStickyNote, FaCheckCircle,
 } from 'react-icons/fa';
+import {
+  ResponsiveModal
+} from '../../components/responsive';
 import apiService from '@/services/api.service';
 import { API_ENDPOINTS, BACKEND_BASE_URL } from '@/config/api';
 import './PosPage.css';
-import {
-  ResponsiveContainer,
-  ResponsiveRow,
-  ResponsiveCol,
-  ResponsiveCard,
-  ResponsiveButton,
-  ResponsiveModal,
-  ResponsiveInput,
-  ResponsiveSelect,
-  ResponsiveLabel,
-  ResponsiveCheckbox,
-  ResponsiveTextarea,
-} from '@/components/responsive';
 
 /* ─── helpers ─── */
 const peso = (v) => `₱${Number(v || 0).toFixed(2)}`;

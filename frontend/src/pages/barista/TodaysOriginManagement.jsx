@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   FaStar, FaPlus, FaEdit, FaTrash, FaCoffee, FaCalendarAlt,
   FaClock, FaMapMarkerAlt, FaSpinner, FaExclamationTriangle,
@@ -7,20 +7,7 @@ import './TodaysOriginManagement.css';
 import { API_ENDPOINTS } from '@/config/api';
 import apiService from '@/services/api.service';
 import { useNotificationSystem } from '@/components/common/NotificationSystem';
-import {
-  ResponsiveContainer,
-  ResponsiveRow,
-  ResponsiveCol,
-  ResponsiveCard,
-  ResponsiveButton,
-  ResponsiveForm,
-  ResponsiveInput,
-  ResponsiveSelect,
-  ResponsiveModal,
-  ResponsiveLabel,
-  ResponsiveCheckbox,
-  ResponsiveTextarea,
-} from '@/components/responsive';
+import { ResponsiveModal } from '@/components/responsive';
 
 /* ── Helpers ──────────────────────────────────────────────── */
 const todayStr = () => new Date().toISOString().split('T')[0];

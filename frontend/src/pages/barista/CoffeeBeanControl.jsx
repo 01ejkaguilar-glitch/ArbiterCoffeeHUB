@@ -1,28 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   FaCoffee, FaEdit, FaSearch, FaStar, FaRegStar,
-  FaExclamationTriangle, FaCalendarAlt, FaClock,
-  FaPlus, FaMapMarkerAlt, FaSync, FaArchive,
+  FaExclamationTriangle, FaCalendarAlt,
+  FaPlus, FaMapMarkerAlt, FaArchive,
   FaTimes, FaSpinner, FaLeaf,
+  FaClock, FaSync,
 } from 'react-icons/fa';
 import { API_ENDPOINTS } from '@/config/api';
 import apiService from '@/services/api.service';
 import { useNotificationSystem } from '@/components/common/NotificationSystem';
-import {
-  ResponsiveContainer,
-  ResponsiveRow,
-  ResponsiveCol,
-  ResponsiveCard,
-  ResponsiveButton,
-  ResponsiveForm,
-  ResponsiveInput,
-  ResponsiveSelect,
-  ResponsiveModal,
-  ResponsiveLabel,
-  ResponsiveCheckbox,
-  ResponsiveTextarea,
-} from '@/components/responsive';
 import '@/pages/barista/CoffeeBeanControl.css';
+import { ResponsiveModal } from '@/components/responsive';
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const normalise = (responseData) => {

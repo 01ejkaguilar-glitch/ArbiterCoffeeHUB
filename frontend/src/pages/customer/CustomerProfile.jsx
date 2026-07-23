@@ -123,7 +123,7 @@ const CustomerProfile = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getErrorInfo]);
 
   useEffect(() => {
     fetchProfile();

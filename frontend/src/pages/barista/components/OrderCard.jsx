@@ -31,7 +31,6 @@ const OrderCard = ({
   const actions = STATUS_ACTIONS[order?.status] || [];
   const items = order?.order_items || order?.items || [];
   const total = order?.total_amount ?? order?.total ?? null;
-  const [swipeDirection, setSwipeDirection] = useState(null);
   const [isSwiping, setIsSwiping] = useState(false);
   const [swipeStartX, setSwipeStartX] = useState(0);
 
@@ -134,19 +133,7 @@ const OrderCard = ({
   // Handle touch move for swipe-to-dismiss
   const handleTouchMove = useCallback((e) => {
     if (!isSwiping || window.innerWidth > 768) return;
-
-    const currentX = e.touches[0].clientX;
-    const diff = currentX - swipeStartX;
-
-    // Update swipe direction based on movement
-    if (Math.abs(diff) > 10) { // Minimum swipe distance
-      if (diff > 0) {
-        setSwipeDirection('right'); // Swipe right to complete
-      } else {
-        setSwipeDirection('left'); // Swipe left to cancel
-      }
-    }
-  }, [isSwiping, swipeStartX]);
+  }, [isSwiping]);
 
   // Handle touch end for swipe-to-dismiss
   const handleTouchEnd = useCallback((e) => {
@@ -167,10 +154,9 @@ const OrderCard = ({
     }
 
     // Reset swipe state
-    setSwipeDirection(null);
     setIsSwiping(false);
     setSwipeStartX(0);
-  }, [order?.id, onUpdateStatus, order?.status]);
+  }, [isSwiping, swipeStartX, order?.id, onUpdateStatus, order?.status]);
 
   // Handle keyboard shortcuts
   const handleKeyDown = useCallback((e) => {
@@ -217,7 +203,7 @@ const OrderCard = ({
       default:
         break;
     }
-  }, [order?.status, order?.id, onUpdateStatus, onViewDetail]);
+  }, [order, onUpdateStatus, onViewDetail]);
 
   return (
     <ResponsiveCard

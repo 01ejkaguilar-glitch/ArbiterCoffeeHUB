@@ -175,11 +175,7 @@ const AdminInventory = () => {
     return counts;
   }, [inventoryItems]);
 
-  const handleSort = (key) => {
-    setSortConfig(prev => prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' });
-    setPage(1);
-  };
-
+  
   const handleShowModal = (item = null) => {
     if (item) {
       setEditingItem(item);
@@ -382,9 +378,6 @@ const AdminInventory = () => {
               { Header: 'Actions', accessor: 'actions' }
             ]}
             data={paged.map((item, idx) => {
-              const status = getStockStatus(item);
-              const qty = parseFloat(item.quantity);
-              const lvl = parseFloat(item.reorder_level) || 1;
               return {
                 index: (page - 1) * PAGE_SIZE + idx + 1,
                 name: item.name,

@@ -1,7 +1,6 @@
 import React from 'react';
 import ResponsiveTable from '../../../components/responsive/Table';
 import ResponsiveButton from '../../../components/responsive/Button';
-import ResponsiveForm from '../../../components/responsive/Form';
 
 const ProductTable = ({
   products = [],

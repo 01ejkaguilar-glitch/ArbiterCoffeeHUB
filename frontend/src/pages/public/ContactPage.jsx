@@ -6,10 +6,9 @@ import {
   ResponsiveForm,
   ResponsiveCard,
   ResponsiveAlert,
-  ResponsiveListGroup,
   ResponsiveRow,
 } from '@/components/responsive';
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock, FaFacebookF, FaInstagram, FaTiktok } from 'react-icons/fa';
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock, FaFacebookF, FaInstagram } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import SEO from '../../components/SEO';

@@ -12,12 +12,6 @@ import ResponsiveForm from '../../components/responsive/Form';
 import ResponsiveModal from '../../components/responsive/Modal';
 import ResponsiveTable from '../../components/responsive/Table';
 import ResponsiveCard from '../../components/responsive/Card';
-import ResponsiveAlert from '../../components/responsive/Alert';
-import ResponsiveSpinner from '../../components/responsive/Spinner';
-import ResponsiveBadge from '../../components/responsive/Badge';
-import ResponsiveContainer from '../../components/responsive/Container';
-import ResponsiveRow from '../../components/responsive/Row';
-import ResponsiveCol from '../../components/responsive/Col';
 
 const blankForm = () => ({
   employee_id: '', review_period: '', overall_score: '', punctuality_score: '',

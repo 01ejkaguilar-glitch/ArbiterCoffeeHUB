@@ -8,16 +8,7 @@ import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
 import ResponsiveButton from '../../components/responsive/Button';
-import ResponsiveForm from '../../components/responsive/Form';
-import ResponsiveModal from '../../components/responsive/Modal';
-import ResponsiveTable from '../../components/responsive/Table';
 import ResponsiveCard from '../../components/responsive/Card';
-import ResponsiveAlert from '../../components/responsive/Alert';
-import ResponsiveSpinner from '../../components/responsive/Spinner';
-import ResponsiveBadge from '../../components/responsive/Badge';
-import ResponsiveContainer from '../../components/responsive/Container';
-import ResponsiveRow from '../../components/responsive/Row';
-import ResponsiveCol from '../../components/responsive/Col';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
 import './AdminWorkforce.css';
 
@@ -69,7 +60,7 @@ const AdminShifts = () => {
       const res = await apiService.get(API_ENDPOINTS.WORKFORCE.EMPLOYEES);
       if (res.success) setEmployees(Array.isArray(res.data) ? res.data : (res.data?.data || []));
     } catch { /* non-fatal */ }
-  }, [apiService.get, API_ENDPOINTS.WORKFORCE.EMPLOYEES]);
+  }, []);
 
   const fetchShifts = useCallback(async () => {
     setLoading(true);

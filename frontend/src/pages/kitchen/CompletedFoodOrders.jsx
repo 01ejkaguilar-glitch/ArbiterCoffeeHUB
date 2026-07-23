@@ -11,10 +11,8 @@ import { useNotificationSystem } from '../../components/common/NotificationSyste
 import {
   ResponsiveButton,
   ResponsiveCard,
-  ResponsiveContainer,
   ResponsiveCol,
   ResponsiveRow,
-  ResponsiveModal,
   ResponsiveTable,
 } from '../../components/responsive';
 import './CompletedFoodOrders.css';

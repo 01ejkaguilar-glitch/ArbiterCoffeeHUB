@@ -9,7 +9,6 @@ import PageShell from '../../components/layout/PageShell';
 import {
   ResponsiveButton,
   ResponsiveCard,
-  ResponsiveForm,
   ResponsiveModal,
   ResponsiveTable
 } from '../../components/responsive';
@@ -19,23 +18,6 @@ const blankForm = () => ({
   name: '', email: '', phone: '', password: '', role: 'barista',
   position: '', department: '', hire_date: '', salary: '', status: 'active',
 });
-
-const RoleBadge = ({ role }) => (
-  <span className={`wf-badge ${role === 'admin' ? 'blue' : role === 'manager' ? 'amber' : 'green'}`}>
-    {role || 'barista'}
-  </span>
-);
-const STATUS_MAP = {
-  active:     { cls: 'present', label: 'Active' },
-  on_leave:   { cls: 'late',    label: 'On Leave' },
-  suspended:  { cls: 'absent',  label: 'Suspended' },
-  terminated: { cls: 'absent',  label: 'Terminated' },
-  inactive:   { cls: 'absent',  label: 'Inactive' },
-};
-const StatusBadge = ({ status }) => {
-  const s = STATUS_MAP[status] || { cls: 'absent', label: status || 'Inactive' };
-  return <span className={`wf-badge ${s.cls}`}>{s.label}</span>;
-};
 
 const AdminEmployees = () => {
   const [employees, setEmployees]   = useState([]);
@@ -77,7 +59,7 @@ const AdminEmployees = () => {
       }
     } catch { setError('Failed to load employees.'); }
     finally { setLoading(false); }
-  }, [apiService.get, API_ENDPOINTS.WORKFORCE.EMPLOYEES]);
+  }, []);
 
   useEffect(() => { fetchEmployees(); }, [fetchEmployees]);
 

@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { FaEnvelope, FaExclamationCircle, FaTimes, FaCheckCircle, FaArrowLeft } from 'react-icons/fa';
+import { FaEnvelope, FaExclamationCircle, FaCheckCircle, FaArrowLeft } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import { FadeIn, SlideInUp } from '../../components/animations/AnimationWrappers';

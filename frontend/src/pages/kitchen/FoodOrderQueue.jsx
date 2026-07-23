@@ -73,7 +73,7 @@ const FoodOrderCard = ({ order, timer, updatingOrder, onUpdateStatus, formatElap
   const actions = statusActions[order.status] || [];
 
   return (
-    <ResponsiveCard className={`border-0 shadow-sm h-100 ${order.status}`} className={`foq-order-card ${order.status}`}>
+    <ResponsiveCard className={`border-0 shadow-sm h-100 ${order.status} foq-order-card ${order.status}`}>
       <ResponsiveCard.Header className="foq-order-header d-flex justify-content-between align-items-center">
         <div className="d-flex align-items-center">
           <span className="foq-order-num">#{order.order_number || order.id}</span>

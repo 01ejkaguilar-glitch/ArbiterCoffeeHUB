@@ -8,9 +8,7 @@ import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
 import ResponsiveButton from '@/components/responsive/Button';
 import ResponsiveForm from '@/components/responsive/Form';
-import ResponsiveModal from '@/components/responsive/Modal';
 import ResponsiveTable from '@/components/responsive/Table';
-import ResponsiveCard from '@/components/responsive/Card';
 import './AdminWorkforce.css';
 
 const blankForm = () => ({

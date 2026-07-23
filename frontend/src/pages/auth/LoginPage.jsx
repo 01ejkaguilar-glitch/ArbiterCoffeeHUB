@@ -6,8 +6,6 @@ import { useToast } from '../../components/animations/Toast';
 import { FadeIn, SlideInUp } from '../../components/animations/AnimationWrappers';
 import './Auth.css';
 import {
-  ResponsiveButton,
-  ResponsiveContainer,
   ResponsiveForm,
   ResponsiveRow,
   ResponsiveCol,

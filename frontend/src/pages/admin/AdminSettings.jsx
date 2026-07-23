@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ResponsiveButton, ResponsiveForm, ResponsiveModal, ResponsiveAlert, ResponsiveCard } from '../../components/responsive';
+import { ResponsiveButton, ResponsiveCard, ResponsiveAlert, ResponsiveModal } from '../../components/responsive';
 import {
   FaHistory, FaUsers, FaPlus, FaEdit, FaTrash, FaTimes,
   FaChevronUp, FaChevronDown, FaSave, FaUserCircle, FaSync,
@@ -13,15 +13,6 @@ import './AdminSettings.css';
 // ─── Blank helpers ────────────────────────────────────────────────────────────
 const blankTimeline = () => ({ year: new Date().getFullYear(), title: '', description: '' });
 const blankMember   = () => ({ name: '', role: '', bio: '', photo_url: '', display_order: 0 });
-
-// ─── Alert banner ─────────────────────────────────────────────────────────────
-const Alert = ({ msg, type, onClose }) =>
-  msg ? (
-    <div className={`as-alert ${type}`}>
-      {msg}
-      <button className="as-alert-close" onClick={onClose}><FaTimes /></button>
-    </div>
-  ) : null;
 
 // ── Validation Functions ─────────────────────────────────────────────────────
 const validateTimelineField = (field, value) => {
@@ -99,7 +90,6 @@ const AdminSettings = () => {
 
   const validateTimeline = () => {
     const errors = {};
-    const isValid = true;
 
     // Validate year
     const yearError = validateTimelineField('year', tlForm.year);
@@ -139,6 +129,9 @@ const AdminSettings = () => {
   };
 
   // ── Fetch Timeline ──────────────────────────────────────────────────────────
+  // Only getErrorInfo is in the dependency array because it's the only value that can change between renders.
+  // API_ENDPOINTS.ADMIN.SETTINGS.TIMELINE and apiService.get are imported constants/immutable references
+  // that never change, so they don't need to be in the dependency array.
   const fetchTimeline = useCallback(async () => {
     setLoading(p => ({ ...p, timeline: true }));
     try {
@@ -148,9 +141,12 @@ const AdminSettings = () => {
       getErrorInfo(err);
     }
     finally { setLoading(p => ({ ...p, timeline: false })); }
-  }, [apiService.get, API_ENDPOINTS.ADMIN.SETTINGS.TIMELINE]);
+  }, [getErrorInfo]);
 
   // ── Fetch Team ──────────────────────────────────────────────────────────────
+  // Only getErrorInfo is in the dependency array because it's the only value that can change between renders.
+// API_ENDPOINTS.ADMIN.SETTINGS.TEAM and apiService.get are imported constants/immutable references
+// that never change, so they don't need to be in the dependency array.
   const fetchTeam = useCallback(async () => {
     setLoading(p => ({ ...p, team: true }));
     try {
@@ -160,7 +156,7 @@ const AdminSettings = () => {
       getErrorInfo(err);
     }
     finally { setLoading(p => ({ ...p, team: false })); }
-  }, [apiService.get, API_ENDPOINTS.ADMIN.SETTINGS.TEAM]);
+  }, [getErrorInfo]);
 
   useEffect(() => { fetchTimeline(); fetchTeam(); }, [fetchTimeline, fetchTeam]);
 

@@ -8,9 +8,6 @@ import BatchActionModal from './components/BatchActionModal';
 import PageShell from '../../components/layout/PageShell';
 import ResponsiveButton from '../../components/responsive/Button';
 import ResponsiveCard from '../../components/responsive/Card';
-import ResponsiveForm from '../../components/responsive/Form';
-import ResponsiveModal from '../../components/responsive/Modal';
-import ResponsiveTable from '../../components/responsive/Table';
 import './AdminProducts.css';
 
 const AdminProducts = () => {

@@ -1,14 +1,12 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
-import { Container, Row, Col, Breadcrumb, Button } from 'react-bootstrap';
-import { FaExclamationTriangle, FaRedo } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
-import { ResponsiveModal, ResponsiveButton, ResponsiveForm, ResponsiveTable, ResponsiveAlert, ResponsiveCard, ResponsiveRow, ResponsiveCol, ResponsiveSpinner } from '../../components/responsive';
+import { FaRedo } from 'react-icons/fa';
+import { ResponsiveModal, ResponsiveButton, ResponsiveForm, ResponsiveAlert, ResponsiveCard, ResponsiveRow, ResponsiveCol, ResponsiveSpinner } from '../../components/responsive';
 import {
   FaEye, FaWifi, FaBell,
   FaShoppingCart, FaCheckCircle, FaClock, FaBoxOpen,
   FaTimesCircle, FaArrowRight, FaTimes, FaSave,
-  FaFileDownload, FaList, FaEllipsisV
+  FaFileDownload, FaEllipsisV, FaList
 } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
@@ -75,7 +73,6 @@ const AdminOrders = () => {
   const [dateRange, setDateRange] = useState('all');
   const [exporting, setExporting] = useState(false);
   // Virtual scrolling
-  const [scrollOffset, setScrollOffset] = useState(0);
   const [visibleStartIndex, setVisibleStartIndex] = useState(0);
   const [visibleEndIndex, setVisibleEndIndex] = useState(0);
   const rowHeightEstimate = 48; // pixels per row (estimated)
@@ -152,7 +149,7 @@ const AdminOrders = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [page, perPage, debouncedSearch, filterStatus, filterType]);
+  }, [page, perPage, debouncedSearch, filterStatus, filterType, getErrorInfo]);
 
   // Refetch whenever page, perPage, debounced search, or filters change
   useEffect(() => {
@@ -181,15 +178,16 @@ const AdminOrders = () => {
   useEffect(() => {
     if (!tableRef.current) return;
 
+    const table = tableRef.current;
+
     const updateVisibleIndices = () => {
-      const scrollTop = tableRef.current.scrollTop;
+      const scrollTop = table.scrollTop;
       const startIndex = Math.max(0, Math.floor((scrollTop - (buffer * rowHeightEstimate)) / rowHeightEstimate));
       const endIndex = Math.min(
         orders.length - 1,
         Math.ceil((scrollTop + viewportHeight + (buffer * rowHeightEstimate)) / rowHeightEstimate)
       );
 
-      setScrollOffset(scrollTop);
       setVisibleStartIndex(startIndex);
       setVisibleEndIndex(endIndex);
     };
@@ -198,14 +196,14 @@ const AdminOrders = () => {
       updateVisibleIndices();
     };
 
-    tableRef.current.addEventListener('scroll', handleScroll);
+    table.addEventListener('scroll', handleScroll);
     // Initial calculation
     updateVisibleIndices();
 
     return () => {
-      tableRef.current.removeEventListener('scroll', handleScroll);
+      table.removeEventListener('scroll', handleScroll);
     };
-  }, [orders.length, viewportHeight, rowHeightEstimate, buffer]);
+  }, [tableRef, orders.length, viewportHeight, rowHeightEstimate, buffer]);
 
   // Set up pull-to-refresh hook
   const handleRefreshCallback = useCallback(() => fetchOrders(false), [fetchOrders]);

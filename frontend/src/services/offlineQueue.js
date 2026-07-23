@@ -8,9 +8,6 @@ import { v4 as uuidv4 } from 'uuid';
 // Queue storage key
 const QUEUE_STORAGE_KEY = 'arbitercoffee offlineQueue';
 
-// Critical actions that should be queued when offline
-const CRITICAL_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
-
 class OfflineQueue {
   constructor() {
     this.queue = this.loadQueue() || [];

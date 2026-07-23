@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   FaCalendarAlt, FaSearch, FaCheck, FaTimes, FaSync,
   FaHourglassHalf, FaTimesCircle, FaCheckCircle, FaFilter,
@@ -7,16 +7,8 @@ import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
 import PageShell from '../../components/layout/PageShell';
 import ResponsiveButton from '../../components/responsive/Button';
-import ResponsiveForm from '../../components/responsive/Form';
-import ResponsiveModal from '../../components/responsive/Modal';
 import ResponsiveTable from '../../components/responsive/Table';
-import ResponsiveCard from '../../components/responsive/Card';
-import ResponsiveAlert from '../../components/responsive/Alert';
-import ResponsiveSpinner from '../../components/responsive/Spinner';
 import ResponsiveBadge from '../../components/responsive/Badge';
-import ResponsiveContainer from '../../components/responsive/Container';
-import ResponsiveRow from '../../components/responsive/Row';
-import ResponsiveCol from '../../components/responsive/Col';
 import './AdminWorkforce.css';
 
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
@@ -24,11 +16,6 @@ const diffDays = (s, e) => {
   if (!s || !e) return 0;
   const ms = new Date(e) - new Date(s);
   return Math.max(1, Math.round(ms / 86400000) + 1);
-};
-
-const StatusBadge = ({ status }) => {
-  const map = { pending: 'amber', approved: 'present', rejected: 'absent', cancelled: 'absent' };
-  return <span className={`wf-badge ${map[status] || 'amber'}`}>{status}</span>;
 };
 
 const LEAVE_TYPES = ['annual', 'sick', 'emergency', 'maternity', 'paternity', 'unpaid'];
@@ -67,14 +54,14 @@ const AdminLeaveRequests = () => {
 
   useEffect(() => { fetchRequests(); }, [fetchRequests]);
 
-  const openReview = (req, defaultAction = 'approved') => {
+  const openReview = useCallback((req, defaultAction = 'approved') => {
     setSelected(req);
     setAction(defaultAction);
     setRemarks('');
     setShowModal(true);
-  };
+  }, [setSelected, setAction, setRemarks, setShowModal]);
 
-  const handleAction = async (e) => {
+  const handleAction = useCallback(async (e) => {
     e.preventDefault();
     if (!selected) return;
     setActionLoading(true);
@@ -87,15 +74,17 @@ const AdminLeaveRequests = () => {
       else setError(res.message || 'Action failed.');
     } catch { setError('Failed to process leave request.'); }
     finally { setActionLoading(false); }
-  };
+  }, [selected, action, remarks, setActionLoading, setError, setShowModal, fetchRequests]);
 
-  const filtered = requests.filter(r => {
-    const q = search.toLowerCase();
-    const nameMatch = (r.employee_name || r.employee?.name || '').toLowerCase().includes(q);
-    const statusMatch = statusFilter === 'all' || r.status === statusFilter;
-    const typeMatch   = typeFilter   === 'all' || r.leave_type === typeFilter;
-    return nameMatch && statusMatch && typeMatch;
-  });
+  const filtered = useMemo(() => {
+    return requests.filter(r => {
+      const q = search.toLowerCase();
+      const nameMatch = (r.employee_name || r.employee?.name || '').toLowerCase().includes(q);
+      const statusMatch = statusFilter === 'all' || r.status === statusFilter;
+      const typeMatch   = typeFilter   === 'all' || r.leave_type === typeFilter;
+      return nameMatch && statusMatch && typeMatch;
+    });
+  }, [requests, search, statusFilter, typeFilter]);
 
   return (
     <PageShell title="Leave Requests" subtitle="Review and approve employee leave requests" error={error} onRetry={fetchRequests}>

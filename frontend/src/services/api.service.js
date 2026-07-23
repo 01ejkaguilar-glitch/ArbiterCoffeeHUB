@@ -4,7 +4,6 @@
  */
 
 import apiClientWithRetry from './apiClientWithRetry';
-import API_BASE_URL from '../config/api';
 import offlineQueue from './offlineQueue';
 
 // Critical actions that should be queued when offline
@@ -125,7 +124,7 @@ export const unregisterProgressCallback = (id) => {
 };
 
 // Notify all progress callbacks
-const notifyProgress = (progress) => {
+let notifyProgress = (progress) => {
   progressCallbacks.forEach((callback) => {
     try {
       callback(progress);

@@ -8,7 +8,7 @@ import {
 import { API_ENDPOINTS } from '@/config/api';
 import apiService from '@/services/api.service';
 import { useNotificationSystem } from '@/components/common/NotificationSystem';
-import { ResponsiveTable, ResponsiveButton, ResponsiveModal, ResponsiveCard, ResponsiveCol, ResponsiveRow, ResponsiveContainer } from '@/components/responsive';
+import { ResponsiveTable, ResponsiveContainer } from '@/components/responsive';
 import '@/pages/barista/CompletedOrders.css';
 
 // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -200,7 +200,7 @@ const CompletedOrders = () => {
     { threshold: 100 }
   );
   return (
-    <ResponsiveContainer className="co-page">
+    <ResponsiveContainer className="co-page" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
 
       {/* Top bar */}
       <div className="co-topbar">

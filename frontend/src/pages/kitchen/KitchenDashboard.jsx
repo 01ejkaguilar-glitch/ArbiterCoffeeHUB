@@ -12,13 +12,11 @@ import apiService from '../../services/api.service';
 import { useKitchenOrders } from '../../hooks/useBroadcast';
 import { useNotificationSystem } from '../../components/common/NotificationSystem';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardNavigation';
-import { useSwipeToDismiss } from '../../hooks/useSwipeToDismiss';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import SwipeableOrderItem from '../../components/shared/SwipeableOrderItem';
 import {
   ResponsiveButton,
   ResponsiveCard,
-  ResponsiveContainer,
   ResponsiveCol,
   ResponsiveRow,
 } from '../../components/responsive';
@@ -127,12 +125,6 @@ const KitchenDashboard = () => {
     });
 
     showOrderNotification('Order dismissed', 'info');
-  };
-
-  const handleProcessOrder = (orderId) => {
-    // For demo purposes, we'll show a notification
-    // In a real app, this might mark the oldest order as processed
-    showOrderNotification('Order marked as processed via keyboard shortcut', 'success');
   };
 
   useKeyboardShortcuts({

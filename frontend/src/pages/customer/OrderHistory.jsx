@@ -13,7 +13,6 @@ import {
   ResponsiveForm,
   ResponsiveInputGroup,
   ResponsiveDropdown,
-  ResponsivePagination
 } from '../../components/responsive';
 import { FaEye, FaRedo, FaWifi, FaExclamationTriangle, FaSearch, FaFilter, FaDownload, FaRedoAlt, FaCalendarAlt, FaTimes } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';

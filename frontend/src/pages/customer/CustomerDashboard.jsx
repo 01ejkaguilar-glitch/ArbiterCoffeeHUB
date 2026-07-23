@@ -1,21 +1,18 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   ResponsiveContainer,
   ResponsiveSpinner,
   ResponsiveButton,
-  ResponsiveBadge,
   ResponsiveAlert,
   ResponsiveCard,
-  ResponsiveRow,
   ResponsiveCol,
-  ResponsiveProgressBar,
   ResponsiveModal
 } from '../../components/responsive';
 import {
   FaShoppingBag, FaCheckCircle, FaClock, FaWallet,
   FaCoffee, FaClipboardList, FaUser, FaStar,
-  FaChevronRight, FaArrowRight, FaFire, FaMoon,
-  FaGift, FaTrophy, FaCalendarAlt, FaChevronUp, FaChevronDown
+  FaChevronRight, FaArrowRight, FaMoon,
+  FaGift, FaTrophy, FaChevronUp, FaChevronDown
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -27,7 +24,6 @@ import { API_ENDPOINTS } from '../../config/api';
 import { AreaMetricChart } from '../../components/charts';
 import StatusBadge from '../../components/common/StatusBadge';
 import SEO from '../../components/SEO';
-import PullToRefresh from '../../components/mobile/PullToRefresh';
 import { usePullToRefresh } from '../../hooks/usePullToRefresh';
 import './CustomerDashboard.css';
 
@@ -94,7 +90,6 @@ const getSmartRecommendationTitle = (user, stats, analyticsData, recentOrders) =
   const hour = new Date().getHours();
   const isMorning = hour >= 6 && hour < 11;
   const isAfternoon = hour >= 11 && hour < 17;
-  const isEvening = hour >= 17 || hour < 6;
 
   // Get user's most frequent order from history
   const usualOrder = getUsualOrder(recentOrders);
@@ -122,30 +117,21 @@ const getSmartRecommendationTitle = (user, stats, analyticsData, recentOrders) =
       : "Afternoon Boost";
   }
 
-  if (isEvening) {
-    if (stats.total_orders > 0) {
-      return usualOrder
-        ? `Evening ${usualOrder} Wind-Down`
-        : "Evening Wind-Down";
-    }
+  // Evening
+  if (stats.total_orders > 0) {
     return usualOrder
-      ? `Evening ${usualOrder} Treat`
-      : "Evening Treat";
+      ? `Evening ${usualOrder} Wind-Down`
+      : "Evening Wind-Down";
   }
-
   return usualOrder
-    ? `Recommended for You: Try ${usualOrder}`
-    : "Recommended for You";
+    ? `Evening ${usualOrder} Treat`
+    : "Evening Treat";
 };
 
 const getRecommendationIcon = (user, stats, analyticsData, recentOrders) => {
   const hour = new Date().getHours();
   const isMorning = hour >= 6 && hour < 11;
   const isAfternoon = hour >= 11 && hour < 17;
-  const isEvening = hour >= 17 || hour < 6;
-
-  // Get user's most frequent order from history for potential icon customization
-  const usualOrder = getUsualOrder(recentOrders);
 
   if (isMorning) {
     // Could customize based on usual order - for now keep coffee icon
@@ -162,7 +148,6 @@ const getRecommendationTitle = (user, stats, analyticsData, recentOrders) => {
   const hour = new Date().getHours();
   const isMorning = hour >= 6 && hour < 11;
   const isAfternoon = hour >= 11 && hour < 17;
-  const isEvening = hour >= 17 || hour < 6;
 
   // Get top product from analytics if available
   const topProduct = analyticsData?.top_products?.[0];
@@ -180,9 +165,7 @@ const getRecommendationTitle = (user, stats, analyticsData, recentOrders) => {
     return usualOrder
       ? `${usualOrder} Morning Special`
       : topProductName;
-  }
-
-  if (isAfternoon) {
+  } else if (isAfternoon) {
     if (stats.total_orders > 5) {
       return usualOrder
         ? `Iced ${usualOrder} Macchiato`
@@ -191,9 +174,8 @@ const getRecommendationTitle = (user, stats, analyticsData, recentOrders) => {
     return usualOrder
       ? `${topProductName} Iced with ${usualOrder || 'a twist'}`
       : `${topProductName} Iced`;
-  }
-
-  if (isEvening) {
+  } else {
+    // Evening
     if (stats.total_orders > 0) {
       return usualOrder
         ? `Decaf ${usualOrder} Espresso`
@@ -203,17 +185,12 @@ const getRecommendationTitle = (user, stats, analyticsData, recentOrders) => {
       ? `Decaf ${usualOrder} Special`
       : "Decaf " + topProductName;
   }
-
-  return usualOrder
-    ? `${topProductName} with ${usualOrder} twist`
-    : topProductName || "House Special";
 };
 
 const getRecommendationDescription = (user, stats, analyticsData, recentOrders) => {
   const hour = new Date().getHours();
   const isMorning = hour >= 6 && hour < 11;
   const isAfternoon = hour >= 11 && hour < 17;
-  const isEvening = hour >= 17 || hour < 6;
 
   // Get user's most frequent order from history
   const usualOrder = getUsualOrder(recentOrders);
@@ -227,9 +204,7 @@ const getRecommendationDescription = (user, stats, analyticsData, recentOrders) 
     return usualOrder
       ? `A smooth, balanced ${usualOrder} perfect for morning`
       : "A smooth, balanced blend perfect for morning";
-  }
-
-  if (isAfternoon) {
+  } else if (isAfternoon) {
     if (stats.total_orders > 5) {
       return usualOrder
         ? `Sweet and refreshing ${usualOrder} for that afternoon lift`
@@ -238,9 +213,8 @@ const getRecommendationDescription = (user, stats, analyticsData, recentOrders) 
     return usualOrder
       ? `Cool, refreshing ${usualOrder} option for warmer afternoons`
       : "Cool, refreshing option for warmer afternoons";
-  }
-
-  if (isEvening) {
+  } else {
+    // Evening
     if (stats.total_orders > 0) {
       return usualOrder
         ? `Smooth and caffeine-free ${usualOrder} for evening enjoyment`
@@ -250,10 +224,6 @@ const getRecommendationDescription = (user, stats, analyticsData, recentOrders) 
       ? `Rich ${usualOrder} flavor without the caffeine for evening`
       : "Rich flavor without the caffeine for evening";
   }
-
-  return usualOrder
-    ? `Customer favorite ${usualOrder} with perfect balance of flavor`
-    : "Customer favorite with perfect balance of flavor";
 };
 
 const QUICK_ACTIONS = [
@@ -263,8 +233,6 @@ const QUICK_ACTIONS = [
   { path: '/profile', label: 'Profile', icon: FaUser, color: 'rgba(0,104,55,0.1)', iconColor: 'var(--color-dark-green)', desc: 'Account settings' },
 ];
 
-
-/* ================================================================ */
 
 const CustomerDashboard = () => {
   const { user } = useAuth();
@@ -828,9 +796,9 @@ const CustomerDashboard = () => {
                   <Link to="/products" className="cdb-empty-link">Browse Menu <FaArrowRight className="ms-1" size={12} /></Link>
                 </div>
               )
-              }
-            </div>
+            }
           </div>
+        </div>
 
         </ResponsiveContainer>
 
