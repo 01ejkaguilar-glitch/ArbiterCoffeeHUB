@@ -25,28 +25,7 @@ const pct = (val) => `${parseFloat(val || 0).toFixed(1)}%`;
 const fmtDate = (d) =>
   new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-const getDateRange = useCallback((key) => {
-  const now = new Date();
-  let start, end;
-  if (key === 'week') {
-    start = new Date(now); start.setDate(now.getDate() - 6); end = new Date(now);
-  } else if (key === 'year') {
-    start = new Date(now.getFullYear(), 0, 1);
-    end   = new Date(now.getFullYear(), 11, 31);
-  } else {
-    start = new Date(now.getFullYear(), now.getMonth(), 1);
-    end   = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  }
-  return {
-    start_date: start.toISOString().split('T')[0],
-    end_date:   end.toISOString().split('T')[0],
-  };
-}, []);
 
-const STATUS_COLORS = {
-  completed: '#2ecc71', pending: '#f39c12', processing: '#006837',
-  cancelled: '#e74c3c', ready: '#009245', delivered: '#15803d',
-};
 const PIE_COLORS = ['#2ecc71','#009245','#e74c3c','#f39c12','#005028','#15803d','#e67e22','#2D7A2F'];
 
 const TABS = [
@@ -100,6 +79,25 @@ const AdminAnalytics = () => {
   const [loadingBarista,  setLoadingBarista]  = useState(false);
 
   const [loaded, setLoaded] = useState({ sales: false, customers: false, performance: false, segments: false, barista: false });
+
+  // Helper function to get date range based on key
+  const getDateRange = useCallback((key) => {
+    const now = new Date();
+    let start, end;
+    if (key === 'week') {
+      start = new Date(now); start.setDate(now.getDate() - 6); end = new Date(now);
+    } else if (key === 'year') {
+      start = new Date(now.getFullYear(), 0, 1);
+      end   = new Date(now.getFullYear(), 11, 31);
+    } else {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end   = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    }
+    return {
+      start_date: start.toISOString().split('T')[0],
+      end_date:   end.toISOString().split('T')[0],
+    };
+  }, []);
 
   /* ── Fetch helpers ─────────────────────────────────────────── */
   const fetchSales = useCallback(async (range) => {
@@ -163,7 +161,7 @@ const AdminAnalytics = () => {
     if (activeTab === 'performance' && !loaded.performance) { fetchPerformance(timeRange); setLoaded(p => ({ ...p, performance: true })); }
     if (activeTab === 'segments'    && !loaded.segments)    { fetchSegments(); setLoaded(p => ({ ...p, segments: true })); }
     if (activeTab === 'barista'     && !loaded.barista)     { fetchBarista(timeRange); setLoaded(p => ({ ...p, barista: true })); }
-  }, [activeTab, timeRange, fetchSales, fetchCustomers, fetchPerformance, fetchSegments, fetchBarista]);
+  }, [activeTab, timeRange, fetchSales, fetchCustomers, fetchPerformance, fetchSegments, fetchBarista, loaded.sales, loaded.customers, loaded.performance, loaded.segments, loaded.barista]);
 
   const handleRefresh = () => {
     setRefreshing(true);
