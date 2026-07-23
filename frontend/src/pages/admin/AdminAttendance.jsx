@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import ResponsiveButton from '../../components/responsive/Button';
 import ResponsiveAlert from '../../components/responsive/Alert';
 import {
-  FaClock, FaSearch, FaPlus, FaCheckCircle, FaTimesCircle,
+  FaSearch, FaPlus, FaCheckCircle, FaTimesCircle,
   FaUserClock, FaTimes, FaCalendarAlt, FaSync,
 } from 'react-icons/fa';
 import apiService from '../../services/api.service';

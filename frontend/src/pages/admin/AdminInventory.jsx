@@ -11,7 +11,7 @@ import {
 } from '../../components/responsive';
 import {
   FaPlus, FaEdit, FaTrash, FaBoxes, FaCoffee, FaUtensils, FaBox, FaSprayCan,
-  FaPencilAlt, FaSort, FaSortUp, FaSortDown, FaHistory, FaLayerGroup, FaTimesCircle,
+  FaPencilAlt, FaHistory, FaLayerGroup, FaTimesCircle,
   FaCookieBite, FaSnowflake, FaSearch, FaArrowUp, FaArrowDown, FaExchangeAlt,
   FaRecycle, FaChevronLeft, FaChevronRight, FaBoxOpen,
 } from 'react-icons/fa';

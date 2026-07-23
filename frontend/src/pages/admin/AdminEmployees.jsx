@@ -107,9 +107,6 @@ const AdminEmployees = () => {
       case 'position':
         if (!selected && !formData.position.trim()) errs.position = 'Position is required';
         break;
-      case 'email':
-        // Already handled above
-        break;
       default:
         break;
     }
