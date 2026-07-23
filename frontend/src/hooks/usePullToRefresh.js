@@ -23,7 +23,7 @@ export const usePullToRefresh = (onRefresh, options = {}) => {
       startYRef.current = null;
       onRefresh();
     }
-  }, [onRefresh, threshold, resistance]);
+  }, [onRefresh, threshold, draggingRef, startYRef]);
 
   const onTouchEnd = useCallback(() => {
     draggingRef.current = false;

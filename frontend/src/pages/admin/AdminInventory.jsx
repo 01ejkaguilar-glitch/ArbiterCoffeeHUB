@@ -67,12 +67,6 @@ function StockBadge({ item }) {
   );
 }
 
-function SortIcon({ col, sortConfig }) {
-  if (sortConfig.key !== col) return <FaSort style={{ marginLeft: 4, opacity: 0.35, fontSize: '0.65rem' }} />;
-  return sortConfig.dir === 'asc'
-    ? <FaSortUp style={{ marginLeft: 4, color: 'var(--color-dark-green)', fontSize: '0.65rem' }} />
-      : <FaSortDown style={{ marginLeft: 4, color: 'var(--color-dark-green)', fontSize: '0.65rem' }} />;
-}
 const AdminInventory = () => {
   const [inventoryItems, setInventoryItems] = useState([]);
   const [inventoryLogs, setInventoryLogs]   = useState([]);
@@ -391,8 +385,6 @@ const AdminInventory = () => {
               const status = getStockStatus(item);
               const qty = parseFloat(item.quantity);
               const lvl = parseFloat(item.reorder_level) || 1;
-              const barPct = Math.min(100, Math.round((qty / (lvl * 3)) * 100));
-              const barCls = status === 'in-stock' ? 'green' : status === 'low-stock' ? 'amber' : 'red';
               return {
                 index: (page - 1) * PAGE_SIZE + idx + 1,
                 name: item.name,

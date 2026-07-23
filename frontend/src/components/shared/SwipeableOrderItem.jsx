@@ -103,7 +103,7 @@ const SwipeableOrderItem = ({
               <span className={`text-${order.status === 'completed' ? 'success' : order.status === 'preparing' ? 'warning' : order.status === 'pending' ? 'info' : 'secondary'} me-2`}>
                 {order.status}
               </span>
-              <span className="eta-time eta-${eta.type}">
+              <span className={'eta-time eta-' + eta.type}>
                 {eta.text}
               </span>
             </div>

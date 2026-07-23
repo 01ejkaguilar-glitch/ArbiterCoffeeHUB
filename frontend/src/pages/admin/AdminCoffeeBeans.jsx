@@ -38,7 +38,6 @@ const AdminCoffeeBeans = () => {
     stock_quantity: 0,
     is_featured: false
   });
-  const [formErrors, setFormErrors] = useState({});
 
   const fetchCoffeeBeans = useCallback(async (bustCache = false) => {
     try {

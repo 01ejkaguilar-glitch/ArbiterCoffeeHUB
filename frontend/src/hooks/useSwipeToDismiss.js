@@ -35,7 +35,7 @@ export const useSwipeToDismiss = (onDismissed, threshold = 100) => {
       isSwiping: true,
       dismissing: Math.abs(diff) > threshold
     });
-  }, [swipeState.isSwiping, threshold]);
+  }, [swipeState, threshold]);
 
   const handleTouchEnd = useCallback(async () => {
     if (!swipeState.isSwiping) return;
@@ -59,7 +59,7 @@ export const useSwipeToDismiss = (onDismissed, threshold = 100) => {
         dismissing: false
       });
     }
-  }, [swipeState, threshold]);
+  }, [swipeState, threshold, onDismissed]);
 
   // Reset on component unmount or when needed
   useEffect(() => {

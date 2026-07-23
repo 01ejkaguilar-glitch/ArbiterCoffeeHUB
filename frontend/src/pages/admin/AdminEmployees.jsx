@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   FaUsers, FaSearch, FaPlus, FaEdit, FaTrash, FaTimes,
-  FaUserCheck, FaUserTimes, FaSync, FaExclamationTriangle, FaEnvelope, FaPhone,
+  FaUserCheck, FaUserTimes, FaSync, FaExclamationTriangle,
 } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
