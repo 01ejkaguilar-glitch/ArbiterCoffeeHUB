@@ -133,7 +133,6 @@ jobs:
             echo "WARNING: Response time exceeded 3 second threshold"
             # Don't fail the job for now, just warn
           fi
-        }
 
       - name: Prepare public_html
         run: |
