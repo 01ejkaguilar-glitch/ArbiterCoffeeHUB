@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ResponsiveButton from '../../components/responsive/Button';
-import ResponsiveForm from '../../components/responsive/Form';
 import ResponsiveModal from '../../components/responsive/Modal';
 import ResponsiveAlert from '../../components/responsive/Alert';
 import ResponsiveTable from '../../components/responsive/Table';

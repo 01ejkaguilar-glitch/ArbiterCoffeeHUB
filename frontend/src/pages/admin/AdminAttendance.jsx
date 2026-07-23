@@ -3,7 +3,7 @@ import ResponsiveButton from '../../components/responsive/Button';
 import ResponsiveAlert from '../../components/responsive/Alert';
 import {
   FaSearch, FaPlus, FaCheckCircle, FaTimesCircle,
-  FaUserClock, FaTimes, FaCalendarAlt, FaSync,
+  FaUserClock, FaTimes, FaCalendarAlt, FaSync, FaClock,
 } from 'react-icons/fa';
 import apiService from '../../services/api.service';
 import { API_ENDPOINTS } from '../../config/api';
