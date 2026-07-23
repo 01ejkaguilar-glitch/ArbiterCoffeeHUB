@@ -10,6 +10,7 @@ import ResponsiveBadge from '../../components/responsive/Badge';
 import ResponsiveLoadingFallback from '../../components/responsive/LoadingFallback';
 import ResponsiveRow from '../../components/responsive/Row';
 import ResponsiveCol from '../../components/responsive/Col';
+import ResponsiveForm from '../../components/responsive/Form';
 import { FaEdit, FaTrash, FaSearch, FaStar, FaPlus } from 'react-icons/fa';
 import { API_ENDPOINTS } from '../../config/api';
 import { BACKEND_BASE_URL } from '../../config/api';

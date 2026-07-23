@@ -208,8 +208,9 @@ const AdminOrders = () => {
   }, [orders.length, viewportHeight, rowHeightEstimate, buffer]);
 
   // Set up pull-to-refresh hook
+  const handleRefreshCallback = useCallback(() => fetchOrders(false), [fetchOrders]);
   const { onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(
-    () => fetchOrders(false),
+    handleRefreshCallback,
     { threshold: 100 }
   );
 

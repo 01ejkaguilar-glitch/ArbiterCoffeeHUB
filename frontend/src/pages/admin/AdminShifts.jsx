@@ -69,7 +69,7 @@ const AdminShifts = () => {
       const res = await apiService.get(API_ENDPOINTS.WORKFORCE.EMPLOYEES);
       if (res.success) setEmployees(Array.isArray(res.data) ? res.data : (res.data?.data || []));
     } catch { /* non-fatal */ }
-  }, []);
+  }, [apiService.get, API_ENDPOINTS.WORKFORCE.EMPLOYEES]);
 
   const fetchShifts = useCallback(async () => {
     setLoading(true);
@@ -208,10 +208,10 @@ const AdminShifts = () => {
     }
   });
 
-  const empName = id => {
+  const empName = useCallback((id) => {
     const e = employees.find(e => String(e.id) === String(id));
     return e ? e.name : `#${id}`;
-  };
+  }, [employees]);
 
   // Shift swap request
   const requestShiftSwap = async (shiftId) => {

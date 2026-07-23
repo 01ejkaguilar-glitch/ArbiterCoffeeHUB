@@ -25,7 +25,7 @@ const pct = (val) => `${parseFloat(val || 0).toFixed(1)}%`;
 const fmtDate = (d) =>
   new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-const getDateRange = (key) => {
+const getDateRange = useCallback((key) => {
   const now = new Date();
   let start, end;
   if (key === 'week') {
@@ -41,7 +41,7 @@ const getDateRange = (key) => {
     start_date: start.toISOString().split('T')[0],
     end_date:   end.toISOString().split('T')[0],
   };
-};
+}, []);
 
 const STATUS_COLORS = {
   completed: '#2ecc71', pending: '#f39c12', processing: '#006837',
@@ -74,12 +74,6 @@ const KpiCard = ({ icon, iconClass, label, value, sub, className = '' }) => (
   </ResponsiveCard>
 );
 
-const StatusChip = ({ status }) => (
-  <span className="aa-status-chip">
-    <span className="aa-dot" style={{ background: STATUS_COLORS[status] || '#aaa' }} />
-    {status}
-  </span>
-);
 
 const Empty = () => (
   <div className="aa-empty">No data available for this period.</div>
@@ -116,7 +110,7 @@ const AdminAnalytics = () => {
       if (res.success) setSalesData(res.data);
     } catch (e) { /* Sales data unavailable */ }
     finally { setLoadingSales(false); }
-  }, []);
+  }, [getDateRange]);
 
   const fetchCustomers = useCallback(async (range) => {
     setLoadingCust(true);
@@ -126,7 +120,7 @@ const AdminAnalytics = () => {
       if (res.success) setCustData(res.data);
     } catch (e) { /* Customer data unavailable */ }
     finally { setLoadingCust(false); }
-  }, []);
+  }, [getDateRange]);
 
   const fetchPerformance = useCallback(async (range) => {
     setLoadingPerf(true);
@@ -136,7 +130,7 @@ const AdminAnalytics = () => {
       if (res.success) setPerfData(res.data);
     } catch (e) { /* Performance data unavailable */ }
     finally { setLoadingPerf(false); }
-  }, []);
+  }, [getDateRange]);
 
   const fetchSegments = useCallback(async () => {
     setLoadingSegments(true);
@@ -155,7 +149,7 @@ const AdminAnalytics = () => {
       if (res.success) setBaristaData(res.data);
     } catch (e) { /* Barista data unavailable */ }
     finally { setLoadingBarista(false); }
-  }, []);
+  }, [getDateRange]);
 
   /* Reset loaded flags when timeRange changes */
   useEffect(() => {
@@ -169,7 +163,7 @@ const AdminAnalytics = () => {
     if (activeTab === 'performance' && !loaded.performance) { fetchPerformance(timeRange); setLoaded(p => ({ ...p, performance: true })); }
     if (activeTab === 'segments'    && !loaded.segments)    { fetchSegments(); setLoaded(p => ({ ...p, segments: true })); }
     if (activeTab === 'barista'     && !loaded.barista)     { fetchBarista(timeRange); setLoaded(p => ({ ...p, barista: true })); }
-  }, [activeTab, loaded, timeRange, fetchSales, fetchCustomers, fetchPerformance, fetchSegments, fetchBarista]);
+  }, [activeTab, timeRange, fetchSales, fetchCustomers, fetchPerformance, fetchSegments, fetchBarista]);
 
   const handleRefresh = () => {
     setRefreshing(true);

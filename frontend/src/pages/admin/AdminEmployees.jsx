@@ -77,7 +77,7 @@ const AdminEmployees = () => {
       }
     } catch { setError('Failed to load employees.'); }
     finally { setLoading(false); }
-  }, []);
+  }, [apiService.get, API_ENDPOINTS.WORKFORCE.EMPLOYEES]);
 
   useEffect(() => { fetchEmployees(); }, [fetchEmployees]);
 

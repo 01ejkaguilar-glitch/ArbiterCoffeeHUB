@@ -84,7 +84,7 @@ const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [apiService.get, API_ENDPOINTS.ADMIN.DASHBOARD_STATS, API_ENDPOINTS.ADMIN.ANALYTICS.SALES, API_ENDPOINTS.WORKFORCE.EMPLOYEE_STATS, API_ENDPOINTS.WORKFORCE.ATTENDANCE_SUMMARY]);
 
   // Initial load
   useEffect(() => {

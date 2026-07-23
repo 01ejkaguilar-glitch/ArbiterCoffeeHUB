@@ -1,7 +1,7 @@
 import { useCallback, useRef, useEffect } from 'react';
 
 export const usePullToRefresh = (onRefresh, options = {}) => {
-  const { threshold = 100, resistance = 0.5 } = options;
+  const { threshold = 100 } = options;
   const startYRef = useRef(null);
   const draggingRef = useRef(false);
 

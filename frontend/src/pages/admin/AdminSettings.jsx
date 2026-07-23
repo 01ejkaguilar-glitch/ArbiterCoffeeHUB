@@ -148,7 +148,7 @@ const AdminSettings = () => {
       getErrorInfo(err);
     }
     finally { setLoading(p => ({ ...p, timeline: false })); }
-  }, []);
+  }, [apiService.get, API_ENDPOINTS.ADMIN.SETTINGS.TIMELINE]);
 
   // ── Fetch Team ──────────────────────────────────────────────────────────────
   const fetchTeam = useCallback(async () => {
@@ -160,7 +160,7 @@ const AdminSettings = () => {
       getErrorInfo(err);
     }
     finally { setLoading(p => ({ ...p, team: false })); }
-  }, []);
+  }, [apiService.get, API_ENDPOINTS.ADMIN.SETTINGS.TEAM]);
 
   useEffect(() => { fetchTimeline(); fetchTeam(); }, [fetchTimeline, fetchTeam]);
 

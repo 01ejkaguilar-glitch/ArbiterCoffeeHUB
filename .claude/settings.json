@@ -62,7 +62,8 @@
       "Bash(grep \"#[0-9a-fA-F]\\\\{3,8\\\\}\" /c/Users/01ker/ArbiterCoffeeHUB/frontend/src/components/responsive/Form.css /c/Users/01ker/ArbiterCoffeeHUB/frontend/src/components/responsive/InputGroup.css /c/Users/01ker/ArbiterCoffeeHUB/frontend/src/components/responsive/ListGroup.css)",
       "Bash(grep -E '#[0-9a-fA-F]{3,6}' /c/Users/01ker/ArbiterCoffeeHUB/frontend/src/components/workforce/EmployeeAttendance.css)",
       "Bash(grep -E '#[0-9a-fA-F]{3,6}|rgba?\\\\\\([^\\)]*\\\\\\)' /c/Users/01ker/ArbiterCoffeeHUB/frontend/src/components/workforce/EmployeeAttendance.css)",
-      "Bash(grep -E '#[0-9a-fA-F]{3,6}|rgba?\\\\\\([^\\)]*[0-9]+[^\\)]*\\\\\\)' /c/Users/01ker/ArbiterCoffeeHUB/frontend/src/components/workforce/EmployeeAttendance.css)"
+      "Bash(grep -E '#[0-9a-fA-F]{3,6}|rgba?\\\\\\([^\\)]*[0-9]+[^\\)]*\\\\\\)' /c/Users/01ker/ArbiterCoffeeHUB/frontend/src/components/workforce/EmployeeAttendance.css)",
+      "Bash(npm run *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\01ker\\ArbiterCoffeeHUB"
