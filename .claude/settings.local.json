@@ -257,7 +257,8 @@
       "Bash(npx craco *)",
       "Bash(/c/Users/01ker/ArbiterCoffeeHUB/frontend/src\" -name \"Dropdown.jsx\" -o -name \"Dropdown.js\" -o -name \"Dropdown.tsx\" 2>/dev/null)",
       "Bash(jest)",
-      "Bash(craco.config.js *)"
+      "Bash(craco.config.js *)",
+      "Bash(timeout 5 tail -20 C:\\\\Users\\\\01ker\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-01ker-ArbiterCoffeeHUB\\\\cb935fb2-41cd-4438-8ee6-bdbebad98a20\\\\tasks\\\\b4w0yhe3x.output)"
     ]
   },
   "prefersReducedMotion": false
