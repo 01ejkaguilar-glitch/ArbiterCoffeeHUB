@@ -1,5 +1,4 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent } from '@testing-library/react';
 import EmptyState from './EmptyState';
 
 describe('EmptyState', () => {
@@ -40,7 +39,7 @@ describe('EmptyState', () => {
     expect(button).toHaveClass('btn-success');
 
     // Click the button
-    userEvent.click(button);
+    fireEvent.click(button);
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 

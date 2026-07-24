@@ -1,5 +1,5 @@
 import React from 'react';
-import { ResponsiveAlert } from './Alert';
+import { ResponsiveAlert } from '@components/responsive/Alert.jsx';
 
 export default {
   title: 'Components/Alert',
@@ -81,7 +81,7 @@ export const WithLink = {
         </a>
         .
       </>
-    ),
+      ),
     variant: 'info',
   },
 };

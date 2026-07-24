@@ -1,5 +1,5 @@
 import React from 'react';
-import { ResponsiveDropdown } from './Dropdown';
+import { ResponsiveDropdown } from '@components/responsive/Dropdown.jsx';
 
 export default {
   title: 'Components/Dropdown',

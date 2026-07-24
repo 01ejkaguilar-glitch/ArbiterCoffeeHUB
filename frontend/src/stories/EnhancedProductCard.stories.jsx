@@ -1,5 +1,5 @@
 import React from 'react';
-import { EnhancedProductCard } from './EnhancedProductCard';
+import { EnhancedProductCard } from '@components/product/EnhancedProductCard.jsx';
 
 export default {
   title: 'Components/EnhancedProductCard',

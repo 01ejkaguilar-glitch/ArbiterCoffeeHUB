@@ -253,7 +253,11 @@
       "Bash(php test_query.php)",
       "Bash(curl -s http://localhost:8000/api/v1/products/1)",
       "Bash(curl -v http://localhost:8000/api/v1/products/1)",
-      "Bash(curl -s \"http://localhost/api/v1/products?per_page=8\")"
+      "Bash(curl -s \"http://localhost/api/v1/products?per_page=8\")",
+      "Bash(npx craco *)",
+      "Bash(/c/Users/01ker/ArbiterCoffeeHUB/frontend/src\" -name \"Dropdown.jsx\" -o -name \"Dropdown.js\" -o -name \"Dropdown.tsx\" 2>/dev/null)",
+      "Bash(jest)",
+      "Bash(craco.config.js *)"
     ]
   },
   "prefersReducedMotion": false

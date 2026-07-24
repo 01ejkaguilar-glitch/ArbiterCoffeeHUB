@@ -1,9 +1,9 @@
 import React from 'react';
-import { FormControl, FormLabel } from './Form';
+import { ResponsiveForm } from '@components/responsive/Form.jsx';
 
 export default {
   title: 'Components/Form',
-  component: FormControl,
+  component: ResponsiveForm,
   parameters: {
     layout: 'centered',
   },
@@ -15,13 +15,18 @@ export const Default = {
     placeholder: 'Enter text...',
     className: ''
   },
+  render: (args) => (
+    <div style={{ padding: '20px' }}>
+      <ResponsiveForm.Control {...args} />
+    </div>
+  ),
 };
 
 export const WithLabel = {
-  render: (args) => (
+  render: () => (
     <div style={{ padding: '20px' }}>
-      <FormLabel htmlFor="example-input">Email Address</FormLabel>
-      <FormControl id="example-input" type="email" placeholder="Enter your email" />
+      <ResponsiveForm.Label htmlFor="example-input">Email Address</ResponsiveForm.Label>
+      <ResponsiveForm.Control id="example-input" type="email" placeholder="Enter your email" />
     </div>
   ),
 };
@@ -29,8 +34,8 @@ export const WithLabel = {
 export const Invalid = {
   render: () => (
     <div style={{ padding: '20px' }}>
-      <FormLabel htmlFor="invalid-input">Required Field</FormLabel>
-      <FormControl id="invalid-input" type="text" isInvalid placeholder="This field is required" />
+      <ResponsiveForm.Label htmlFor="invalid-input">Required Field</ResponsiveForm.Label>
+      <ResponsiveForm.Control id="invalid-input" type="text" className="is-invalid" placeholder="This field is required" />
     </div>
   ),
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import EmployeeAttendance from './EmployeeAttendance';
+import EmployeeAttendance from '@components/workforce/EmployeeAttendance.jsx';
 
 // Mock the useToast hook
 const useToast = () => {
@@ -16,7 +16,7 @@ const DEFAULT_THEME = {
 };
 
 // Mock the apiService
-jest.mock('../../services/api.service', () => ({
+jest.mock('@services/api.service', () => ({
   get: jest.fn().mockResolvedValue({ data: { data: {} } }),
   post: jest.fn().mockResolvedValue({ data: { data: {} } }),
 }));

@@ -1,5 +1,5 @@
 import React from 'react';
-import { InputGroup } from './InputGroup';
+import { InputGroup } from '@components/responsive/InputGroup.jsx';
 
 export default {
   title: 'Components/InputGroup',

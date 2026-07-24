@@ -1,5 +1,5 @@
 import React from 'react';
-import { ResponsiveListGroup, ResponsiveListGroupItem } from './ListGroup';
+import { ResponsiveListGroup, ResponsiveListGroupItem } from '@components/responsive/ListGroup.jsx';
 
 export default {
   title: 'Components/ListGroup',

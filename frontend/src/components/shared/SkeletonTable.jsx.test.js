@@ -8,21 +8,23 @@ describe('SkeletonTable', () => {
     expect(table).toHaveClass('skeleton-table');
 
     // Check header
-    const headerCells = table.querySelectorAll('th');
+    const headerCells = Array.from(table.querySelectorAll('th') || []);
     expect(headerCells).toHaveLength(6);
 
     // Check body rows
-    const rows = table.querySelectorAll('tbody tr');
+    const rows = Array.from(table.querySelectorAll('tbody tr') || []);
     expect(rows).toHaveLength(3); // default numRows is 3
 
     // Check first row has cells
-    const firstRowCells = rows[0].querySelectorAll('td');
-    expect(firstRowCells).toHaveLength(6);
+    if (rows.length > 0) {
+      const firstRowCells = Array.from(rows[0].querySelectorAll('td') || []);
+      expect(firstRowCells).toHaveLength(6);
+    }
   });
 
   test('Skeleton table accepts custom number of rows', () => {
     render(<SkeletonTable numRows={5} />);
-    const rows = screen.getByRole('table').querySelectorAll('tbody tr');
+    const rows = Array.from(screen.getByRole('table').querySelectorAll('tbody tr') || []);
     expect(rows).toHaveLength(5);
   });
 
@@ -33,7 +35,7 @@ describe('SkeletonTable', () => {
       { label: 'Phone', width: '30%' }
     ];
     render(<SkeletonTable columns={customColumns} />);
-    const headerCells = screen.getByRole('table').querySelectorAll('th');
+    const headerCells = Array.from(screen.getByRole('table').querySelectorAll('th') || []);
     expect(headerCells).toHaveLength(3);
 
     expect(headerCells[0]).toHaveStyle('width: 30%');

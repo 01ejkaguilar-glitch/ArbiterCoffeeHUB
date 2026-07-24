@@ -33,4 +33,37 @@ module.exports = {
       return webpackConfig;
     },
   },
+  jest: {
+    configure: (jestConfig) => {
+      return {
+        ...jestConfig,
+        moduleNameMapper: {
+          '^@/(.*)$': '<rootDir>/src/$1',
+          '^@$': '<rootDir>/src',
+          '^@components/(.*)$': '<rootDir>/src/components/$1',
+          '^@components$': '<rootDir>/src/components',
+          '^@components/shared/(.*)$': '<rootDir>/src/components/shared/$1',
+          '^@components/shared$': '<rootDir>/src/components/shared',
+          '^@components/responsive/(.*)$': '<rootDir>/src/components/responsive/$1',
+          '^@components/responsive$': '<rootDir>/src/components/responsive',
+          '^@pages/(.*)$': '<rootDir>/src/pages/$1',
+          '^@pages$': '<rootDir>/src/pages',
+          '^@pages/admin/(.*)$': '<rootDir>/src/pages/admin/$1',
+          '^@pages/admin$': '<rootDir>/src/pages/admin',
+          '^@styles/(.*)$': '<rootDir>/src/styles/$1',
+          '^@styles$': '<rootDir>/src/styles',
+          '^@utils/(.*)$': '<rootDir>/src/utils/$1',
+          '^@utils$': '<rootDir>/src/utils',
+          '^@services/(.*)$': '<rootDir>/src/services/$1',
+          '^@services$': '<rootDir>/src/services',
+          '^@hooks/(.*)$': '<rootDir>/src/hooks/$1',
+          '^@hooks$': '<rootDir>/src/hooks',
+          '^@contexts/(.*)$': '<rootDir>/src/contexts/$1',
+          '^@contexts$': '<rootDir>/src/contexts',
+          '^@assets/(.*)$': '<rootDir>/src/assets/$1',
+          '^@assets$': '<rootDir>/src/assets',
+        },
+      };
+    },
+  },
 };

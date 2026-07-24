@@ -1,5 +1,5 @@
 import React from 'react';
-import { ResponsiveBadge } from './Badge';
+import { ResponsiveBadge } from '@components/responsive/Badge.jsx';
 
 export default {
   title: 'Components/Badge',

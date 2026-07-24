@@ -2,9 +2,6 @@
  * Offline Queue Service Tests
  */
 
-import offlineQueue from './offlineQueue';
-import { v4 as uuidv4 } from 'uuid';
-
 // Mock crypto for uuidv4 in JSDOM
 if (typeof crypto === 'undefined') {
   global.crypto = {
@@ -37,8 +34,28 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 describe('OfflineQueue', () => {
+  // Reset module registry before each test to get a fresh instance
   beforeEach(() => {
+    jest.resetModules();
     jest.clearAllMocks();
+
+    // Re-apply the mocks after resetModules clears them
+    jest.mock('uuid', () => {
+      let counter = 0;
+      return {
+        v4: jest.fn(() => {
+          counter++;
+          return `test-uuid-${counter}`;
+        })
+      };
+    });
+
+    // Re-import the module after resetting modules and re-applying mocks
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const offlineQueueModule = require('./offlineQueue');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    global.offlineQueue = offlineQueueModule.default;
+
     // Clear the queue and reset localStorage mock before each test
     offlineQueue.clearQueue();
     localStorageMock.clear();
@@ -98,9 +115,8 @@ describe('OfflineQueue', () => {
       };
 
       const queuedRequest = offlineQueue.enqueue(request);
-      expect(queuedRequest.id).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
-      );
+      expect(typeof queuedRequest.id).toBe('string');
+      expect(queuedRequest.id).toMatch(/^test-uuid-\d+$/);
     });
 
     it('should use provided ID if available', () => {
@@ -122,7 +138,7 @@ describe('OfflineQueue', () => {
 
       offlineQueue.enqueue(request);
 
-      // Should be called twice: once in constructor (from beforeEach) and once in enqueue
+      // Should be called: clearQueue in beforeEach + enqueue
       expect(localStorageMock.setItem).toHaveBeenCalledTimes(2);
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         'arbitercoffee offlineQueue',
@@ -133,11 +149,14 @@ describe('OfflineQueue', () => {
 
   describe('dequeue', () => {
     it('should remove a request from the queue by ID', () => {
+      // Use explicit IDs to ensure test determinism
       const request = {
+        id: 'explicit-id-1',
         method: 'POST',
         url: '/api/test1',
       };
       const request2 = {
+        id: 'explicit-id-2',
         method: 'PUT',
         url: '/api/test2',
       };
@@ -151,7 +170,7 @@ describe('OfflineQueue', () => {
 
       const queue = offlineQueue.getQueue();
       expect(queue).toHaveLength(1);
-      expect(queue[0].id).toBe(queuedRequest2.id);
+      expect(queue[0].id).toBe('explicit-id-2');
     });
 
     it('should return false if request ID is not found', () => {
@@ -179,7 +198,7 @@ describe('OfflineQueue', () => {
       const queuedRequest = offlineQueue.enqueue(request);
       offlineQueue.dequeue(queuedRequest.id);
 
-      // Should be called: constructor (beforeEach) + enqueue + dequeue
+      // Should be called: clearQueue in beforeEach + enqueue + dequeue
       expect(localStorageMock.setItem).toHaveBeenCalledTimes(3);
     });
   });
@@ -221,7 +240,7 @@ describe('OfflineQueue', () => {
       offlineQueue.enqueue({ method: 'POST', url: '/api/test' });
       offlineQueue.clearQueue();
 
-      // Should be called: constructor (beforeEach) + enqueue + clearQueue
+      // Should be called: clearQueue in beforeEach + enqueue + clearQueue
       expect(localStorageMock.setItem).toHaveBeenCalledTimes(3);
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         'arbitercoffee offlineQueue',

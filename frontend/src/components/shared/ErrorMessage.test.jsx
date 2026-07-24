@@ -1,5 +1,4 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent } from '@testing-library/react';
 import ErrorMessage from './ErrorMessage';
 
 describe('ErrorMessage', () => {
@@ -89,10 +88,10 @@ describe('ErrorMessage', () => {
     expect(buttons[1]).toHaveTextContent(/cancel/i);
 
     // Clicking buttons should call the provided handlers
-    userEvent.click(buttons[0]);
+    fireEvent.click(buttons[0]);
     expect(handleRetry).toHaveBeenCalledTimes(1);
 
-    userEvent.click(buttons[1]);
+    fireEvent.click(buttons[1]);
     expect(handleCancel).toHaveBeenCalledTimes(1);
   });
 

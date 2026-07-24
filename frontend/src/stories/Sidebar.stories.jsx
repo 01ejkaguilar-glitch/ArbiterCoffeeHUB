@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Sidebar from './Sidebar';
+import Sidebar from '@components/layout/Sidebar.jsx';
 
 // Mock data for sidebar items and groups
 const mockItems = [

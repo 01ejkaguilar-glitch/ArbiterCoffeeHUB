@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navbar } from './Navbar';
+import { Navbar } from '@components/layout/Navbar.jsx';
 
 export default {
   title: 'Components/Navbar',

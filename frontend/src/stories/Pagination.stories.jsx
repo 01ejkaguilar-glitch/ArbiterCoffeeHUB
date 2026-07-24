@@ -1,5 +1,5 @@
 import React from 'react';
-import { ResponsivePagination } from './Pagination';
+import { ResponsivePagination } from '@components/responsive/Pagination.jsx';
 
 export default {
   title: 'Components/Pagination',
