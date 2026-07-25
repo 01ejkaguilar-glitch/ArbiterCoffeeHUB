@@ -77,6 +77,15 @@ jobs:
           mkdir -p public_html/api/{storage/{logs,framework/{cache,sessions,views},bootstrap/cache},api}
           mkdir -p public_html/bootstrap/cache
 
+      - name: List local deployment directory (debug)
+        run: |
+          echo "Contents of public_html:"
+          ls -la public_html/
+          echo "Public html api:"
+          ls -la public_html/api/
+          echo "Public html bootstrap/cache:"
+          ls -la public_html/bootstrap/cache/
+
       - name: Deploy frontend
         run: cp -r frontend/build/* public_html/
 
@@ -99,6 +108,20 @@ jobs:
             **/vendor/**
             **/.git/**
             **/.ftp-deploy-sync-state.json
+
+      - name: Verify FTP upload (debug)
+        if: always()
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            echo "Checking remote public_html:"
+            ls -la /home/u843463747/domains/arbitercoffee.shop/public_html/
+            echo "Checking remote public_html/api:"
+            ls -la /home/u843463747/domains/arbitercoffee.shop/public_html/api/
 
       # ===== POST-DEPLOYMENT (Laravel) =====
       - name: Run Laravel setup commands
