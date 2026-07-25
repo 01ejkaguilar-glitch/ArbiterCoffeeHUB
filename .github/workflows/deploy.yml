@@ -130,7 +130,7 @@ jobs:
             **/.git/**
             **/.env
             **/.gitignore
-          log-level: DEBUG
+          log-level: verbose
 
       # ===== POST-DEPLOYMENT (Laravel optimization via SSH) =====
       - name: Run Laravel optimization commands
