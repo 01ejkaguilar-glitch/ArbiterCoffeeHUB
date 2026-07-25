@@ -41,7 +41,6 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -60,7 +59,7 @@ jobs:
 
       # ===== BUILD PHASE =====
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
         working-directory: frontend
 
       - name: Build frontend
