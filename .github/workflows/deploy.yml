@@ -130,6 +130,10 @@ jobs:
             **/.git/**
             **/.env
             **/.gitignore
+          # Try FTPS (FTP over TLS) since plain FTP might be blocked
+          secure: true
+          # Use passive mode (often needed behind firewalls/NATs)
+          passive: true
           log-level: verbose
 
       # ===== POST-DEPLOYMENT (Laravel optimization via SSH) =====
