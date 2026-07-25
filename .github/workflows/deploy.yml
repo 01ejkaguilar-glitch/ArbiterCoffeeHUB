@@ -87,11 +87,13 @@ jobs:
           # Copy core Laravel directories
           cp -r app config database public resources routes storage vendor staging/public_html/api/
           # Copy essential files
-          cp artisan composer.json composer.lock server.php staging/public_html/api/
+          cp artisan composer.json composer.lock staging/public_html/api/
           # Copy .env.example as template (will be overridden by server's actual .env)
           cp .env.example staging/public_html/api/.env.example
-          # Create necessary directories with proper permissions
-          mkdir -p staging/public_html/api/storage/framework/{sessions,views,cache}
+          # Copy server.php if it exists
+          if [ -f server.php ]; then
+            cp server.php staging/public_html/api/
+          fi
           # Create necessary directories with proper permissions
           mkdir -p staging/public_html/api/storage/framework/{sessions,views,cache}
           mkdir -p staging/public_html/api/storage/logs
