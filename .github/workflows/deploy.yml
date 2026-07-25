@@ -40,8 +40,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -60,7 +58,7 @@ jobs:
 
       # ===== BUILD PHASE =====
       - name: Install frontend dependencies
-        run: npm ci --legacy-peer-deps
+        run: npm install --legacy-peer-deps
         working-directory: frontend
 
       - name: Build frontend
@@ -175,7 +173,7 @@ jobs:
             echo "Backend files: $BACKEND_COUNT"
 
             if [ "$FRONTEND_COUNT" -gt 0 ] && [ "$BACKEND_COUNT" -gt 0 ]; then
-              echo "✅ Deployment verification successful - files found in both directories"
+              echo "✅ Deployment verification successful - found files in both directories"
             else
               echo "⚠️ Warning: Low file count detected"
               exit 1
