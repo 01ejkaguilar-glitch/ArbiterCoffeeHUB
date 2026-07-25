@@ -60,7 +60,7 @@ jobs:
 
       # ===== BUILD PHASE =====
       - name: Install frontend dependencies
-        run: npm ci --legacy-peer-deps
+        run: npm install --legacy-peer-deps
         working-directory: frontend
 
       - name: Run frontend tests (allow failures)
