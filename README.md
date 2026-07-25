@@ -5,16 +5,16 @@ ArbiterCoffeeHUB is a full-stack web application featuring a React frontend and 
 
 ## Current Status
 - **Status**: Production Ready
-- **Version**: 1.2.0
+- **Version**: 1.2.1
 - **Last Updated**: July 2026
 - **Deployment Target**: Hostinger Shared Hosting (with subdomain separation)
 
 ## System Architecture
 ```
 Frontend (React):   arbitercoffeeshop.com
-   ↓ (HTTPS API calls)
+    ↓ (HTTPS API calls)
 Backend (Laravel):  api.arbitercoffeeshop.com
-   ↓ (MySQL)
+    ↓ (MySQL)
 Database:           u576753664_ArbiterCoffee
 ```
 
@@ -29,7 +29,7 @@ Database:           u576753664_ArbiterCoffee
 
 ## Project Structure
 ```
-/ (root)
+/
 ├── .github/                 # GitHub Actions workflows
 │   └── workflows/
 │       └── deploy.yml       # CI/CD pipeline for Hostinger
@@ -161,14 +161,11 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) automates:
 3. Backend dependency installation (Composer)
 4. FTP transfer to Hostinger
 5. SSH-based post-deployment tasks:
-   - Release directory creation with timestamp
-   - Symlink updates for zero-downtime deployment
-   - Composer install (if needed)
-   - Environment validation
-   - Database connection testing
-   - Cache clearing and optimization
+   - Laravel optimization (config/cache/route caching)
    - Permission setting
-   - Deployment verification
+   - Cache clearing and optimization
+6. Deployment verification
+3. Status notifications (Slack)
 
 ## Database Setup on Hostinger
 1. In Hostinger hPanel → Databases → MySQL:
