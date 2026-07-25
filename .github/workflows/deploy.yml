@@ -89,7 +89,11 @@ jobs:
           # Copy bootstrap directory
           cp -r bootstrap staging/public_html/api/
           # Copy essential files
-          cp artisan composer.json composer.lock server.php staging/public_html/api/
+          cp artisan composer.json composer.lock staging/public_html/api/
+          # Copy server.php if it exists
+          if [ -f server.php ]; then
+            cp server.php staging/public_html/api/
+          fi
           # Copy .env.example as template (will be overridden by server's actual .env)
           cp .env.example staging/public_html/api/.env.example
           # Create necessary directories with proper permissions
