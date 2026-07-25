@@ -103,11 +103,34 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
           local-dir: ./public_html/
-          remote-dir: public_html
+          server-dir: public_html
           exclude: |
             **/vendor/**
             **/.git/**
             **/.ftp-deploy-sync-state.json
+
+      - name: List what FTP action sees locally (debug)
+        if: always()
+        run: |
+          echo "Files that would be uploaded:"
+          find ./public_html -type f | sort
+          echo "Total files: $(find ./public_html -type f | wc -l)"
+
+      - name: SSH debug - show home and list
+        if: always()
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            echo "SSH user: $USER"
+            echo "Home: $HOME"
+            pwd
+            ls -la
+            echo "Listing public_html if exists:"
+            ls -la public_html 2>/dev/null || echo "public_html not found"
 
       - name: Verify FTP upload (debug)
         if: always()
