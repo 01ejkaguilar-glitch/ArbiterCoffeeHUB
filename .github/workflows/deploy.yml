@@ -162,7 +162,7 @@ jobs:
                   { "type": "mrkdwn", "text": "*Workflow:*\n${{ github.workflow }}" },
                   { "type": "mrkdwn", "text": "*Status:*\n${{ job.status }}" },
                   { "type": "mrkdwn", "text": "*Environment:*\n${{ github.event.inputs.environment }}" },
-                  { "type": "mrkdwn", "text": "*Commit:*\n${{ github.sha:0:7}}" }
+                  { "type": "mrkdwn", "text": "*Commit:*\n${{ github.sha:0:7 }}" }
                 ] }
               ]
             }
