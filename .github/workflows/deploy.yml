@@ -95,6 +95,13 @@ jobs:
           cp -r app config routes bootstrap storage database resources public_html/api/
           cp -r public/.htaccess lang public_html/api/ 2>/dev/null || true
 
+      - name: Debug FTP credentials (masked)
+        if: always()
+        run: |
+          echo "FTP_HOST: ${{ secrets.FTP_HOST }}"
+          echo "FTP_USERNAME: ${{ secrets.FTP_USERNAME }}"
+          echo "FTP_PORT: ${{ secrets.FTP_PORT }}"
+
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
@@ -108,6 +115,7 @@ jobs:
             **/vendor/**
             **/.git/**
             **/.ftp-deploy-sync-state.json
+          log-level: DEBUG
 
       - name: List what FTP action sees locally (debug)
         if: always()
