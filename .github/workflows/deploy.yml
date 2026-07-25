@@ -39,8 +39,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -193,7 +194,7 @@ jobs:
                   { "type": "mrkdwn", "text": "*Workflow:*\n${{ github.workflow }}" },
                   { "type": "mrkdwn", "text": "*Status:*\n${{ job.status }}" },
                   { "type": "mrkdwn", "text": "*Environment:*\n${{ github.inputs.environment }}" },
-                  { "type": "mrkdwn", "text": "*Commit:*\n${{ github.sha }}" }
+                  { "type": "mrkdwn", "text": "*Commit:*\n${{ github.sha[0:7] }}" }
                 ] }
               ]
             }
