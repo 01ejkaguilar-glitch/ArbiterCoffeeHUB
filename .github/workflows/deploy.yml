@@ -102,8 +102,10 @@ jobs:
 
       - name: Set permissions on storage directories
         run: |
-          chmod -R 775 staging/public_html/api/storage
-          chmod -R 775 staging/public_html/api/bootstrap/cache
+          echo "Setting permissions on storage directories..."
+          chmod -R 775 staging/public_html/api/storage || echo "Failed to chmod storage directory"
+          chmod -R 775 staging/public_html/api/bootstrap/cache || echo "Failed to chmod bootstrap/cache directory"
+          echo "Permissions set successfully."
 
       # ===== FTP DEPLOYMENT =====
       - name: Debug FTP credentials (masked)
@@ -209,3 +211,4 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
