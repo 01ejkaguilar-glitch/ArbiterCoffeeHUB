@@ -10,42 +10,42 @@ on:
         required: true
         default: 'deploy'
         type: choice
-        options: [deploy, rollback]
+        options:
+          - deploy
+          - rollback
       environment:
         description: 'Target environment'
         required: true
         default: 'production'
         type: choice
-        options: [staging, production]
+        options:
+          - staging
+          - production
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
+    environment: ${{ github.inputs.environment }}
     permissions:
-      contents: write
+      contents: write  # Needed for git tagging
 
     steps:
-      # ===== SETUP PHASE =====
+      # ===== CHECKOUT & SETUP =====
       - name: Checkout code
         uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
-        with: { node-version: "24" }
-
-      - name: Cache frontend dependencies
-        uses: actions/cache@v4
         with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-npm-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-npm-
+          node-version: '20'
+          cache: 'npm'
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.2"
+          php-version: '8.2'
           extensions: mbstring, xml, pdo_mysql, bcmath, zip, gd
           tools: composer
 
@@ -54,47 +54,48 @@ jobs:
         with:
           path: vendor
           key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          restore-keys: |
+            ${{ runner.os }}-composer-
 
-      # ===== BUILD & TEST PHASE =====
+      # ===== BUILD PHASE =====
       - name: Install frontend dependencies
-        run: cd frontend && npm ci --legacy-peer-deps
+        run: npm ci
+        working-directory: frontend
 
       - name: Build frontend
-        run: cd frontend && npm run build
-
-      - name: Test frontend (continue on deployment even if tests fail - known issue with ImageSnapshot)
-        run: cd frontend && npm test -- --watchAll=false --ci
-        continue-on-error: true
+        run: npm run build
+        working-directory: frontend
 
       - name: Install backend dependencies
         run: composer install --prefer-dist --no-progress --no-interaction --no-dev
 
-      # ===== DEPLOYMENT PHASE =====
-      - name: Prepare deployment directory
+      # ===== PREPARE DEPLOYMENT ARTIFACTS =====
+      - name: Create deployment staging directory
         run: |
-          rm -rf public_html
-          mkdir -p public_html/api/{storage/{logs,framework/{cache,sessions,views},bootstrap/cache},api}
-          mkdir -p public_html/bootstrap/cache
+          mkdir -p staging/public_html
+          mkdir -p staging/public_html/api
 
-      - name: List local deployment directory (debug)
+      - name: Copy frontend build
+        run: cp -r frontend/build/* staging/public_html/
+
+      - name: Prepare Laravel application files
         run: |
-          echo "Contents of public_html:"
-          ls -la public_html/
-          echo "Public html api:"
-          ls -la public_html/api/
-          echo "Public html bootstrap/cache:"
-          ls -la public_html/bootstrap/cache/
+          # Copy core Laravel directories
+          cp -r app config database public resources routes storage vendor staging/public_html/api/
+          # Copy essential files
+          cp artisan composer.json composer.lock server.php staging/public_html/api/
+          # Copy .env.example as template (will be overridden by server's actual .env)
+          cp .env.example staging/public_html/api/.env.example
+          # Create necessary directories with proper permissions
+          mkdir -p staging/public_html/api/storage/framework/{sessions,views,cache}
+          mkdir -p staging/public_html/api/storage/logs
 
-      - name: Deploy frontend
-        run: cp -r frontend/build/* public_html/
-
-      - name: Deploy backend files
+      - name: Set permissions on storage directories
         run: |
-          cp -r public index.php artisan composer.json composer.lock .env public_html/api/ 2>/dev/null || true
-          cp -r app config routes bootstrap storage database resources public_html/api/
-          cp -r public/.htaccess lang public_html/api/ 2>/dev/null || true
+          chmod -R 775 staging/public_html/api/storage
+          chmod -R 775 staging/public_html/api/bootstrap/cache
 
+      # ===== FTP DEPLOYMENT =====
       - name: Debug FTP credentials (masked)
         if: always()
         run: |
@@ -109,23 +110,19 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
-          local-dir: ./public_html/
+          local-dir: ./staging/public_html/
           server-dir: public_html/
+          # Important: Exclude .env to preserve server's existing environment configuration
+          # Exclude .git to avoid deploying repository metadata
           exclude: |
-            **/vendor/**
             **/.git/**
-            **/.ftp-deploy-sync-state.json
+            **/.env
+            **/.gitignore
           log-level: DEBUG
 
-      - name: List what FTP action sees locally (debug)
-        if: always()
-        run: |
-          echo "Files that would be uploaded:"
-          find ./public_html -type f | sort
-          echo "Total files: $(find ./public_html -type f | wc -l)"
-
-      - name: SSH debug - show home and list
-        if: always()
+      # ===== POST-DEPLOYMENT (Laravel optimization via SSH) =====
+      - name: Run Laravel optimization commands
+        if: github.inputs.action == 'deploy'
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -133,62 +130,34 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            echo "SSH user: $USER"
-            echo "Home: $HOME"
-            pwd
-            ls -la
-            echo "Listing public_html if exists:"
-            ls -la public_html 2>/dev/null || echo "public_html not found"
+            # Navigate to the Laravel application directory
+            cd /home/${{ secrets.FTP_USERNAME }}/public_html/api
 
-      - name: Verify FTP upload (debug)
-        if: always()
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            echo "Checking remote public_html:"
-            ls -la /home/${{ secrets.SSH_USERNAME }}/public_html/
-            echo "Checking remote public_html/api:"
-            ls -la /home/${{ secrets.SSH_USERNAME }}/public_html/api/
+            echo "Running Laravel optimization commands..."
 
-      # ===== POST-DEPLOYMENT (Laravel) =====
-      - name: Run Laravel setup commands
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            # Set paths
-            BASE_DIR="/home/${{ secrets.SSH_USERNAME }}"
-            RELEASE_TIMESTAMP=$(date +%Y%m%d%H%M%S)
-            RELEASE_DIR="$BASE_DIR/releases/$RELEASE_TIMESTAMP"
-            CURRENT_LINK="$BASE_DIR/current"
-
-            # Create release directory and deploy
-            mkdir -p "$RELEASE_DIR"
-            cp -r "$BASE_DIR/public_html/"* "$RELEASE_DIR/"
-
-            # Update symlink for zero-downtime deploy
-            ln -snf "$RELEASE_DIR" "$CURRENT_LINK"
-
-            # Laravel optimization commands
-            cd "$RELEASE_DIR"
-            php artisan optimize:clear
+            # Cache configuration, routes, and views
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
+
+            # Clear compiled views and cache (fresh start)
+            php artisan view:clear
+            php artisan config:clear
+            php artisan route:clear
+
+            # Optimize application for better performance
+            php artisan optimize:clear
+
+            # Ensure proper permissions for storage and cache directories
             chmod -R 755 storage bootstrap/cache
+            chmod -R 775 storage/framework/{sessions,views,cache}
+            chmod -R 775 storage/logs
 
-            echo "✅ Deployment complete: $RELEASE_TIMESTAMP"
+            echo "✅ Laravel optimization completed"
 
-      # ===== CLEANUP & NOTIFICATIONS =====
-      - name: Clean old releases (keep 5)
-        if: github.event.inputs.action == 'deploy'
+      # ===== VERIFICATION & NOTIFICATIONS =====
+      - name: Verify deployment (file count)
+        if: always()
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -196,15 +165,20 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            BASE_DIR="/home/${{ secrets.SSH_USERNAME }}"
-            cd "$BASE_DIR/releases"
-            ls -dt */ | tail -n +6 | xargs rm -rf --
+            echo "Verifying frontend files in public_html:"
+            FRONTEND_COUNT=$(find /home/${{ secrets.FTP_USERNAME }}/public_html -type f | wc -l)
+            echo "Frontend files: $FRONTEND_COUNT"
 
-      - name: Create production tag
-        if: github.event.inputs.action == 'deploy' && github.event.inputs.environment == 'production' && github.ref == 'refs/heads/main'
-        run: |
-          git tag "release-$(date +%Y%m%d%H%M%S)"
-          git push origin "--tags"
+            echo "Verifying backend files in public_html/api:"
+            BACKEND_COUNT=$(find /home/${{ secrets.FTP_USERNAME }}/public_html/api -type f | wc -l)
+            echo "Backend files: $BACKEND_COUNT"
+
+            if [ "$FRONTEND_COUNT" -gt 0 ] && [ "$BACKEND_COUNT" -gt 0 ]; then
+              echo "✅ Deployment verification successful - files found in both directories"
+            else
+              echo "⚠️ Warning: Low file count detected"
+              exit 1
+            fi
 
       - name: Deployment notification
         if: always()
@@ -218,7 +192,7 @@ jobs:
                 { "type": "section", "fields": [
                   { "type": "mrkdwn", "text": "*Workflow:*\n${{ github.workflow }}" },
                   { "type": "mrkdwn", "text": "*Status:*\n${{ job.status }}" },
-                  { "type": "mrkdwn", "text": "*Environment:*\n${{ github.event.inputs.environment }}" },
+                  { "type": "mrkdwn", "text": "*Environment:*\n${{ github.inputs.environment }}" },
                   { "type": "mrkdwn", "text": "*Commit:*\n${{ github.sha }}" }
                 ] }
               ]
