@@ -260,7 +260,8 @@
       "Bash(craco.config.js *)",
       "Bash(timeout 5 tail -20 C:\\\\Users\\\\01ker\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-01ker-ArbiterCoffeeHUB\\\\cb935fb2-41cd-4438-8ee6-bdbebad98a20\\\\tasks\\\\b4w0yhe3x.output)",
       "Bash(timeout 5 /nobreak)",
-      "Bash(timeout 5 bash -c \"while [ ! -f C:\\\\Users\\\\01ker\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-01ker-ArbiterCoffeeHUB\\\\cb935fb2-41cd-4438-8ee6-bdbebad98a20\\\\tasks\\\\bxlpwlzpf.output ]; do sleep 1; done; echo 'File found'\")"
+      "Bash(timeout 5 bash -c \"while [ ! -f C:\\\\Users\\\\01ker\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-01ker-ArbiterCoffeeHUB\\\\cb935fb2-41cd-4438-8ee6-bdbebad98a20\\\\tasks\\\\bxlpwlzpf.output ]; do sleep 1; done; echo 'File found'\")",
+      "WebFetch(domain:srv684-files.hstgr.io)"
     ]
   },
   "prefersReducedMotion": false

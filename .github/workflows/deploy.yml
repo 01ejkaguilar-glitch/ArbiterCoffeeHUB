@@ -119,9 +119,9 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             echo "Checking remote public_html:"
-            ls -la /home/u843463747/domains/arbitercoffee.shop/public_html/
+            ls -la /home/${{ secrets.SSH_USERNAME }}/public_html/
             echo "Checking remote public_html/api:"
-            ls -la /home/u843463747/domains/arbitercoffee.shop/public_html/api/
+            ls -la /home/${{ secrets.SSH_USERNAME }}/public_html/api/
 
       # ===== POST-DEPLOYMENT (Laravel) =====
       - name: Run Laravel setup commands
@@ -133,7 +133,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             # Set paths
-            BASE_DIR="/home/u843463747/domains/arbitercoffee.shop"
+            BASE_DIR="/home/${{ secrets.SSH_USERNAME }}"
             RELEASE_TIMESTAMP=$(date +%Y%m%d%H%M%S)
             RELEASE_DIR="$BASE_DIR/releases/$RELEASE_TIMESTAMP"
             CURRENT_LINK="$BASE_DIR/current"
@@ -165,7 +165,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            BASE_DIR="/home/u843463747/domains/arbitercoffee.shop"
+            BASE_DIR="/home/${{ secrets.SSH_USERNAME }}"
             cd "$BASE_DIR/releases"
             ls -dt */ | tail -n +6 | xargs rm -rf --
 
