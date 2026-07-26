@@ -70,28 +70,4 @@ jobs:
             echo 'Deployment completed successfully'
           "
 
-      - name: Send Notification (Optional)
-        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          payload: |
-            {
-              "text": "✅ Deployment successful to arbitercoffeeshop.com",
-              "attachments": [
-                {
-                  "color": "#36a64f",
-                  "fields": [
-                    {
-                      "title": "Environment",
-                      "value": "Production",
-                      "short": true
-                    },
-                    {
-                      "title": "Commit",
-                      "value": "${{ github.sha }}",
-                      "short": true
-                    }
-                  ]
-                }
-              ]
-            }
+      
