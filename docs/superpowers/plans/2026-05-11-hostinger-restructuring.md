@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Configure App/Env to point to correct API subdomain (api.arbitercoffee.shop) and enable CORS/Sanctum for cross-domain auth from React frontend
+**Goal:** Configure App/Env to point to correct API subdomain (api.arbitercoffeeshop.com) and enable CORS/Sanctum for cross-domain auth from React frontend
 
-**Architecture:** Update Laravel configuration to serve API at api.arbitercoffee.shop while React serves from arbitercoffee.shop. Uses CORS for cross-origin requests and Sanctum for SPA authentication with cookies shared across subdomains.
+**Architecture:** Update Laravel configuration to serve API at api.arbitercoffeeshop.com while React serves from arbitercoffeeshop.com. Uses CORS for cross-origin requests and Sanctum for SPA authentication with cookies shared across subdomains.
 
 **Tech Stack:** Laravel 11, Sanctum, CORS, React 19
 
@@ -26,19 +26,19 @@
 
 Change:
 ```
-APP_URL=https://arbitercoffee.shop
+APP_URL=https://arbitercoffeeshop.com
 ```
 
 To:
 ```
-APP_URL=https://api.arbitercoffee.shop
+APP_URL=https://api.arbitercoffeeshop.com
 ```
 
 - [ ] **Step 2: Add SANCTUM_STATEFUL_DOMAINS**
 
 Add after line 31 (SESSION_DOMAIN):
 ```
-SANCTUM_STATEFUL_DOMAINS=arbitercoffee.shop
+SANCTUM_STATEFUL_DOMAINS=arbitercoffeeshop.com
 ```
 
 - [ ] **Step 3: Commit**
@@ -47,8 +47,8 @@ SANCTUM_STATEFUL_DOMAINS=arbitercoffee.shop
 git add .env
 git commit -m "config: update APP_URL for API subdomain and add SANCTUM_STATEFUL_DOMAINS
 
-- APP_URL set to api.arbitercoffee.shop (Laravel serves from this domain)
-- SANCTUM_STATEFUL_DOMAINS allows SPA auth from arbitercoffee.shop
+- APP_URL set to api.arbitercoffeeshop.com (Laravel serves from this domain)
+- SANCTUM_STATEFUL_DOMAINS allows SPA auth from arbitercoffeeshop.com
 - CORS_ALLOWED_ORIGINS already configured for frontend domain
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
@@ -75,7 +75,7 @@ Find the `stateful` array and update to include both domains:
 'stateful' => explode(',', implode(',', array_filter([
     centralDomain(env('SANCTUM_STATEFUL_DOMAINS', sprintf(
         '%s%s',
-        'arbitercoffee.shop,api.arbitercoffee.shop',
+        'arbitercoffeeshop.com,api.arbitercoffeeshop.com',
         env('APP_ENV') === 'local' ? ',localhost,127.0.0.1,127.0.0.1:3000,localhost:3000' : ''
     ))),
     'localhost',
@@ -98,7 +98,7 @@ Ensure these settings exist:
 git add config/sanctum.php
 git commit -m "config: add stateful domains for Sanctum SPA authentication
 
-- Include both arbitercoffee.shop and api.arbitercoffee.shop
+- Include both arbitercoffeeshop.com and api.arbitercoffeeshop.com
 - Allow localhost for development
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
@@ -120,7 +120,7 @@ grep -n "CORS_ALLOWED_ORIGINS" .env config/cors.php
 
 - [ ] **Step 2: Confirm CORS_ALLOWED_ORIGINS in .env**
 
-Should already exist and equal `https://arbitercoffee.shop`
+Should already exist and equal `https://arbitercoffeeshop.com`
 
 - [ ] **Step 3: Verify cors.php reads from env**
 
@@ -167,13 +167,13 @@ If workflow succeeds: proceed to Task 5
 
 - [ ] **Step 1: Test React frontend**
 
-Visit: `https://arbitercoffee.shop`
+Visit: `https://arbitercoffeeshop.com`
 - Should load React app without errors
-- Network tab should show successful API calls to api.arbitercoffee.shop
+- Network tab should show successful API calls to api.arbitercoffeeshop.com
 
 - [ ] **Step 2: Test API endpoint**
 
-Visit: `https://api.arbitercoffee.shop/api/v1/products`
+Visit: `https://api.arbitercoffeeshop.com/api/v1/products`
 - Should return JSON (may need auth, but should not be 404/500)
 - Check CORS headers are present
 
@@ -198,7 +198,7 @@ Log in through React app and verify:
 ## Expected Outcome
 
 After implementation:
-- `https://arbitercoffee.shop` serves React frontend
-- `https://api.arbitercoffee.shop` serves Laravel API
+- `https://arbitercoffeeshop.com` serves React frontend
+- `https://api.arbitercoffeeshop.com` serves Laravel API
 - CORS allows frontend to call API
 - Sanctum authentication works across domains

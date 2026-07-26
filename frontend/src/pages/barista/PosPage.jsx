@@ -764,7 +764,7 @@ export default function PosPage() {
             </div>
             <div className="line" />
             <div className="center">Thank you! Please visit us again.</div>
-            <div className="center" style={{ marginTop: 4, fontSize: 11 }}>— www.arbitercoffee.com —</div>
+            <div className="center" style={{ marginTop: 4, fontSize: 11 }}>— www.arbitercoffeeshop.com —</div>
           </div>
         </ResponsiveModal.Body>
         <ResponsiveModal.Footer>

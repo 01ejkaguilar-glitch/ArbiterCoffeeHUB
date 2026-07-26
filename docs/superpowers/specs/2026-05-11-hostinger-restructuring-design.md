@@ -3,8 +3,8 @@
 ## Overview
 
 Restructure the ArbiterCoffeeHUB project to be fully compatible with Hostinger shared hosting using:
-- Main domain **arbitercoffee.shop** → React frontend (served from `/public_html/`)
-- API subdomain **api.arbitercoffee.shop** → Laravel backend (served from `/public_html/api/`)
+- Main domain **arbitercoffeeshop.com** → React frontend (served from `/public_html/`)
+- API subdomain **api.arbitercoffeeshop.com** → Laravel backend (served from `/public_html/api/`)
 
 ## Current State
 
@@ -27,12 +27,12 @@ Restructure the ArbiterCoffeeHUB project to be fully compatible with Hostinger s
 ### Server File Structure (Hostinger)
 ```
 /
-└── public_html/                              ← arbitercoffee.shop document root
+└── public_html/                              ← arbitercoffeeshop.com document root
     ├── index.html                            ← React frontend
     ├── static/                               ← React assets (JS, CSS, images)
     ├── favicon.ico
     ├── manifest.json
-    └── api/                                  ← api.arbitercoffee.shop document root
+    └── api/                                  ← api.arbitercoffeeshop.com document root
         ├── index.php                         ← Laravel entry point
         ├── artisan
         ├── composer.json
@@ -59,11 +59,11 @@ Restructure the ArbiterCoffeeHUB project to be fully compatible with Hostinger s
 ```
 User Browser
     │
-    ├─→ https://arbitercoffee.shop/         → React SPA (static files)
+    ├─→ https://arbitercoffeeshop.com/         → React SPA (static files)
     │       │
-    │       └─→ fetch('https://api.arbitercoffee.shop/api/v1/...')
+    │       └─→ fetch('https://api.arbitercoffeeshop.com/api/v1/...')
     │
-    └─→ https://api.arbitercoffee.shop/api/v1/...
+    └─→ https://api.arbitercoffeeshop.com/api/v1/...
             │
             └─→ Laravel API (shared hosting /public_html/api/)
 ```
@@ -81,28 +81,28 @@ User Browser
 
 **Key environment variables set in workflow:**
 - `NODE_ENV=production`
-- `REACT_APP_API_URL=https://api.arbitercoffee.shop/api/v1`
+- `REACT_APP_API_URL=https://api.arbitercoffeeshop.com/api/v1`
 
 ### 2. Laravel Configuration Changes
 
 #### 2.1 .env updates
 ```diff
-- APP_URL=https://arbitercoffee.shop
-+ APP_URL=https://api.arbitercoffee.shop
+- APP_URL=https://arbitercoffeeshop.com
++ APP_URL=https://api.arbitercoffeeshop.com
 
-  SESSION_DOMAIN=arbitercoffee.shop
+  SESSION_DOMAIN=arbitercoffeeshop.com
 
-+ SANCTUM_STATEFUL_DOMAINS=arbitercoffee.shop
++ SANCTUM_STATEFUL_DOMAINS=arbitercoffeeshop.com
 
-  CORS_ALLOWED_ORIGINS=https://arbitercoffee.shop
+  CORS_ALLOWED_ORIGINS=https://arbitercoffeeshop.com
 ```
 
 #### 2.2 config/cors.php (already correct, verify)
 - `allowed_origins` reads from `CORS_ALLOWED_ORIGINS` env
-- Already set to `https://arbitercoffee.shop` in .env
+- Already set to `https://arbitercoffeeshop.com` in .env
 
 #### 2.3 config/sanctum.php
-- Add api.arbitercoffee.shop to stateful domains
+- Add api.arbitercoffeeshop.com to stateful domains
 
 ### 3. Server-side Deploy Script (deploy.sh)
 
@@ -117,7 +117,7 @@ Current script at `/var/www/arbiter/api` (on server) needs to:
 | Setting | Value |
 |---------|-------|
 | Main domain document root | `/public_html/` |
-| Subdomain | `api.arbitercoffee.shop` |
+| Subdomain | `api.arbitercoffeeshop.com` |
 | Subdomain document root | `/public_html/api/` |
 
 ## Files to Modify
@@ -136,8 +136,8 @@ Current script at `/var/www/arbiter/api` (on server) needs to:
    - Check `/public_html/` contains React files
    - Check `/public_html/api/` contains Laravel files
 3. **Functional test:**
-   - Visit `https://arbitercoffee.shop` - should show React app
-   - Visit `https://api.arbitercoffee.shop/api/v1/products` - should return JSON
+   - Visit `https://arbitercoffeeshop.com` - should show React app
+   - Visit `https://api.arbitercoffeeshop.com/api/v1/products` - should return JSON
 
 ## Rollback Plan
 

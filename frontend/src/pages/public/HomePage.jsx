@@ -110,7 +110,7 @@ const HomePage = () => {
           country: "PH"
         }}
         telephone="+63-2-1234-5678"
-        email="contact@arbitercoffee.com"
+        email="contact@arbitercoffeeshop.com"
         openingHours={[
           { dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], opens: "08:00", closes: "22:00" },
           { dayOfWeek: ["Saturday", "Sunday"], opens: "09:00 AM", closes: "09:00 PM" }

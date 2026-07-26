@@ -2,217 +2,96 @@ name: Deploy to Hostinger
 
 on:
   push:
-    branches: [main]
-  workflow_dispatch:
-    inputs:
-      action:
-        description: 'Deployment action'
-        required: true
-        default: 'deploy'
-        type: choice
-        options:
-          - deploy
-          - rollback
-      environment:
-        description: 'Target environment'
-        required: true
-        default: 'production'
-        type: choice
-        options:
-          - staging
-          - production
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: ${{ github.inputs.environment }}
-    permissions:
-      contents: write  # Needed for git tagging
-
     steps:
-      # ===== CHECKOUT & SETUP =====
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      - uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
-          extensions: mbstring, xml, pdo_mysql, bcmath, zip, gd
-          tools: composer
+          php-version: '8.3'
+          extensions: mbstring, intl, bcmath, xml
+          coverage: none
 
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          path: vendor
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
+          node-version: '20'
+          cache: 'npm'
 
-      # ===== BUILD PHASE =====
-      - name: Install frontend dependencies
-        run: npm install --legacy-peer-deps
-        working-directory: frontend
-
-      - name: Run frontend tests (allow failures)
-        run: npm test
-        working-directory: frontend
-        continue-on-error: true
-
-      - name: Build frontend
-        run: npm run build
-        working-directory: frontend
-
-      - name: Install backend dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction --no-dev
-
-      # ===== PREPARE DEPLOYMENT ARTIFACTS =====
-      - name: Create deployment staging directory
+      - name: Install Dependencies
         run: |
-          mkdir -p staging/public_html
-          mkdir -p staging/public_html/api
+          composer install --no-dev --prefer-dist --optimize-autoloader
+          npm ci
+          cd frontend && npm ci && npm run build
 
-      - name: Copy frontend build
-        run: cp -r frontend/build/* staging/public_html/
-
-      - name: Prepare Laravel application files
+      - name: Deploy via Rsync (Incremental)
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          # Copy core Laravel directories
-          cp -r app config database public resources routes storage vendor staging/public_html/api/
-          # Copy bootstrap directory
-          cp -r bootstrap staging/public_html/api/
-          # Copy essential files
-          cp artisan composer.json composer.lock staging/public_html/api/
-          # Copy server.php if it exists
-          if [ -f server.php ]; then
-            cp server.php staging/public_html/api/
-          fi
-          # Copy .env.example as template (will be overridden by server's actual .env)
-          cp .env.example staging/public_html/api/.env.example
-          # Create necessary directories with proper permissions
-          mkdir -p staging/public_html/api/storage/framework/{sessions,views,cache}
-          mkdir -p staging/public_html/api/storage/logs
+          # Deploy Laravel backend (only changed files)
+          rsync -avz --delete \
+            -e "ssh -p $SSH_PORT -o StrictHostKeyChecking=no" \
+            --exclude='.env' \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='frontend/node_modules' \
+            --exclude='frontend/.cache' \
+            ./ \
+            $SSH_USERNAME@$SSH_HOST:/home/u576753664/domains/arbitercoffeeshop.com/public_html/api/
 
-      - name: Set permissions on storage directories
+          # Deploy React frontend build (only changed files)
+          rsync -avz --delete \
+            -e "ssh -p $SSH_PORT -o StrictHostKeyChecking=no" \
+            --exclude='.git' \
+            frontend/build/ \
+            $SSH_USERNAME@$SSH_HOST:/home/u576753664/domains/arbitercoffeeshop.com/public_html/
+
+      - name: Run Post-Deployment Commands via SSH
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          echo "Setting permissions on storage directories..."
-          chmod -R 775 staging/public_html/api/storage || echo "Failed to chmod storage directory"
-          chmod -R 775 staging/public_html/api/bootstrap/cache || echo "Failed to chmod bootstrap/cache directory"
-          echo "Permissions set successfully."
+          ssh -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
+            cd /home/u576753664/domains/arbitercoffeeshop.com/public_html/api &&
+            php artisan config:cache &&
+            php artisan route:cache &&
+            php artisan view:cache &&
+            php artisan optimize:clear &&
+            echo 'Deployment completed successfully'
+          "
 
-      # ===== FTP DEPLOYMENT =====
-      - name: Debug FTP credentials (masked)
-        if: always()
-        run: |
-          echo "FTP_HOST: ${{ secrets.FTP_HOST }}"
-          echo "FTP_USERNAME: ${{ secrets.FTP_USERNAME }}"
-          echo "FTP_PORT: ${{ secrets.FTP_PORT }}"
-
-      - name: Deploy to FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
-          local-dir: ./staging/public_html/
-          server-dir: public_html/
-          # Important: Exclude .env to preserve server's existing environment configuration
-          # Exclude .git to avoid deploying repository metadata
-          exclude: |
-            **/.git/**
-            **/.env
-            **/.gitignore
-          # Try FTPS (FTP over TLS) since plain FTP might be blocked
-          secure: true
-          # Use passive mode (often needed behind firewalls/NATs)
-          passive: true
-          log-level: verbose
-
-      # ===== POST-DEPLOYMENT (Laravel optimization via SSH) =====
-      - name: Run Laravel optimization commands
-        if: github.inputs.action == 'deploy'
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            # Navigate to the Laravel application directory
-            cd /home/${{ secrets.FTP_USERNAME }}/public_html/api
-
-            echo "Running Laravel optimization commands..."
-
-            # Cache configuration, routes, and views
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-
-            # Clear compiled views and cache (fresh start)
-            php artisan view:clear
-            php artisan config:clear
-            php artisan route:clear
-
-            # Optimize application for better performance
-            php artisan optimize:clear
-
-            # Ensure proper permissions for storage and cache directories
-            chmod -R 755 storage bootstrap/cache
-            chmod -R 775 storage/framework/{sessions,views,cache}
-            chmod -R 775 storage/logs
-
-            echo "✅ Laravel optimization completed"
-
-      # ===== VERIFICATION & NOTIFICATIONS =====
-      - name: Verify deployment (file count)
-        if: always()
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            echo "Verifying frontend files in public_html:"
-            FRONTEND_COUNT=$(find /home/${{ secrets.FTP_USERNAME }}/public_html -type f | wc -l)
-            echo "Frontend files: $FRONTEND_COUNT"
-
-            echo "Verifying backend files in public_html/api:"
-            BACKEND_COUNT=$(find /home/${{ secrets.FTP_USERNAME }}/public_html/api -type f | wc -l)
-            echo "Backend files: $BACKEND_COUNT"
-
-            if [ "$FRONTEND_COUNT" -gt 0 ] && [ "$BACKEND_COUNT" -gt 0 ]; then
-              echo "✅ Deployment verification successful - found files in both directories"
-            else
-              echo "⚠️ Warning: Low file count detected"
-              exit 1
-            fi
-
-      - name: Deployment notification
-        if: always()
+      - name: Send Notification (Optional)
+        if: ${{ secrets.SLACK_WEBHOOK_URL }}
         uses: slackapi/slack-github-action@v1.23.0
         with:
           payload: |
             {
-              "text": "Deployment ${{ github.job }}: ${{ job.status }}",
-              "blocks": [
-                { "type": "header", "text": { "type": "plain_text", "text": ":rocket: Deployment Status" } },
-                { "type": "section", "fields": [
-                  { "type": "mrkdwn", "text": "*Workflow:*\n${{ github.workflow }}" },
-                  { "type": "mrkdwn", "text": "*Status:*\n${{ job.status }}" },
-                  { "type": "mrkdwn", "text": "*Environment:*\n${{ github.inputs.environment }}" },
-                  { "type": "mrkdwn", "text": "*Commit:*\n${{ github.sha }}" }
-                ] }
+              "text": "✅ Deployment successful to arbitercoffeeshop.com",
+              "attachments": [
+                {
+                  "color": "#36a64f",
+                  "fields": [
+                    {
+                      "title": "Environment",
+                      "value": "Production",
+                      "short": true
+                    },
+                    {
+                      "title": "Commit",
+                      "value": "${{ github.sha }}",
+                      "short": true
+                    }
+                  ]
+                }
               ]
             }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        continue-on-error: true

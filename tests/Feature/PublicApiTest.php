@@ -111,7 +111,7 @@ class PublicApiTest extends TestCase
     {
         SystemConfig::setValue('contact_info', [
             'phone' => '+63 912 345 6789',
-            'email' => 'custom@arbitercoffee.com',
+            'email' => 'custom@arbitercoffeeshop.com',
             'address' => [
                 'street' => '456 Custom Street',
                 'city' => 'Quezon City',
@@ -137,7 +137,7 @@ class PublicApiTest extends TestCase
                 'success' => true,
                 'data' => [
                     'phone' => '+63 912 345 6789',
-                    'email' => 'custom@arbitercoffee.com',
+                    'email' => 'custom@arbitercoffeeshop.com',
                     'address' => [
                         'city' => 'Quezon City',
                     ],

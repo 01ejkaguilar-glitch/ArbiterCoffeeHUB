@@ -318,8 +318,8 @@ const ContactPage = () => {
                 Email Us
               </h5>
               <p className="mb-0">
-                <a href={`mailto:${contactInfo?.email || 'hello@arbitercoffee.com'}`} className="text-decoration-none">
-                  {contactInfo?.email || 'hello@arbitercoffee.com'}
+                <a href={`mailto:${contactInfo?.email || 'hello@arbitercoffeeshop.com'}`} className="text-decoration-none">
+                  {contactInfo?.email || 'hello@arbitercoffeeshop.com'}
                 </a>
               </p>
             </ResponsiveCard.Body>

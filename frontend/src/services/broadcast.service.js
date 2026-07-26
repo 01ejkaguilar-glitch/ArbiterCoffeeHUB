@@ -12,7 +12,7 @@ const REALTIME_ENABLED = process.env.REACT_APP_ENABLE_NOTIFICATIONS === 'true';
 
 const runtimeHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
 const isLocalRuntimeHost = runtimeHost === 'localhost' || runtimeHost === '127.0.0.1';
-const defaultReverbHost = isLocalRuntimeHost ? 'localhost' : 'api.arbitercoffee.shop';
+const defaultReverbHost = isLocalRuntimeHost ? 'localhost' : 'api.arbitercoffeeshop.com';
 const defaultReverbScheme = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https' : 'http';
 const defaultReverbPort = defaultReverbScheme === 'https' ? 443 : 80;
 

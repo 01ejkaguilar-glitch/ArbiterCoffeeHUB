@@ -148,7 +148,7 @@ This document provides a comprehensive reference for all environment variables u
 |----------|---------|--------|----------|---------|-------------------------|
 | VAPID_PUBLIC_KEY | VAPID public key for push notifications | String | No | none | None |
 | VAPID_PRIVATE_KEY | VAPID private key for push notifications | String | No | none | Must be kept secret |
-| VAPID_SUBJECT | VAPID subject (mailto: or https://) | String | No | mailto:admin@arbitercoffee.com | None |
+| VAPID_SUBJECT | VAPID subject (mailto: or https://) | String | No | mailto:admin@arbitercoffeeshop.com | None |
 
 ## Prerender.io Configuration
 

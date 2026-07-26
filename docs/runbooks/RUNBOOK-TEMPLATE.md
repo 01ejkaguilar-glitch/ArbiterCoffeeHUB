@@ -96,7 +96,7 @@ This template provides a standardized format for creating operational runbooks i
 - [Related Runbook 1](LINK-TO-RELATED-RUNBOOK.md)
 - [Related Runbook 2](LINK-TO-RE-RUNBOOK.md)
 - [System Architecture Document](../architecture/SYSTEM-ARCHITECTURE.md)
-- [API Documentation](https://api.arbitercoffee.com/docs)
+- [API Documentation](https://api.arbitercoffeeshop.com/docs)
 - [Database Schema Documentation](docs/database/SCHEMA.md)
 - [Configuration Management Database](link-to-CMDB)
 - [Monitoring Dashboards](link-to-grafana-dashboards)

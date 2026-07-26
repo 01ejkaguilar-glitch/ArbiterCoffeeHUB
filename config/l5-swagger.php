@@ -35,8 +35,8 @@ return [
                 'termsOfService' => '',
                 'contact' => [
                     'name' => 'Arbiter Coffee Hub Team',
-                    'url' => 'https://arbitercoffee.shop',
-                    'email' => 'team@arbitercoffee.shop',
+                    'url' => 'https://arbitercoffeeshop.com',
+                    'email' => 'team@arbitercoffeeshop.com',
                 ],
                 'license' => [
                     'name' => 'MIT',
@@ -350,7 +350,7 @@ return [
          * Constants which can be used in annotations
          */
         'constants' => [
-            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'arbitercoffee.shop'),
+            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'arbitercoffeeshop.com'),
         ],
 
     ],

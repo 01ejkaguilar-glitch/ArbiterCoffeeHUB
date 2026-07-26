@@ -124,7 +124,7 @@ class SystemConfigController extends BaseController
         try {
             $contactInfo = SystemConfig::getValue('contact_info', [
                 'phone' => '+63 123 456 7890',
-                'email' => 'info@arbitercoffee.com',
+                'email' => 'info@arbitercoffeeshop.com',
                 'address' => 'Arbiter Coffee Hub, Main Street, City',
                 'social_media' => [
                     'facebook' => 'https://facebook.com/arbitercoffee',

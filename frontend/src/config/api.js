@@ -7,13 +7,13 @@ const isLocalRuntime = typeof window !== 'undefined'
   && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
 const isProductionFrontendHost = typeof window !== 'undefined'
-  && ['arbitercoffee.shop', 'www.arbitercoffee.shop'].includes(window.location.hostname);
+  && ['arbitercoffeeshop.com', 'www.arbitercoffeeshop.com'].includes(window.location.hostname);
 
 const apiBaseFromEnv = process.env.REACT_APP_API_URL;
 const backendBaseFromEnv = process.env.REACT_APP_BACKEND_URL;
 
-const productionApiBase = 'https://api.arbitercoffee.shop/api/v1';
-const productionBackendBase = 'https://api.arbitercoffee.shop';
+const productionApiBase = 'https://api.arbitercoffeeshop.com/api/v1';
+const productionBackendBase = 'https://api.arbitercoffeeshop.com';
 
 const sameOriginApiBase = typeof window !== 'undefined'
   ? `${window.location.origin}/api/v1`
