@@ -53,8 +53,8 @@ Ensure your GitHub repository has:
 composer install --no-dev --prefer-dist --optimize-autoloader
 
 # 2. Install Node.js dependencies and build React frontend
-npm ci
-cd frontend && npm ci && npm run build
+npm install
+cd frontend && npm install && npm run build
 cd ..
 ```
 
@@ -216,7 +216,7 @@ Ensure `.github/workflows/deploy.yml` exists with the content created earlier. K
   3. Build React production bundle
   4. Deploy via rsync (incremental)
   5. Run post-deployment Laravel optimization commands
-  6. Optional Slack notification
+  6. **No notification section** (removed per user request)
 
 ### Step 3: Test the Pipeline
 1. Make a small, harmless change (e.g., update README.md)
