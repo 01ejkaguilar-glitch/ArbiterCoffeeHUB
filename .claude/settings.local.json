@@ -267,7 +267,9 @@
       "mcp__hostinger-hosting__hosting_listWebsitesV1",
       "mcp__hostinger-hosting__hosting_getPHPDetailsV1",
       "PowerShell($random = -join \\(\\(65..90\\) + \\(97..122\\) | Get-Random -Count 16 | % {[char]$_}\\); $random)",
-      "PowerShell($random = -join \\(\\(65..90\\) + \\(97..122\\) | Get-Random -Count 32 | % {[char]$_}\\); $random)"
+      "PowerShell($random = -join \\(\\(65..90\\) + \\(97..122\\) | Get-Random -Count 32 | % {[char]$_}\\); $random)",
+      "Bash(git merge *)",
+      "Bash(git branch *)"
     ]
   },
   "prefersReducedMotion": false
