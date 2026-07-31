@@ -27,7 +27,7 @@ jobs:
       - name: Install Dependencies
         run: |
           composer install --no-dev --prefer-dist --optimize-autoloader
-          cd frontend && npm install && npm run build
+          cd frontend && npm install --legacy-peer-deps && npm run build
 
       - name: Deploy via Rsync (Incremental)
         env:
