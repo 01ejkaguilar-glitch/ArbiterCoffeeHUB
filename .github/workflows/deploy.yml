@@ -30,6 +30,8 @@ jobs:
           cd frontend && npm install --legacy-peer-deps && npm run build
 
       - name: Debug SSH secret length
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           echo "SSH private key secret length (asterisks count): ${#SSH_PRIVATE_KEY}"
           if [ -z "$SSH_PRIVATE_KEY" ]; then
@@ -38,6 +40,8 @@ jobs:
           fi
 
       - name: Setup SSH Key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
           # Write key using heredoc to preserve exact formatting
