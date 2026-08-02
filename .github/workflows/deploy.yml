@@ -31,15 +31,17 @@ jobs:
 
       - name: Setup SSH Key
         run: |
-          # Create .ssh directory if it doesn't exist
           mkdir -p ~/.ssh
-          # Write the private key to a file
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          # Set proper permissions
+          # Write key using heredoc to preserve exact formatting
+          cat > ~/.ssh/id_rsa <<EOF
+          $SSH_PRIVATE_KEY
+          EOF
           chmod 600 ~/.ssh/id_rsa
-          # Optional: Add to ssh-agent
-          # eval $(ssh-agent -s)
-          # ssh-add ~/.ssh/id_rsa
+          # Validate key is loadable by OpenSSH (catches formatting errors early)
+          if ! ssh-keygen -y -f ~/.ssh/id_rsa > /dev/null 2>&1; then
+            echo "Error: Invalid SSH private key format in secret"
+            exit 1
+          fi
 
       - name: Deploy via Rsync (Incremental)
         env:
@@ -74,10 +76,10 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
-            cd /home/u576753664/domains/arbitercoffeeshop.com/public_html/api && 
-            php artisan config:cache && 
-            php artisan route:cache && 
-            php artisan view:cache && 
-            php artisan optimize:clear && 
+            cd /home/u576753664/domains/arbitercoffeeshop.com/public_html/api &&
+            php artisan config:cache &&
+            php artisan route:cache &&
+            php artisan view:cache &&
+            php artisan optimize:clear &&
             echo 'Deployment completed successfully'
           "
