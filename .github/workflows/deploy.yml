@@ -100,18 +100,18 @@ jobs:
         run: |
           echo "Testing network connectivity to $SSH_HOST:$SSH_PORT..."
           if command -v nc >/dev/null 2>&1; then
-            # Try netcat with timeout
-            if nc -z -w5 "$SSH_HOST" "$SSH_PORT"; then
-              echo "Network connection successful"
+            echo "Using nc with timeout 5 seconds (IPv4 forced)"
+            if nc -z -w5 -4 "$SSH_HOST" "$SSH_PORT"; then
+              echo "Network connection successful via nc"
             else
-              echo "Network connection failed or timed out"
+              echo "Network connection failed or timed out via nc"
             fi
           elif command -v ncat >/dev/null 2>&1; then
-            # Try ncat with timeout
-            if ncat -z --wait 5s "$SSH_HOST" "$SSH_PORT"; then
-              echo "Network connection successful"
+            echo "Using ncat with timeout 5 seconds (IPv4 forced)"
+            if ncat -z --wait 5s -4 "$SSH_HOST" "$SSH_PORT"; then
+              echo "Network connection successful via ncat"
             else
-              echo "Network connection failed or timed out"
+              echo "Network connection failed or timed out via ncat"
             fi
           else
             echo "Neither nc nor ncat available, skipping network test"
@@ -124,7 +124,30 @@ jobs:
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
           echo "Testing SSH connection to $SSH_USERNAME@$SSH_HOST:$SSH_PORT..."
-          ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection successful"
+          echo "SSH client version: $(ssh -V 2>&1)"
+          echo "Attempting to connect with SSH (timeout 10 seconds, IPv4 forced) with up to 3 retries..."
+          max_retries=3
+          retry_count=0
+          while [ $retry_count -lt $max_retries ]; do
+            if ssh -4 -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection successful"; then
+              echo "SSH connection established and command executed successfully"
+              break
+            else
+              echo "SSH connection attempt $((retry_count+1)) failed"
+              retry_count=$((retry_count+1))
+              if [ $retry_count -lt $max_retries ]; then
+                echo "Waiting 5 seconds before retry..."
+                sleep 5
+              fi
+            fi
+          done
+          if [ $retry_count -eq $max_retries ]; then
+            echo "SSH connection failed after $max_retries attempts"
+            echo "Trying to diagnose with verbose SSH (but limiting output) on the last attempt..."
+            # Try a verbose connection on the last attempt to see where it fails
+            ssh -4 -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=10 -o LogLevel=verbose -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection test" 2>&1 | head -20
+            exit 1
+          fi
 
       - name: Deploy via Rsync (Incremental)
         env:
