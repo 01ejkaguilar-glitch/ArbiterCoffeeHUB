@@ -44,7 +44,8 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
-          printf "%s\n" "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          # Ensure we have proper line endings and no extra whitespace
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           # Validate key is loadable by OpenSSH (catches formatting errors early)
           if ! ssh-keygen -y -f ~/.ssh/id_rsa > /dev/null 2>&1; then
@@ -53,6 +54,15 @@ jobs:
             echo "First 10 chars: ${SSH_PRIVATE_KEY:0:10}"
             echo "Last 10 chars: ${SSH_PRIVATE_KEY: -10}"
             exit 1
+          fi
+          # Additional verification: try to actually load the key with ssh
+          if ! ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ssh-keyscan -T 5 localhost 2>/dev/null | head -1 >/dev/null 2>&1; then
+            # This might fail due to host key verification, but if it gets past key loading, that's good
+            # We'll check the specific error
+            if ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ssh-keyscan -T 5 localhost 2>&1 | grep -q "Error loading"; then
+              echo "Error: SSH cannot load private key"
+              exit 1
+            fi
           fi
 
       - name: Debug SSH connection details
