@@ -56,12 +56,20 @@ jobs:
           fi
 
       - name: Debug SSH connection details
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
           echo "SSH_HOST: $SSH_HOST"
           echo "SSH_PORT: $SSH_PORT"
           echo "SSH_USERNAME: $SSH_USERNAME"
 
       - name: Test SSH connection
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
           ssh -o BatchMode=yes -o ConnectTimeout=10 -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection successful"
 
