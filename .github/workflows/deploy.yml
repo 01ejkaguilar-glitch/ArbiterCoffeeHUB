@@ -125,6 +125,66 @@ jobs:
           echo "Testing SSH connection to $SSH_USERNAME@$SSH_HOST:$SSH_PORT..."
           ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection successful"
 
+      - name: Setup Environment File
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          echo "Setting up .env file on server..."
+          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
+            # Navigate to the project directory
+            cd /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/
+
+            # Check if .env file exists
+            if [ ! -f .env ]; then
+              echo \"Creating .env file from .env.example...\"
+              cp .env.example .env
+            fi
+
+            # Ensure APP_KEY is set
+            if ! grep -q '^APP_KEY=' .env || grep -q '^APP_KEY=$' .env; then
+              echo \"Generating APP_KEY...\"
+              KEY_OUTPUT=\$(php artisan key:generate --show)
+              sed -i \"s/^APP_KEY=.*/APP_KEY=\$KEY_OUTPUT/\" .env
+            fi
+
+            # Ensure CORS_ALLOWED_ORIGINS is set correctly
+            if ! grep -q '^CORS_ALLOWED_ORIGINS=' .env; then
+              echo \"Adding CORS_ALLOWED_ORIGINS to .env\"
+              echo \"CORS_ALLOWED_ORIGINS=https://arbitercoffeeshop.com\" >> .env
+            else
+              sed -i 's|^CORS_ALLOWED_ORIGINS=.*|CORS_ALLOWED_ORIGINS=https://arbitercoffeeshop.com|' .env
+            fi
+
+            # Ensure SANCTUM_STATEFUL_DOMAINS is set correctly
+            if ! grep -q '^SANCTUM_STATEFUL_DOMAINS=' .env; then
+              echo \"Adding SANCTUM_STATEFUL_DOMAINS to .env\"
+              echo \"SANCTUM_STATEFUL_DOMAINS=arbitercoffeeshop.com,api.arbitercoffeeshop.com\" >> .env
+            else
+              sed -i 's|^SANCTUM_STATEFUL_DOMAINS=.*|SANCTUM_STATEFUL_DOMAINS=arbitercoffeeshop.com,api.arbitercoffeeshop.com|' .env
+            fi
+
+            # Ensure APP_URL is set correctly
+            if ! grep -q '^APP_URL=' .env; then
+              echo \"Adding APP_URL to .env\"
+              echo \"APP_URL=https://api.arbitercoffeeshop.com\" >> .env
+            else
+              sed -i 's|^APP_URL=.*|APP_URL=https://api.arbitercoffeeshop.com|' .env
+            fi
+
+            # Ensure FRONTEND_URL is set correctly
+            if ! grep -q '^FRONTEND_URL=' .env; then
+              echo \"Adding FRONTEND_URL to .env\"
+              echo \"FRONTEND_URL=https://arbitercoffeeshop.com\" >> .env
+            else
+              sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=https://arbitercoffeeshop.com|' .env
+            fi
+
+            echo \".env file setup complete.\"
+          "
+
       - name: Deploy via Rsync (Incremental)
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
