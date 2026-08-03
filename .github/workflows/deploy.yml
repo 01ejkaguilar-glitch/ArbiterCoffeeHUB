@@ -65,12 +65,54 @@ jobs:
           echo "SSH_PORT: $SSH_PORT"
           echo "SSH_USERNAME: $SSH_USERNAME"
 
+      - name: Test DNS resolution
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          echo "Checking DNS resolution for $SSH_HOST..."
+          if getent hosts "$SSH_HOST"; then
+            echo "DNS resolution successful"
+          else
+            echo "DNS resolution failed or host not found"
+            # Try with dig if available
+            if command -v dig >/dev/null 2>&1; then
+              dig "$SSH_HOST" +short
+            elif command -v nslookup >/dev/null 2>&1; then
+              nslookup "$SSH_HOST="$SSH_HOST"
+            fi
+          fi
+
+      - name: Test network connectivity
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          echo "Testing network connectivity to $SSH_HOST:$SSH_PORT..."
+          if command -v nc >/dev/null 2>&1; then
+            # Try netcat with timeout
+            if nc -z -w5 "$SSH_HOST" "$SSH_PORT"; then
+              echo "Network connection successful"
+            else
+              echo "Network connection failed or timed out"
+            fi
+          elif command -v ncat >/dev/null 2>&1; then
+            # Try ncat with timeout
+            if ncat -z --wait 5s "$SSH_HOST" "$SSH_PORT"; then
+              echo "Network connection successful"
+            else
+              echo "Network connection failed or timed out"
+            fi
+          else
+            echo "Neither nc nor ncat available, skipping network test"
+          fi
+
       - name: Test SSH connection
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
+          echo "Testing SSH connection to $SSH_USERNAME@$SSH_HOST:$SSH_PORT..."
           ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection successful"
 
       - name: Deploy via Rsync (Incremental)
