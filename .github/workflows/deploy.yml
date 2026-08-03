@@ -113,6 +113,19 @@ jobs:
             ls -la /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/
           "
 
+      - name: Ensure bootstrap/cache directory exists and is writable
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
+            mkdir -p /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/bootstrap/cache &&
+            chmod -R 775 /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/bootstrap/cache &&
+            chown -R $SSH_USERNAME:$SSH_USERNAME /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/bootstrap/cache
+          "
+
       - name: Run Post-Deployment Commands via SSH
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
