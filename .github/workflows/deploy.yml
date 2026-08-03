@@ -71,17 +71,18 @@ jobs:
             --exclude='.env' \
             --exclude='.git' \
             --exclude='node_modules' \
+            --exclude='frontend/' \
             --exclude='frontend/node_modules' \
             --exclude='frontend/.cache' \
             ./ \
-            $SSH_USERNAME@$SSH_HOST:/home/u576753664/domains/arbitercoffeeshop.com/public_html/api/
+            $SSH_USERNAME@$SSH_HOST:/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/
 
           # Deploy React frontend build (only changed files)
           rsync -avz --delete \
             -e "ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no" \
             --exclude='.git' \
             frontend/build/ \
-            $SSH_USERNAME@$SSH_HOST:/home/u576753664/domains/arbitercoffeeshop.com/public_html/
+            $SSH_USERNAME@$SSH_HOST:/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/
 
       - name: Verify deployment directory
         env:
@@ -92,8 +93,8 @@ jobs:
         run: |
           echo "Checking deployed files..."
           ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
-            ls -la /home/u576753664/domains/arbitercoffeeshop.com/public_html/
-            ls -la /home/u576753664/domains/arbitercoffeeshop.com/public_html/api/
+            ls -la /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/
+            ls -la /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/
           "
 
       - name: Run Post-Deployment Commands via SSH
@@ -104,7 +105,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
-            cd /home/u576753664/domains/arbitercoffeeshop.com/public_html/api &&
+            cd /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api &&
             php artisan config:cache &&
             php artisan route:cache &&
             php artisan view:cache &&
