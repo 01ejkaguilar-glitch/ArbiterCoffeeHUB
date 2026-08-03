@@ -1,3 +1,4 @@
+# Workflow fix triggered at: $(date)
 name: Deploy to Hostinger
 
 on:
