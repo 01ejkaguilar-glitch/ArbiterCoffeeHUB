@@ -272,13 +272,20 @@ jobs:
               echo \"ERROR: .env file is not readable - cannot proceed\"
               exit 1
             fi
-            # Ensure proper permissions
+            # Check for basic .env validity (at least one key=value pair outside comments)
+            if ! grep -v '^#' .env | grep -q '='; then
+              echo \"ERROR: .env file appears to have invalid format - no valid key=value pairs found\"
+              exit 1
+            fi
+            # Ensure proper permissions and ownership
             chmod 644 .env
+            chown $SSH_USERNAME:$SSH_USERNAME .env
             echo \"Environment file verified and permissions set\"
 
+            # Clear existing caches first, then create fresh ones
+            php artisan optimize:clear &&
             php artisan config:cache &&
             php artisan route:cache &&
             php artisan view:cache &&
-            php artisan optimize:clear &&
             echo 'Deployment completed successfully'
           "
