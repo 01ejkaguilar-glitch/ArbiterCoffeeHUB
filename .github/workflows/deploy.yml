@@ -137,6 +137,11 @@ jobs:
             # Navigate to the project directory
             cd /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/
 
+            # Ensure bootstrap/cache directory exists and is writable
+            mkdir -p bootstrap/cache
+            chmod -R 775 bootstrap/cache
+            chown -R $SSH_USERNAME:$SSH_USERNAME bootstrap/cache || echo \"Warning: Could not set ownership of bootstrap/cache, continuing anyway\"
+
             # Check if .env file exists
             if [ ! -f .env ]; then
               echo \"Creating .env file from .env.example...\"
