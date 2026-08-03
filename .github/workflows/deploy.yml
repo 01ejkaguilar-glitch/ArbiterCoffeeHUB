@@ -162,10 +162,16 @@ jobs:
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
+          echo "Ensuring bootstrap/cache directory exists and is writable..."
           ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
+            # Create the directory if it doesn't exist
             mkdir -p /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/bootstrap/cache &&
+
+            # Ensure directory is writable
             chmod -R 775 /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/bootstrap/cache &&
-            chown -R $SSH_USERNAME:$SSH_USERNAME /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/bootstrap/cache
+
+            # Try to set ownership, but don't fail if we don't have permission
+            chown -R $SSH_USERNAME:$SSH_USERNAME /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/bootstrap/cache || echo \"Warning: Could not set ownership, continuing anyway\"
           "
 
       - name: Run Post-Deployment Commands via SSH
