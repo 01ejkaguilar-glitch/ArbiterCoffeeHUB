@@ -281,35 +281,35 @@ jobs:
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
+          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST << 'EOF'
             cd /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api &&
 
             # Verify .env file exists and is readable
             if [ ! -f .env ]; then
-              echo \"ERROR: .env file not found - cannot proceed\"
+              echo "ERROR: .env file not found - cannot proceed"
               exit 1
             fi
             if [ ! -s .env ]; then
-              echo \"ERROR: .env file is empty - cannot proceed\"
+              echo "ERROR: .env file is empty - cannot proceed"
               exit 1
             fi
             if [ ! -r .env ]; then
-              echo \"ERROR: .env file is not readable - cannot proceed\"
+              echo "ERROR: .env file is not readable - cannot proceed"
               exit 1
             fi
             # Check for basic .env validity (at least one key=value pair outside comments)
             if ! grep -v '^#' .env | grep -q '='; then
-              echo \"ERROR: .env file appears to have invalid format - no valid key=value pairs found\"
+              echo "ERROR: .env file appears to have invalid format - no valid key=value pairs found"
               exit 1
             fi
             # Validate .env file syntax using Symfony Dotenv component
-            if ! php -r \"require __DIR__.'/vendor/autoload.php'; try { Dotenv\\Dotenv::createImmutable(__DIR__, '.env')->load(); } catch (Exception $e) { echo '.env file is invalid: ' . $e->getMessage(); exit(1); }\"; then
+            if ! php -r "require __DIR__.'/vendor/autoload.php'; try { Dotenv\\Dotenv::createImmutable(__DIR__, '.env')->load(); } catch (Exception $e) { echo '.env file is invalid: ' . $e->getMessage(); exit(1); }"; then
               exit 1
             fi
             # Ensure proper permissions and ownership
             chmod 644 .env
-            chown $SSH_USERNAME:$SSH_USERNAME .env || echo \"Warning: Could not set ownership of .env, continuing anyway\"
-            echo \"Environment file verified and permissions set\"
+            chown $SSH_USERNAME:$SSH_USERNAME .env || echo "Warning: Could not set ownership of .env, continuing anyway"
+            echo "Environment file verified and permissions set"
 
             # Clear existing caches first, then create fresh ones
             php artisan optimize:clear &&
@@ -317,4 +317,4 @@ jobs:
             php artisan route:cache &&
             php artisan view:cache &&
             echo 'Deployment completed successfully'
-          "
+          EOF
