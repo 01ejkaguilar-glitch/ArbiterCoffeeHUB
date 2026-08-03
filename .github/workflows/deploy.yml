@@ -256,22 +256,22 @@ jobs:
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-            # Verify .env file exists and is readable
-            if [ ! -f .env ]; then
-              echo "ERROR: .env file not found - cannot proceed"
-              exit 1
-            fi
-            if [ ! -s .env ]; then
-              echo "ERROR: .env file is empty - cannot proceed"
-              exit 1
-            fi
-            if [ ! -r .env ]; then
-              echo "ERROR: .env file is not readable - cannot proceed"
-              exit 1
-            fi
-            # Ensure proper permissions
-            chmod 644 .env
-            echo "Environment file verified and permissions set"
+          # Verify .env file exists and is readable
+          if [ ! -f .env ]; then
+            echo "ERROR: .env file not found - cannot proceed"
+            exit 1
+          fi
+          if [ ! -s .env ]; then
+            echo "ERROR: .env file is empty - cannot proceed"
+            exit 1
+          fi
+          if [ ! -r .env ]; then
+            echo "ERROR: .env file is not readable - cannot proceed"
+            exit 1
+          fi
+          # Ensure proper permissions
+          chmod 644 .env
+          echo "Environment file verified and permissions set"
 
           ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
             cd /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api &&
