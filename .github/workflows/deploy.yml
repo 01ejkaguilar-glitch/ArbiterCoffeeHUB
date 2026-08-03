@@ -125,10 +125,12 @@ jobs:
         run: |
           echo "Testing SSH connection to $SSH_USERNAME@$SSH_HOST:$SSH_PORT..."
           echo "SSH client version: $(ssh -V 2>&1)"
+          echo "SSH key file: ~/.ssh/id_rsa (exists: $(test -f ~/.ssh/id_rsa && echo 'yes' || echo 'no'))"
           echo "Attempting to connect with SSH (timeout 10 seconds, IPv4 forced) with up to 3 retries..."
           max_retries=3
           retry_count=0
           while [ $retry_count -lt $max_retries ]; do
+            echo "Attempt $((retry_count+1))/$max_retries: ssh -4 -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo 'SSH connection test'"
             if ssh -4 -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection successful"; then
               echo "SSH connection established and command executed successfully"
               break
@@ -302,7 +304,7 @@ jobs:
             fi
             # Ensure proper permissions and ownership
             chmod 644 .env
-            chown $SSH_USERNAME:$SSH_USERNAME .env
+            chown $SSH_USERNAME:$SSH_USERNAME .env || echo \"Warning: Could not set ownership of .env, continuing anyway\"
             echo \"Environment file verified and permissions set\"
 
             # Clear existing caches first, then create fresh ones
