@@ -26,8 +26,104 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          composer install --no-dev --prefer-dist --optimize-autoloader
+          composer install --prefer-dist --optimize-autoloader
           cd frontend && npm install --legacy-peer-deps && npm run build
+
+      - name: Debug SSH secret length
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          echo "SSH private key secret length (asterisks count): ${#SSH_PRIVATE_KEY}"
+          if [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Error: SSH_PRIVATE_KEY secret is empty or not set"
+            exit 1
+          fi
+
+      - name: Setup SSH Key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          # Ensure we have proper line endings and no extra whitespace
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          # Validate key is loadable by OpenSSH (catches formatting errors early)
+          if ! ssh-keygen -y -f ~/.ssh/id_rsa > /dev/null 2>&1; then
+            echo "Error: Invalid SSH private key format in secret"
+            # Optionally output first and last few chars for debugging (masked)
+            echo "First 10 chars: ${SSH_PRIVATE_KEY:0:10}"
+            echo "Last 10 chars: ${SSH_PRIVATE_KEY: -10}"
+            exit 1
+          fi
+          # Additional verification: try to actually load the key with ssh
+          if ! ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ssh-keyscan -T 5 localhost 2>/dev/null | head -1 >/dev/null 2>&1; then
+            # This might fail due to host key verification, but if it gets past key loading, that's good
+            # We'll check the specific error
+            if ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ssh-keyscan -T 5 localhost 2>&1 | grep -q "Error loading"; then
+              echo "Error: SSH cannot load private key"
+              exit 1
+            fi
+          fi
+
+      - name: Debug SSH connection details
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+        run: |
+          echo "SSH_HOST: $SSH_HOST"
+          echo "SSH_PORT: $SSH_PORT"
+          echo "SSH_USERNAME: $SSH_USERNAME"
+
+      - name: Test DNS resolution
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          echo "Checking DNS resolution for $SSH_HOST..."
+          if getent hosts "$SSH_HOST"; then
+            echo "DNS resolution successful"
+          else
+            echo "DNS resolution failed or host not found"
+            # Try with dig if available
+            if command -v dig >/dev/null 2>&1; then
+              dig "$SSH_HOST" +short
+            elif command -v nslookup >/dev/null 2>&1; then
+              nslookup "$SSH_HOST"
+            fi
+          fi
+
+      - name: Test network connectivity
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          echo "Testing network connectivity to $SSH_HOST:$SSH_PORT..."
+          if command -v nc >/dev/null 2>&1; then
+            # Try netcat with timeout
+            if nc -z -w5 "$SSH_HOST" "$SSH_PORT"; then
+              echo "Network connection successful"
+            else
+              echo "Network connection failed or timed out"
+            fi
+          elif command -v ncat >/dev/null 2>&1; then
+            # Try ncat with timeout
+            if ncat -z --wait 5s "$SSH_HOST" "$SSH_PORT"; then
+              echo "Network connection successful"
+            else
+              echo "Network connection failed or timed out"
+            fi
+          else
+            echo "Neither nc nor ncat available, skipping network test"
+          fi
+
+      - name: Test SSH connection
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+        run: |
+          echo "Testing SSH connection to $SSH_USERNAME@$SSH_HOST:$SSH_PORT..."
+          ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection successful"
 
       - name: Deploy via Rsync (Incremental)
         env:
@@ -38,21 +134,120 @@ jobs:
         run: |
           # Deploy Laravel backend (only changed files)
           rsync -avz --delete \
-            -e "ssh -p $SSH_PORT -o StrictHostKeyChecking=no" \
+            -e "ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no" \
             --exclude='.env' \
             --exclude='.git' \
             --exclude='node_modules' \
+            --exclude='frontend/' \
             --exclude='frontend/node_modules' \
             --exclude='frontend/.cache' \
             ./ \
-            $SSH_USERNAME@$SSH_HOST:/home/u576753664/domains/arbitercoffeeshop.com/public_html/api/
+            $SSH_USERNAME@$SSH_HOST:/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/
 
           # Deploy React frontend build (only changed files)
           rsync -avz --delete \
-            -e "ssh -p $SSH_PORT -o StrictHostKeyChecking=no" \
+            -e "ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no" \
             --exclude='.git' \
+            --exclude='api/' \
             frontend/build/ \
-            $SSH_USERNAME@$SSH_HOST:/home/u576753664/domains/arbitercoffeeshop.com/public_html/
+            $SSH_USERNAME@$SSH_HOST:/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/
+
+      - name: Verify deployment directory
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          echo "Checking deployed files..."
+          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
+            ls -la /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/
+            ls -la /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/
+          "
+
+      - name: Setup Environment File
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          echo "Setting up .env file on server..."
+          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
+            # Navigate to the project directory
+            cd /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/
+
+            # Ensure bootstrap/cache directory exists and is writable
+            mkdir -p bootstrap/cache
+            chmod -R 775 bootstrap/cache
+            chown -R $SSH_USERNAME:$SSH_USERNAME bootstrap/cache || echo \"Warning: Could not set ownership of bootstrap/cache, continuing anyway\"
+
+            # Check if .env file exists
+            if [ ! -f .env ]; then
+              echo \"Creating .env file from .env.example...\"
+              cp .env.example .env
+            fi
+
+            # Ensure APP_KEY is set
+            if ! grep -q '^APP_KEY=' .env || grep -q '^APP_KEY=$' .env; then
+              echo \"Generating APP_KEY...\"
+              KEY_OUTPUT=\$(php artisan key:generate --show)
+              sed -i \"s/^APP_KEY=.*/APP_KEY=\$KEY_OUTPUT/\" .env
+            fi
+
+            # Ensure CORS_ALLOWED_ORIGINS is set correctly
+            if ! grep -q '^CORS_ALLOWED_ORIGINS=' .env; then
+              echo \"Adding CORS_ALLOWED_ORIGINS to .env\"
+              echo \"CORS_ALLOWED_ORIGINS=https://arbitercoffeeshop.com\" >> .env
+            else
+              sed -i 's|^CORS_ALLOWED_ORIGINS=.*|CORS_ALLOWED_ORIGINS=https://arbitercoffeeshop.com|' .env
+            fi
+
+            # Ensure SANCTUM_STATEFUL_DOMAINS is set correctly
+            if ! grep -q '^SANCTUM_STATEFUL_DOMAINS=' .env; then
+              echo \"Adding SANCTUM_STATEFUL_DOMAINS to .env\"
+              echo \"SANCTUM_STATEFUL_DOMAINS=arbitercoffeeshop.com,api.arbitercoffeeshop.com\" >> .env
+            else
+              sed -i 's|^SANCTUM_STATEFUL_DOMAINS=.*|SANCTUM_STATEFUL_DOMAINS=arbitercoffeeshop.com,api.arbitercoffeeshop.com|' .env
+            fi
+
+            # Ensure APP_URL is set correctly
+            if ! grep -q '^APP_URL=' .env; then
+              echo \"Adding APP_URL to .env\"
+              echo \"APP_URL=https://api.arbitercoffeeshop.com\" >> .env
+            else
+              sed -i 's|^APP_URL=.*|APP_URL=https://api.arbitercoffeeshop.com|' .env
+            fi
+
+            # Ensure FRONTEND_URL is set correctly
+            if ! grep -q '^FRONTEND_URL=' .env; then
+              echo \"Adding FRONTEND_URL to .env\"
+              echo \"FRONTEND_URL=https://arbitercoffeeshop.com\" >> .env
+            else
+              sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=https://arbitercoffeeshop.com|' .env
+            fi
+
+            echo \".env file setup complete.\"
+          "
+
+      - name: Ensure bootstrap/cache directory exists and is writable
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          echo "Ensuring bootstrap/cache directory exists and is writable..."
+          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
+            # Create the directory if it doesn't exist
+            mkdir -p /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/bootstrap/cache &&
+
+            # Ensure directory is writable
+            chmod -R 775 /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/bootstrap/cache &&
+
+            # Try to set ownership, but don't fail if we don't have permission
+            chown -R $SSH_USERNAME:$SSH_USERNAME /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/bootstrap/cache || echo \"Warning: Could not set ownership, continuing anyway\"
+          "
 
       - name: Run Post-Deployment Commands via SSH
         env:
@@ -61,13 +256,28 @@ jobs:
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          ssh -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
-            cd /home/u576753664/domains/arbitercoffeeshop.com/public_html/api &&
+            # Verify .env file exists and is readable
+            if [ ! -f .env ]; then
+              echo "ERROR: .env file not found - cannot proceed"
+              exit 1
+            fi
+            if [ ! -s .env ]; then
+              echo "ERROR: .env file is empty - cannot proceed"
+              exit 1
+            fi
+            if [ ! -r .env ]; then
+              echo "ERROR: .env file is not readable - cannot proceed"
+              exit 1
+            fi
+            # Ensure proper permissions
+            chmod 644 .env
+            echo "Environment file verified and permissions set"
+
+          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
+            cd /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api &&
             php artisan config:cache &&
             php artisan route:cache &&
             php artisan view:cache &&
             php artisan optimize:clear &&
             echo 'Deployment completed successfully'
           "
-
-      
