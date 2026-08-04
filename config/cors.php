@@ -18,7 +18,7 @@ return [
     'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
     'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', env('APP_ENV') === 'production'
-        ? 'https://yourdomain.com'
+        ? 'https://arbitercoffeeshop.com'
         : 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001')),
 
     'allowed_origins_patterns' => [],
