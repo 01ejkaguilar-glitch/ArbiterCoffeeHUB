@@ -157,28 +157,50 @@ jobs:
           echo "Testing SSH connection to $SSH_USERNAME@$SSH_HOST:$SSH_PORT..."
           echo "SSH client version: $(ssh -V 2>&1)"
           echo "SSH key file: ~/.ssh/id_rsa (exists: $(test -f ~/.ssh/id_rsa && echo 'yes' || echo 'no'))"
-          echo "Attempting to connect with SSH (timeout 30 seconds, IPv4 forced) with up to 3 retries..."
+
+          # Add initial delay to let any transient conditions clear
+          echo "Waiting 10 seconds before starting connection attempts..."
+          sleep 10
+
+          echo "Attempting to connect with SSH (timeout 30 seconds) with up to 3 retries..."
           max_retries=3
           retry_count=0
+          base_delay=15  # Start with 15 seconds between attempts
+
           while [ $retry_count -lt $max_retries ]; do
-            echo "Attempt $((retry_count+1))/$max_retries: ssh -4 -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo 'SSH connection test'"
-            if ssh -4 -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection successful"; then
+            attempt=$((retry_count+1))
+            echo "Attempt $attempt/$max_retries: ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo 'SSH connection test'"
+
+            # Try the connection
+            if ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection successful"; then
               echo "SSH connection established and command executed successfully"
               break
             else
-              echo "SSH connection attempt $((retry_count+1)) failed"
+              exit_code=$?
+              echo "SSH connection attempt $attempt failed with exit code: $exit_code"
+
+              # Check if it's a timeout (typically exit code 255 for ssh when connection fails)
+              if [ $exit_code -eq 255 ]; then
+                echo "  -> Likely connection timeout or network issue"
+              else
+                echo "  -> SSH returned non-standard exit code: $exit_code"
+              fi
+
               retry_count=$((retry_count+1))
               if [ $retry_count -lt $max_retries ]; then
-                echo "Waiting 5 seconds before retry..."
-                sleep 5
+                # Exponential backoff: wait longer between each attempt
+                wait_time=$((base_delay * (2 ** (retries_count - 1))))
+                echo "Waiting $wait_time seconds before retry..."
+                sleep $wait_time
               fi
             fi
           done
+
           if [ $retry_count -eq $max_retries ]; then
             echo "SSH connection failed after $max_retries attempts"
             echo "Trying to diagnose with verbose SSH (but limiting output) on the last attempt..."
             # Try a verbose connection on the last attempt to see where it fails
-            ssh -4 -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o LogLevel=verbose -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection test" 2>&1 | head -30
+            ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o LogLevel=verbose -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection test" 2>&1 | head -30
             exit 1
           fi
 
