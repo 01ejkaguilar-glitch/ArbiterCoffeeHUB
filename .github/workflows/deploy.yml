@@ -126,12 +126,12 @@ jobs:
           echo "Testing SSH connection to $SSH_USERNAME@$SSH_HOST:$SSH_PORT..."
           echo "SSH client version: $(ssh -V 2>&1)"
           echo "SSH key file: ~/.ssh/id_rsa (exists: $(test -f ~/.ssh/id_rsa && echo 'yes' || echo 'no'))"
-          echo "Attempting to connect with SSH (timeout 10 seconds, IPv4 forced) with up to 3 retries..."
+          echo "Attempting to connect with SSH (timeout 30 seconds, IPv4 forced) with up to 3 retries..."
           max_retries=3
           retry_count=0
           while [ $retry_count -lt $max_retries ]; do
-            echo "Attempt $((retry_count+1))/$max_retries: ssh -4 -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo 'SSH connection test'"
-            if ssh -4 -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection successful"; then
+            echo "Attempt $((retry_count+1))/$max_retries: ssh -4 -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo 'SSH connection test'"
+            if ssh -4 -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection successful"; then
               echo "SSH connection established and command executed successfully"
               break
             else
@@ -147,7 +147,7 @@ jobs:
             echo "SSH connection failed after $max_retries attempts"
             echo "Trying to diagnose with verbose SSH (but limiting output) on the last attempt..."
             # Try a verbose connection on the last attempt to see where it fails
-            ssh -4 -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=10 -o LogLevel=verbose -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection test" 2>&1 | head -20
+            ssh -4 -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o LogLevel=verbose -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection test" 2>&1 | head -30
             exit 1
           fi
 
