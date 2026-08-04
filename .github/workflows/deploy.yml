@@ -426,7 +426,23 @@ jobs:
               sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=https://arbitercoffeeshop.com|' .env
             fi
 
-            echo \".env file setup complete.\"
+            # Ensure APP_ENV is set correctly
+            if ! grep -q '^APP_ENV=' .env; then
+              echo "Adding APP_ENV to .env"
+              echo "APP_ENV=production" >> .env
+            else
+              sed -i 's|^APP_ENV=.*|APP_ENV=production|' .env
+            fi
+
+            # Ensure APP_DEBUG is set correctly for production
+            if ! grep -q '^APP_DEBUG=' .env; then
+              echo "Adding APP_DEBUG to .env"
+              echo "APP_DEBUG=false" >> .env
+            else
+              sed -i 's|^APP_DEBUG=.*|APP_DEBUG=false|' .env
+            fi
+
+            echo ".env file setup complete."
           "
 
       - name: Ensure bootstrap/cache directory exists and is writable
