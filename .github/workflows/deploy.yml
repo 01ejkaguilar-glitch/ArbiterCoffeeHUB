@@ -231,8 +231,10 @@ jobs:
         run: |
           echo "Starting deployment with SSH connection resilience..."
           
-          # Function to execute rsync with retry logic
-          rsync_with_retry() {
+          # Deploy Laravel backend (only changed files)
+          echo "Deploying Laravel backend..."
+          # Function to execute rsync with retry logic for backend
+          rsync_backend_with_retry() {
             local source_path="$1"
             local dest_path="$2"
             local max_retries=3
@@ -241,20 +243,27 @@ jobs:
             local ssh_opts="-i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o BatchMode=yes"
             
             # Add initial delay to let any transient conditions clear
-            echo "Waiting 10 seconds before starting deployment attempts..."
+            echo "Waiting 10 seconds before starting backend deployment attempts..."
             sleep 10
             
             while [ $retry_count -lt $max_retries ]; do
               attempt=$((retry_count+1))
-              echo "Rsync attempt $attempt/$max_retries: rsync -avz --delete -e \"ssh $ssh_opts\" $source_path $SSH_USERNAME@$SSH_HOST:$dest_path"
+              echo "Backend rsync attempt $attempt/$max_retries: rsync -avz --delete --exclude='.env' --exclude='.git' --exclude='node_modules' --exclude='frontend/' --exclude='frontend/node_modules' --exclude='frontend/.cache' -e \"ssh $ssh_opts\" $source_path $SSH_USERNAME@$SSH_HOST:$dest_path"
               
               # Try the rsync operation
-              if rsync -avz --delete -e "ssh $ssh_opts" "$source_path" "$SSH_USERNAME@$SSH_HOST:$dest_path"; then
-                echo "Rsync operation completed successfully on attempt $attempt"
+              if rsync -avz --delete \
+                --exclude='.env' \
+                --exclude='.git' \
+                --exclude='node_modules' \
+                --exclude='frontend/' \
+                --exclude='frontend/node_modules' \
+                --exclude='frontend/.cache' \
+                -e "ssh $ssh_opts" "$source_path" "$SSH_USERNAME@$SSH_HOST:$dest_path"; then
+                echo "Backend rsync operation completed successfully on attempt $attempt"
                 return 0
               else
                 exit_code=$?
-                echo "Rsync attempt $attempt failed with exit code: $exit_code"
+                echo "Backend rsync attempt $attempt failed with exit code: $exit_code"
                 
                 # Check if it's likely a timeout/connection issue
                 if [ $exit_code -eq 255 ] || [ $exit_code -eq 23 ]; then
@@ -273,20 +282,69 @@ jobs:
               fi
             done
             
-            echo "Rsync operation failed after $max_retries attempts"
+            echo "Backend rsync operation failed after $max_retries attempts"
             return 1
           }
           
           # Deploy Laravel backend (only changed files)
-          echo "Deploying Laravel backend..."
-          rsync_with_retry "./" "/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/" || {
+          rsync_backend_with_retry "./" "/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/" || {
             echo "Failed to deploy Laravel backend"
             exit 1
           }
           
           # Deploy React frontend build (only changed files)
           echo "Deploying React frontend build..."
-          rsync_with_retry "frontend/build/" "/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/" || {
+          # Function to execute rsync with retry logic for frontend
+          rsync_frontend_with_retry() {
+            local source_path="$1"
+            local dest_path="$2"
+            local max_retries=3
+            local retry_count=0
+            local base_delay=15  # Start with 15 seconds between attempts
+            local ssh_opts="-i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o BatchMode=yes"
+            
+            # Add initial delay to let any transient conditions clear
+            echo "Waiting 10 seconds before starting frontend deployment attempts..."
+            sleep 10
+            
+            while [ $retry_count -lt $max_retries ]; do
+              attempt=$((retry_count+1))
+              echo "Frontend rsync attempt $attempt/$max_retries: rsync -avz --delete --exclude='.git' --exclude='api/' -e \"ssh $ssh_opts\" $source_path $SSH_USERNAME@$SSH_HOST:$dest_path"
+              
+              # Try the rsync operation
+              if rsync -avz --delete \
+                --exclude='.git' \
+                --exclude='api/' \
+                -e "ssh $ssh_opts" "$source_path" "$SSH_USERNAME@$SSH_HOST:$dest_path"; then
+                echo "Frontend rsync operation completed successfully on attempt $attempt"
+                return 0
+              else
+                exit_code=$?
+                echo "Frontend rsync attempt $attempt failed with exit code: $exit_code"
+                
+                # Check if it's likely a timeout/connection issue
+                if [ $exit_code -eq 255 ] || [ $exit_code -eq 23 ]; then
+                  echo "  -> Likely connection timeout or network issue"
+                else
+                  echo "  -> Rsync returned exit code: $exit_code"
+                fi
+                
+                retry_count=$((retry_count+1))
+                if [ $retry_count -lt $max_retries ]; then
+                  # Exponential backoff: wait longer between each attempt
+                  wait_time=$((base_delay * (2 ** (retry_count - 1))))
+                  echo "Waiting $wait_time seconds before retry..."
+                  sleep $wait_time
+                fi
+              fi
+            done
+            
+            echo "Frontend rsync operation failed after $max_retries attempts"
+            return 1
+          }
+          
+          # Deploy React frontend build (only changed files)
+          rsync_frontend_with_retry "frontend/build/" "/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/" || {
             echo "Failed to deploy React frontend build"
             exit 1
           }
