@@ -579,7 +579,7 @@ jobs:
               exit 1
             fi
             # Validate .env file syntax using Symfony Dotenv component
-            if ! php -r 'require __DIR__.\"/vendor/autoload.php\"; try { Dotenv\Dotenv::createImmutable(__DIR__, \".env\")->load(); } catch (Exception \$e) { echo \".env file is invalid: \" . \$e->getMessage(); exit(1); }'; then
+            if ! php -r 'require __DIR__ . "/vendor/autoload.php"; try { Dotenv\Dotenv::createImmutable(__DIR__, ".env")->load(); } catch (Exception \$e) { echo ".env file is invalid: " . \$e->getMessage(); exit(1); }'; then
               exit 1
             fi
             # Ensure proper permissions and ownership
