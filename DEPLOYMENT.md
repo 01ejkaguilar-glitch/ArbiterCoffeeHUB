@@ -369,6 +369,39 @@ chown -R www-data:www-data storage bootstrap/cache  # If applicable
 - Check browser console for JavaScript errors
 - Ensure MIME types are correct for CSS/JS files
 
+#### 7. Subdomain Document Root Misconfiguration (API Returns 404/500)
+**Symptoms**: 
+- Static files (favicon.ico, robots.txt) load successfully (200 OK)
+- But API endpoints return 404 Not Found or 500 Internal Server Error
+- Browser shows CORS errors because the server isn't returning proper Laravel responses with CORS headers
+- Direct access to api.arbitercoffeeshop.com shows 403 Forbidden or default Hostinger error pages
+
+**Solution**:
+The subdomain `api.arbitercoffeeshop.com` document root must point to Laravel's `public` directory, not the Laravel root directory.
+
+**Correct Configuration**:
+- Subdomain: `api.arbitercoffeeshop.com`
+- Document Root: `/home/u576753664/domains/arbitercoffeeshop.com/public_html/api/public/`
+
+**Incorrect Configuration** (what you likely have):
+- Subdomain: `api.arbitercoffeeshop.com`
+- Document Root: `/home/u576753664/domains/arbitercoffeeshop.com/public_html/api/`
+
+**To Fix in Hostinger hPanel**:
+1. Go to hPanel → Advanced → Website → Manage
+2. Find the subdomain `api.arbitercoffeeshop.com`
+3. Click "Manage" or "Modify" next to it
+4. Change the "Website root" or "Document root" field from:
+   `/home/u576753664/domains/arbitercoffeeshop.com/public_html/api/`
+   to:
+   `/home/u576753664/domains/arbitercoffeeshop.com/public_html/api/public/`
+5. Save changes and wait 2-5 minutes for propagation
+
+**Verification**:
+After making this change, test:
+- `curl -i https://api.arbitercoffeeshop.com/api/v1/test` (should return JSON)
+- `curl -i -H "Origin: https://arbitercoffeeshop.com" https://api.arbitercoffeeshop.com/api/v1/test` (should include `Access-Control-Allow-Origin` header)
+
 ---
 
 ## Rollback Procedure
