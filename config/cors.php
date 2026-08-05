@@ -11,33 +11,37 @@ return [
     | or "CORS". This determines what cross-origin operations may execute
     | in web browsers. You are free to adjust these settings as needed.
     |
+    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+    |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie', 'broadcasting/auth'],
+    'paths' => [
+        'api/*',
+        'sanctum/csrf-cookie',
+        'broadcasting/auth',
+        'sanctum/csrf-cookie',
+        'api/*', // Ensure API routes are covered
+        'sanctum/csrf-cookie',
+        'broadcasting/auth'
+    ],
 
-    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    'allowed_methods' => ['*'], // Allow all methods
 
-    'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', env('APP_ENV') === 'production'
-        ? 'https://arbitercoffeeshop.com'
-        : 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001')),
+    'allowed_origins' => [
+        'https://arbitercoffeeshop.com',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'http://localhost:3001',
+        'http://127.0.0.1:3001'
+    ],
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => [
-        'Accept',
-        'Authorization',
-        'Content-Type',
-        'X-Requested-With',
-        'X-CSRF-TOKEN',
-        'X-XSRF-TOKEN',
-        'Cache-Control',
-        'Pragma',
-        'X-Cache-Strategy',
-    ],
+    'allowed_headers' => ['*'], // Allow all headers
 
-    'exposed_headers' => env('APP_ENV') === 'production' ? [] : ['X-CSRF-TOKEN'],
+    'exposed_headers' => [],
 
-    'max_age' => env('APP_ENV') === 'production' ? 86400 : 0, // 24 hours in production
+    'max_age' => 0,
 
     'supports_credentials' => true,
 
