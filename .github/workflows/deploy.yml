@@ -106,7 +106,7 @@ jobs:
             echo 'Starting deployment process...'
 
             # Create target directory
-            TARGET_DIR='/home/${SSH_USERNAME}/domains/arbitercoffeeshop.com/public_html'
+            TARGET_DIR='/home/'${SSH_USERNAME}'/domains/arbitercoffeeshop.com/public_html'
             mkdir -p \"$TARGET_DIR\"
 
             # Extract archive
@@ -131,6 +131,18 @@ jobs:
               exit 1
             fi
             chmod 644 \"$TARGET_DIR/.env\" || echo 'Warning: Could not set .env permissions'
+
+            # Ensure APP_KEY is set
+            if ! grep -q '^APP_KEY=' \"$TARGET_DIR/.env\" || grep -q '^APP_KEY=$' \"$TARGET_DIR/.env\"; then
+              echo 'Generating APP_KEY...'
+              KEY_OUTPUT=$(php artisan key:generate --show)
+              # Check if APP_KEY line exists, if not append it
+              if grep -q '^APP_KEY=' \"$TARGET_DIR/.env\"; then
+                sed -i \"s/^APP_KEY=.*/APP_KEY=$KEY_OUTPUT/\" \"$TARGET_DIR/.env\"
+              else
+                echo \"APP_KEY=$KEY_OUTPUT\" >> \"$TARGET_DIR/.env\"
+              fi
+            fi
 
             # Navigate to project directory
             cd \"$TARGET_DIR\"
