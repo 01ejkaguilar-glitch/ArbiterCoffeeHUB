@@ -28,7 +28,7 @@ jobs:
           echo "SSH_USERNAME=$(echo '${{ secrets.SSH_USERNAME }}' | xargs)" >> $GITHUB_ENV
           echo "SSH_HOST=$(echo '${{ secrets.SSH_HOST }}' | xargs)" >> $GITHUB_ENV
           echo "SSH_PORT=$(echo '${{ secrets.SSH_PORT }}' | xargs)" >> $GITHUB_ENV
-          # Note: SSH_PRIVATE_KEY we keep as is; we will trim newlines when using
+          echo "SSH_PRIVATE_KEY=$(echo '${{ secrets.SSH_PRIVATE_KEY }}' | xargs)" >> $GITHUB_ENV
 
       - name: Build React frontend
         run: |
@@ -60,18 +60,56 @@ jobs:
           fi
 
       - name: Set up SSH connection
+        shell: bash
         run: |
+          set -euxo pipefail
+          echo "Setting up SSH connection..."
+
+          # Create .ssh directory
+          echo "About to create ~/.ssh directory"
           mkdir -p ~/.ssh
-          # Trim whitespace from private key (important for newlines)
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          echo "Created ~/.ssh directory successfully"
+
+          # Handle SSH private key using heredoc to avoid shell interpretation of key content
+          if [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Error: SSH_PRIVATE_KEY secret is empty or not set"
+            exit 1
+          fi
+
+          echo "Writing SSH private key to file..."
+          cat > ~/.ssh/id_rsa << 'EOF'
+$SSH_PRIVATE_KEY
+EOF
+          echo "SSH private key written to file"
+
           chmod 600 ~/.ssh/id_rsa
+          echo "Set permissions on private key"
+
+          # Validate SSH variables are set
+          if [ -z "$SSH_USERNAME" ] || [ -z "$SSH_HOST" ] || [ -z "$SSH_PORT" ]; then
+            echo "Error: One or more SSH variables are not set:"
+            echo "  SSH_USERNAME: '$SSH_USERNAME'"
+            echo "  SSH_HOST: '$SSH_HOST'"
+            echo "  SSH_PORT: '$SSH_PORT'"
+            exit 1
+          fi
+
+          echo "SSH variables validated:"
+          echo "  SSH_USERNAME: '$SSH_USERNAME'"
+          echo "  SSH_HOST: '$SSH_HOST'"
+          echo "  SSH_PORT: '$SSH_PORT'"
+
           # Add Hostinger host to known hosts
-          ssh-keyscan -p ${SSH_PORT} ${SSH_HOST} >> ~/.ssh/known_hosts
+          echo "Scanning Hostinger host for known hosts..."
+          ssh-keyscan -p $SSH_PORT $SSH_HOST >> ~/.ssh/known_hosts 2>/dev/null || echo "Warning: Could not scan Hostinger host, continuing anyway"
+          echo "SSH setup complete"
 
       - name: Test SSH connection
+        shell: bash
         run: |
-          echo "Testing SSH connection to ${SSH_HOST}..."
-          if ! ssh -p ${SSH_PORT} -o BatchMode=yes -o ConnectTimeout=10 ${SSH_USERNAME}@${SSH_HOST} 'echo "SSH connection test successful"'; then
+          set -euxo pipefail
+          echo "Testing SSH connection to $SSH_HOST..."
+          if ! ssh -p $SSH_PORT -o BatchMode=yes -o ConnectTimeout=10 $SSH_USERNAME@$SSH_HOST 'echo "SSH connection test successful"'; then
             echo "SSH connection test failed"
             exit 1
           fi
@@ -98,54 +136,54 @@ jobs:
       - name: Deploy application
         run: |
           echo "Uploading deployment archive..."
-          scp -P ${SSH_PORT} -o StrictHostKeyChecking=no deployment.tar.gz ${SSH_USERNAME}@${SSH_HOST}:/tmp/
+          scp -P $SSH_PORT -o StrictHostKeyChecking=no deployment.tar.gz $SSH_USERNAME@$SSH_HOST:/tmp/
 
           echo "Extracting and deploying application..."
-          ssh -p ${SSH_PORT} -o StrictHostKeyChecking=no ${SSH_USERNAME}@${SSH_HOST} "
+          ssh -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
             set -e
             echo 'Starting deployment process...'
 
             # Create target directory
-            TARGET_DIR='/home/'${SSH_USERNAME}'/domains/arbitercoffeeshop.com/public_html'
-            mkdir -p \"$TARGET_DIR\"
+            TARGET_DIR=\"/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html\"
+            mkdir -p \"\$TARGET_DIR\"
 
             # Extract archive
             echo 'Extracting archive...'
-            tar -xzf /tmp/deployment.tar.gz -C \"$TARGET_DIR\"
+            tar -xzf /tmp/deployment.tar.gz -C \"\$TARGET_DIR\"
             rm /tmp/deployment.tar.gz
 
             # Set permissions
             echo 'Setting permissions...'
-            find \"$TARGET_DIR\" -type f -exec chmod 644 {} \;
-            find \"$TARGET_DIR\" -type d -exec chmod 755 {} \;
+            find \"\$TARGET_DIR\" -type f -exec chmod 644 {} \;
+            find \"\$TARGET_DIR\" -type d -exec chmod 755 {} \;
 
             # Ensure storage and bootstrap/cache directories are writable
-            chmod -R 775 \"$TARGET_DIR/storage\" \"$TARGET_DIR/bootstrap/cache\"
+            chmod -R 775 \"\$TARGET_DIR/storage\" \"\$TARGET_DIR/bootstrap/cache\"
 
             # Try to set ownership if possible (ignore if not permitted)
-            chown -R ${SSH_USERNAME}:${SSH_USERNAME} \"$TARGET_DIR/storage\" \"$TARGET_DIR/bootstrap/cache\" 2>/dev/null || echo 'Warning: Could not set ownership on storage/cache, continuing...'
+            chown -R $SSH_USERNAME:$SSH_USERNAME \"\$TARGET_DIR/storage\" \"\$TARGET_DIR/bootstrap/cache\" 2>/dev/null || echo 'Warning: Could not set ownership on storage/cache, continuing...'
 
             # Ensure .env file exists and has correct permissions
-            if [ ! -f \"$TARGET_DIR/.env\" ]; then
+            if [ ! -f \"\$TARGET_DIR/.env\" ]; then
               echo 'Error: .env file not found after extraction!'
               exit 1
             fi
-            chmod 644 \"$TARGET_DIR/.env\" || echo 'Warning: Could not set .env permissions'
+            chmod 644 \"\$TARGET_DIR/.env\" || echo 'Warning: Could not set .env permissions'
 
             # Ensure APP_KEY is set
-            if ! grep -q '^APP_KEY=' \"$TARGET_DIR/.env\" || grep -q '^APP_KEY=$' \"$TARGET_DIR/.env\"; then
+            if ! grep -q '^APP_KEY=' \"\$TARGET_DIR/.env\" || grep -q '^APP_KEY=$' \"\$TARGET_DIR/.env\"; then
               echo 'Generating APP_KEY...'
               KEY_OUTPUT=$(php artisan key:generate --show)
               # Check if APP_KEY line exists, if not append it
-              if grep -q '^APP_KEY=' \"$TARGET_DIR/.env\"; then
-                sed -i \"s/^APP_KEY=.*/APP_KEY=$KEY_OUTPUT/\" \"$TARGET_DIR/.env\"
+              if grep -q '^APP_KEY=' \"\$TARGET_DIR/.env\"; then
+                sed -i \"s/^APP_KEY=.*/APP_KEY=$KEY_OUTPUT/\" \"\$TARGET_DIR/.env\"
               else
-                echo \"APP_KEY=$KEY_OUTPUT\" >> \"$TARGET_DIR/.env\"
+                echo \"APP_KEY=$KEY_OUTPUT\" >> \"\$TARGET_DIR/.env\"
               fi
             fi
 
             # Navigate to project directory
-            cd \"$TARGET_DIR\"
+            cd \"\$TARGET_DIR\"
 
             # Clear and cache configuration
             echo 'Clearing caches...'
