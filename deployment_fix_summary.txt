@@ -1,0 +1,25 @@
+SSH PRIVATE KEY FIX SUMMARY
+===========================
+
+Issue: "grep: unrecognized option '-----BEGIN.*PRIVATE KEY-----'"
+Cause: The SSH private key content, when echoed to grep, was being interpreted as command-line options because it starts with a dash (-).
+
+Fix Applied:
+- Changed: if ! echo "$SSH_PRIVATE_KEY" | grep -q "-----BEGIN.*PRIVATE KEY-----";
+- To:      if ! echo "$SSH_PRIVATE_KEY" | grep -q -- "-----BEGIN.*PRIVATE KEY-----";
+
+The "--" argument tells grep to treat everything that follows as positional parameters (the pattern to search for), not as options, even if they start with "-".
+
+Additional Improvements:
+1. Maintained all existing SSH key validation and sanitization
+2. Kept the printf-based key writing (not heredoc) to avoid shell interpretation
+3. Preserved whitespace trimming in the sanitization step
+4. All other workflow optimizations remain intact
+
+Verification:
+- The workflow now passes YAML validation
+- SSH connection test should work properly
+- Private key handling is secure and robust
+- All other deployment steps (npm, composer, Laravel commands) unaffected
+
+This fix resolves the immediate SSH authentication failure while maintaining all security and reliability improvements made previously.

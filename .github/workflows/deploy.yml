@@ -78,7 +78,7 @@ jobs:
           fi
 
           # Validate that it looks like a private key
-          if ! echo "$SSH_PRIVATE_KEY" | grep -q "-----BEGIN.*PRIVATE KEY-----"; then
+          if ! echo "$SSH_PRIVATE_KEY" | grep -q -- "-----BEGIN.*PRIVATE KEY-----"; then
             echo "Error: SSH_PRIVATE_KEY does not appear to be a valid private key"
             exit 1
           fi
