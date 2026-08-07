@@ -78,8 +78,8 @@ jobs:
 
           echo "Writing SSH private key to file..."
           cat > ~/.ssh/id_rsa << EOF
-$SSH_PRIVATE_KEY
-EOF
+          $SSH_PRIVATE_KEY
+          EOF
           echo "SSH private key written to file"
 
           chmod 600 ~/.ssh/id_rsa
