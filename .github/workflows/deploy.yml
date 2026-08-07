@@ -1,5 +1,4 @@
-# Workflow for Laravel + React single-domain deployment
-name: Deploy to Hostinger (Single Domain)
+name: Deploy Laravel Application to Hostinger
 
 on:
   push:
@@ -10,635 +9,155 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup PHP
+      - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           extensions: mbstring, intl, bcmath, xml
           coverage: none
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          cache-dependency-path: 'frontend/package-lock.json'
-          node-version: '22'
-          cache: 'npm'
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
 
-      - name: Install Dependencies
+      - name: Build React frontend
         run: |
-          composer install --prefer-dist --optimize-autoloader --no-interaction --no-progress
-          cd frontend && npm install --legacy-peer-deps && npm run build
+          npm ci
+          npm run build
 
-      - name: Debug SSH secret length
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Validate environment
         run: |
-          echo "SSH private key secret length (asterisks count): ${#SSH_PRIVATE_KEY}"
-          if [ -z "$SSH_PRIVATE_KEY" ]; then
-            echo "Error: SSH_PRIVATE_KEY secret is empty or not set"
+          echo "Validating environment files..."
+          if [ ! -f .env ]; then
+            echo "Error: .env file not found in repository"
             exit 1
           fi
-
-      - name: Validate SSH connection settings
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-        run: |
-          echo "SSH host: '$SSH_HOST'"
-          echo "SSH port: '$SSH_PORT'"
-          echo "SSH username: '$SSH_USERNAME'"
-
-          if [ -z "$SSH_HOST" ]; then
-            echo "Error: SSH_HOST secret is empty or not set"
+          if [ ! -s .env ]; then
+            echo "Error: .env file is empty"
             exit 1
           fi
+          echo ".env file exists and is not empty"
 
-          if [ -z "$SSH_PORT"]; then
-            echo "Error: SSH_PORT secret is empty or not set"
-            exit 1
+          # Check for required variables
+          if ! grep -q "^APP_KEY=" .env; then
+            echo "Warning: APP_KEY not set in .env, will generate during deployment"
           fi
 
-          if [ -z "$SSH_USERNAME" ]; then
-            echo "Error: SSH_USERNAME secret is empty or not set"
-            exit 1
-          fi
-
-          # Validate that SSH_PORT is a number
-          if ! [[ "$SSH_PORT" =~ ^[0-9]+$ ]]; then
-            echo "Error: SSH_PORT must be a number"
-            exit 1
-          fi
-
-      - name: Setup SSH Key
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Set up SSH connection
         run: |
           mkdir -p ~/.ssh
-          # Ensure we have proper line endings and no extra whitespace
-          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          # Validate key is loadable by OpenSSH (catches formatting errors early)
-          if ! ssh-keygen -y -f ~/.ssh/id_rsa > /dev/null 2>&1; then
-            echo "Error: Invalid SSH private key format in secret"
-            # Optionally output first and last few chars for debugging (masked)
-            echo "First 10 chars: ${SSH_PRIVATE_KEY:0:10}"
-            echo "Last 10 chars: ${SSH_PRIVATE_KEY: -10}"
-            exit 1
-          fi
-          # Additional verification: try to actually load the key with ssh
-          if ! ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ssh-keyscan -T 5 localhost 2>/dev/null | head -1 >/dev/null 2>&1; then
-            # This might fail due to host key verification, but if it gets past key loading, that's good
-            # We'll check the specific error
-            if ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ssh-keyscan -T 5 localhost 2>&1 | grep -q "Error loading"; then
-              echo "Error: SSH cannot load private key"
-              exit 1
-            fi
-          fi
-
-      - name: Debug SSH connection details
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-        run: |
-          # Sanitize SSH_USERNAME by trimming whitespace
-          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          echo "Validating SSH connection settings..."
-          if [ -z "$SSH_HOST"]; then
-            echo "Error: SSH_HOST secret is empty or not set"
-            exit 1
-          fi
-          if [ -z "$SSH_PORT"]; then
-            echo "Error: SSH_PORT script is empty or not set"
-            exit 1
-          fi
-          if [ -z "$SANITIZED_SSH_USERNAME"]; then
-            echo "Error: SSH_USERNAME secret is empty or not set"
-            echo "Please set the SSH_USERNAME secret in your repository settings."
-            exit 1
-          fi
-          if ! [[ "$SSH_PORT" =~ ^[0-9]+$ ]]; then
-            echo "Error: SSH_PORT must be a number"
-            exit 1
-          fi
-          echo "SSH_HOST: $SSH_HOST"
-          echo "SSH_PORT: $SSH_PORT"
-          echo "SSH_USERNAME: $SANITIZED_SSH_USERNAME"
-
-      - name: Test DNS resolution
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-        run: |
-          echo "Checking DNS resolution for $SSH_HOST..."
-          if getent hosts "$SSH_HOST"; then
-            echo "DNS resolution successful"
-          else
-            echo "DNS resolution failed or host not found"
-            # Try with dig if available
-            if command -v dig >/dev/null 2>&1; then
-              dig "$SSH_HOST" +short
-            elif command -v nslookup >/dev/null 2>&1; then
-              nslookup "$SSH_HOST"
-            fi
-          fi
-
-      - name: Test network connectivity
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-        run: |
-          echo "Testing network connectivity to $SSH_HOST:$SSH_PORT..."
-          if command -v nc >/dev/null 2>&1; then
-            echo "Using nc with timeout 5 seconds (IPv4 forced)"
-            if nc -z -w5 -4 "$SSH_HOST" "$SSH_PORT"; then
-              echo "Network connection successful via nc"
-            else
-              echo "Network connection failed or timed out via nc"
-            fi
-          elif command -v ncat >/dev/null 2>&1; then
-            echo "Using ncat with timeout 5 seconds (IPv4 forced)"
-            if ncat -z --wait 5s -4 "$SSH_HOST" "$SSH_PORT"; then
-              echo "Network connection successful via ncat"
-            else
-              echo "Network connection failed or timed out via ncat"
-            fi
-          else
-            echo "Neither nc nor ncat available, skipping network test"
-          fi
+          # Add Hostinger host to known hosts
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Test SSH connection
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
-          # Sanitize SSH_USERNAME by trimming whitespace
-          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          echo "Testing SSH connection to $SANITIZED_SSH_USERNAME@$SSH_HOST:$SSH_PORT..."
-          echo "SSH client version: $(ssh -V 2>&1)"
-          echo "SSH key file: ~/.ssh/id_rsa (exists: $(test -f ~/.ssh/id_rsa && echo 'yes' || echo 'no'))"
-
-          # Add initial delay to let any transient conditions clear
-          echo "Waiting 10 seconds before starting connection attempts..."
-          sleep 10
-
-          echo "Attempting to connect with SSH (timeout 30 seconds) with up to 3 retries..."
-          max_retries=3
-          retry_count=0
-          base_delay=15  # Start with 15 seconds between attempts
-
-          while [ $retry_count -lt $max_retries ]; do
-            attempt=$((retry_count+1))
-            echo "Attempt $attempt/$max_retries: ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p $SSH_PORT $SANITIZED_SSH_USERNAME@$SSH_HOST echo 'SSH connection test'"
-
-            # Try the connection
-            if ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p $SSH_PORT $SANITIZED_SSH_USERNAME@$SSH_HOST echo "SSH connection successful"; then
-              echo "SSH connection established and command executed successfully"
-              break
-            else
-              exit_code=$?
-              echo "SSH connection attempt $attempt failed with exit code: $exit_code"
-
-              # Check if it's a timeout (typically exit code 255 for ssh when connection fails)
-              if [ $exit_code -eq 255 ]; then
-                echo "  -> Likely connection timeout or network issue"
-              else
-                echo "  -> SSH returned non-standard exit code: $exit_code"
-              fi
-
-              retry_count=$((retry_count+1))
-              if [ $retry_count -lt $max_retries ]; then
-                # Exponential backoff: wait longer between each attempt
-                wait_time=$((base_delay * (2 ** (retry_count - 1))))
-                echo "Waiting $wait_time seconds before retry..."
-                sleep $wait_time
-              fi
-            fi
-          done
-
-          if [ $retry_count -eq $max_retries ]; then
-            echo "SSH connection failed after $max_retries attempts"
-            echo "Trying to diagnose with verbose SSH (but limiting output) on the last attempt..."
-            # Try a verbose connection on the last attempt to see where it fails
-            ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o LogLevel=verbose -p $SSH_PORT $SANITIZED_SSH_USERNAME@$SSH_HOST echo "SSH connection test" 2>&1 | head -30
+          echo "Testing SSH connection to ${{ secrets.SSH_HOST }}..."
+          if ! ssh -p ${{ secrets.SSH_PORT }} -o BatchMode=yes -o ConnectTimeout=10 ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'echo "SSH connection test successful"'; then
+            echo "SSH connection test failed"
             exit 1
           fi
+          echo "SSH connection test passed"
 
-      - name: Deploy Laravel Application (excluding frontend build)
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Create deployment archive
         run: |
-          # Sanitize SSH_USERNAME by trimming whitespace
-          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          echo "Starting deployment with SSH connection resilience..."
+          echo "Creating deployment archive..."
+          # Create a clean deployment directory
+          rm -rf deploy_temp
+          mkdir -p deploy_temp
 
-          # Function to execute rsync with retry logic
-          rsync_with_retry() {
-            local source_path="$1"
-            local dest_path="$2"
-            local exclude_patterns="$3"
-            local max_retries=3
-            local retry_count=0
-            local base_delay=15  # Start with 15 seconds between attempts
-            local ssh_opts="-i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o BatchMode=yes"
+          # Copy all necessary files
+          cp -r ./* deploy_temp/
+          cp -r .[^.]* deploy_temp/ 2>/dev/null || true # Copy hidden files
 
-            # Add initial delay to let any transient conditions clear
-            echo "Waiting 10 seconds before starting deployment attempts..."
-            sleep 10
+          # Remove unnecessary files/directories
+          rm -rf deploy_temp/node_modules
+          rm -rf deploy_temp/frontend/node_modules
+          rm -rf deploy_temp/frontend/.cache
+          rm -rf deploy_temp/.git
+          rm -rf deploy_temp/.github
 
-            while [ $retry_count -lt $max_retries ]; do
-              attempt=$((retry_count+1))
-              echo "Rsync attempt $attempt/$max_retries: rsync -avz --delete $exclude_patterns -e \"ssh $ssh_opts\" $SANITIZED_SSH_USERNAME@$SSH_HOST:$dest_path"
+          # Create tarball
+          tar -czf deployment.tar.gz -C deploy_temp .
 
-              # Try the rsync operation
-              if rsync -avz --delete $exclude_patterns -e "ssh $ssh_opts" "$source_path" "$SANITIZED_SSH_USERNAME@$SSH_HOST:$dest_path"; then
-                echo "Rsync operation completed successfully on attempt $attempt"
-                return 0
-              else
-                exit_code=$?
-                echo "Rsync attempt $attempt failed with exit code: $exit_code"
+          # Cleanup
+          rm -rf deploy_temp
 
-                # Check if it's likely a timeout/connection issue
-                if [ $exit_code -eq 255 ] || [ $exit_code -eq 23 ]; then
-                  echo "  -> Likely connection timeout or network issue"
-                else
-                  echo "  -> Rsync returned exit code: $exit_code"
-                fi
+          echo "Deployment archive created successfully"
 
-                retry_count=$((retry_count+1))
-                if [ $retry_count -lt $max_retries ]; then
-                  # Exponential backoff: wait longer between each attempt
-                  wait_time=$((base_delay * (2 ** (retry_count - 1))))
-                  echo "Waiting $wait_time seconds before retry..."
-                  sleep $wait_time
-                fi
-              fi
-            done
-
-            echo "Rsync operation failed after $max_retries attempts"
-            return 1
-          }
-
-          # Define exclude patterns - we'll handle frontend build separately
-          exclude_patterns="--exclude='.env' --exclude='.git' --exclude='frontend/node_modules' --exclude='frontend/.cache'"
-
-          # Deploy Laravel application (exclude frontend source since we'll deploy built version)
-          rsync_with_retry "./" "/home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/" "$exclude_patterns --exclude='frontend/src' --exclude='frontend/package*.json' --exclude='frontend/public' --exclude='frontend/vite.config.js' --exclude='frontend/tailwind.config.js' --exclude='frontend/postcss.config.js' --exclude='frontend/index.html'" || {
-            echo "Failed to deploy Laravel application"
-            exit 1
-          }
-
-      - name: Deploy React Frontend Build
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy application
         run: |
-          # Sanitize SSH_USERNAME by trimming whitespace
-          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          echo "Deploying React frontend build..."
+          echo "Uploading deployment archive..."
+          scp -P ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no deployment.tar.gz ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/tmp/
 
-          # Function to execute rsync with retry logic
-          rsync_with_retry() {
-            local source_path="$1"
-            local dest_path="$2"
-            local max_retries=3
-            local retry_count=0
-            local base_delay=15  # Start with 15 seconds between attempts
-            local ssh_opts="-i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o BatchMode=yes"
+          echo "Extracting and deploying application..."
+          ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "
+            set -e
+            echo 'Starting deployment process...'
 
-            # Add initial delay to let any transient conditions clear
-            echo "Waiting 10 seconds before starting deployment attempts..."
-            sleep 10
+            # Create target directory
+            TARGET_DIR='/home/${{ secrets.SSH_USERNAME }}/domains/arbitercoffeeshop.com/public_html'
+            mkdir -p \"$TARGET_DIR\"
 
-            while [ $retry_count -lt $max_retries ]; do
-              attempt=$((retry_count+1))
-              echo "Rsync attempt $attempt/$max_retries: rsync -avz --delete -e \"ssh $ssh_opts\" $SANITIZED_SSH_USERNAME@$SSH_HOST:$dest_path"
+            # Extract archive
+            echo 'Extracting archive...'
+            tar -xzf /tmp/deployment.tar.gz -C \"$TARGET_DIR\"
+            rm /tmp/deployment.tar.gz
 
-              # Try the rsync operation
-              if rsync -avz --delete -e "ssh $ssh_opts" "$source_path" "$SANITIZED_SSH_USERNAME@$SSH_HOST:$dest_path"; then
-                echo "Rsync operation completed successfully on attempt $attempt"
-                return 0
-              else
-                exit_code=$?
-                echo "Rsync attempt $attempt failed with exit code: $exit_code"
+            # Set permissions
+            echo 'Setting permissions...'
+            find \"$TARGET_DIR\" -type f -exec chmod 644 {} \;
+            find \"$TARGET_DIR\" -type d -exec chmod 755 {} \;
 
-                # Check if it's likely a timeout/connection issue
-                if [ $exit_code -eq 255 ] || [ $exit_code -eq 23 ]; then
-                  echo "  -> Likely connection timeout or network issue"
-                else
-                  echo "  -> Rsync returned exit code: $exit_code"
-                fi
+            # Ensure storage and bootstrap/cache directories are writable
+            chmod -R 775 \"$TARGET_DIR/storage\" \"$TARGET_DIR/bootstrap/cache\"
 
-                retry_count=$((retry_count+1))
-                if [ $retry_count -lt $max_retries ]; then
-                  # Exponential backoff: wait longer between each attempt
-                  wait_time=$((base_delay * (2 ** (retry_count - 1))))
-                  echo "Waiting $wait_time seconds before retry..."
-                  sleep $wait_time
-                fi
-              fi
-            done
+            # Try to set ownership if possible (ignore if not permitted)
+            chown -R ${{ secrets.SSH_USERNAME }}:${{ secrets.SSH_USERNAME }} \"$TARGET_DIR/storage\" \"$TARGET_DIR/bootstrap/cache\" 2>/dev/null || echo 'Warning: Could not set ownership on storage/cache, continuing...'
 
-            echo "Rsync operation failed after $max_retries attempts"
-            return 1
-          }
-
-          # Deploy React build to public/build directory
-          rsync_with_retry "frontend/build/" "/home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/public/build/" || {
-            echo "Failed to deploy React frontend build"
-            exit 1
-          }
-
-          echo "Frontend deployment completed successfully"
-
-      - name: Verify deployment directory
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          # Sanitize SSH_USERNAME by trimming whitespace
-          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]//' -e 's/[[:space:]]*$//')
-          echo "Checking deployed files..."
-          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SANITIZED_SSH_USERNAME@$SSH_HOST "
-            echo '=== Main directory ===' && ls -la /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/ | head -20 &&
-            echo '=== Public directory ===' && ls -la /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/public/ &&
-            echo '=== Build directory ===' && ls -la /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/public/build/ | head -10
-          "
-
-      - name: Setup Environment File
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          # Sanitize SSH_USERNAME by trimming whitespace
-          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          echo "Setting up .env file on server..."
-          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SANITIZED_SSH_USERNAME@$SSH_HOST "
-            # Navigate to the project directory
-            cd /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/
-
-            # Ensure bootstrap/cache directory exists and is writable
-            mkdir -p bootstrap/cache
-            chmod -R 775 bootstrap/cache
-            chown -R $SANITIZED_SSH_USERNAME:$SANITIZED_SSH_USERNAME bootstrap/cache || echo \"Warning: Could not set ownership of bootstrap/cache, continuing anyway\"
-
-            # Check if .env file exists
-            if [ ! -f .env ]; then
-              echo \"Creating .env file from .env.example...\"
-              cp .env.example .env
-            fi
-
-            # Ensure APP_KEY is set
-            if ! grep -q '^APP_KEY=' .env || grep -q '^APP_KEY=$' .env; then
-              echo \"Generating APP_KEY...\"
-              KEY_OUTPUT=\$(php artisan key:generate --show)
-              # Check if APP_KEY line exists, if not append it
-              if grep -q '^APP_KEY=' .env; then
-                sed -i \"s/^APP_KEY=.*/APP_KEY=$KEY_OUTPUT/\" .env
-              else
-                echo \"APP_KEY=$KEY_OUTPUT\" >> .env
-              fi
-            fi
-
-            # Ensure CORS_ALLOWED_ORIGINS is set correctly
-            if ! grep -q '^CORS_ALLOWED_ORIGINS=' .env; then
-              echo \"Adding CORS_ALLOWED_ORIGINS to .env\"
-              echo \"CORS_ALLOWED_ORIGINS=https://arbitercoffeeshop.com\" >> .env
-            else
-              sed -i 's|^CORS_ALLOWED_ORIGINS=.*|CORS_ALLOWED_ORIGINS=https://arbitercoffeeshop.com|' .env
-            fi
-
-            # Ensure SANCTUM_STATEFUL_DOMAINS is set correctly (this needs to be domain without protocol for Sanctum)
-            if ! grep -q '^SANCTUM_STATEFUL_DOMAINS=' .env; then
-              echo \"Adding SANCTUM_STATEFUL_DOMAINS to .env\"
-              echo \"SANCTUM_STATEFUL_DOMAINS=arbitercoffeeshop.com\" >> .env
-            else
-              sed -i 's|^SANCTUM_STATEFUL_DOMAINS=.*|SANCTUM_STATEFUL_DOMAINS=arbitercoffeeshop.com|' .env
-            fi
-
-            # Ensure APP_URL is set correctly (single domain)
-            if ! grep -q '^APP_URL=' .env; then
-              echo \"Adding APP_URL to .env\"
-              echo \"APP_URL=https://arbitercoffeeshop.com\" >> .env
-            else
-              sed -i 's|^APP_URL=.*|APP_URL=https://arbitercoffeeshop.com|' .env
-            fi
-
-            # Ensure FRONTEND_URL is set correctly (same as APP_URL for single domain)
-            if ! grep -q '^FRONTEND_URL=' .env; then
-              echo \"Adding FRONTEND_URL to .env\"
-              echo \"FRONTEND_URL=https://arbitercoffeeshop.com\" >> .env
-            else
-              sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=https://arbitercoffeeshop.com|' .env
-            fi
-
-            # Ensure APP_ENV is set correctly
-            if ! grep -q '^APP_ENV=' .env; then
-              echo \"Adding APP_ENV to .env\"
-              echo \"APP_ENV=production\" >> .env
-            else
-              sed -i 's|^APP_ENV=.*|APP_ENV=production|' .env
-            fi
-
-            # Ensure APP_DEBUG is set correctly for production
-            if ! grep -q '^APP_DEBUG=' .env; then
-              echo \"Adding APP_DEBUG to .env\"
-              echo \"APP_DEBUG=false\" >> .env
-            else
-              sed -i 's|^APP_DEBUG=.*|APP_DEBUG=false|' .env
-            fi
-
-            echo \".env file setup complete.\"
-          "
-
-      - name: Ensure bootstrap/cache directory exists and is writable
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          # Sanitize SSH_USERNAME by trimming whitespace
-          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          echo "Ensuring bootstrap/cache directory exists and is writable with connection resilience..."
-
-          # Function to execute SSH commands with retry logic
-          ssh_with_retry() {
-            local remote_command="$1"
-            local max_retries=3
-            local retry_count=0
-            local base_delay=15  # Start with 15 seconds between attempts
-            local ssh_opts="-i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o BatchMode=yes"
-
-            # Add initial delay to let any transient conditions clear
-            echo "Waiting 10 seconds before starting connection attempts..."
-            sleep 10
-
-            while [ $retry_count -lt $max_retries ]; do
-              attempt=$((retry_count+1))
-              echo "SSH attempt $attempt/$max_retries: ssh $ssh_opts $SANITIZED_SSH_USERNAME@$SSH_HOST \"$remote_command\""
-
-              # Try the SSH operation
-              if ssh $ssh_opts "$SANITIZED_SSH_USERNAME@$SSH_HOST" "$remote_command"; then
-                echo "SSH command executed successfully on attempt $attempt"
-                return 0
-              else
-                exit_code=$?
-                echo "SSH attempt $attempt failed with exit code: $exit_code"
-
-                # Check if it's likely a timeout/connection issue
-                if [ $exit_code -eq 255 ]; then
-                  echo "  -> Likely connection timeout or network issue"
-                else
-                  echo "  -> SSH returned exit code: $exit_code"
-                fi
-
-                retry_count=$((retry_count+1))
-                if [ $retry_count -lt $max_retries ]; then
-                  # Exponential backoff: wait longer between each attempt
-                  wait_time=$((base_delay * (2 ** (retry_count - 1))))
-                  echo "Waiting $wait_time seconds before retry..."
-                  sleep $wait_time
-                fi
-              fi
-            done
-
-            echo "SSH command failed after $max_retries attempts"
-            return 1
-          }
-
-          # Define the remote command to execute
-          REMOTE_COMMAND="
-            # Create the directory if it doesn't exist
-            mkdir -p /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/bootstrap/cache &&
-
-            # Ensure directory is writable
-            chmod -R 775 /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/bootstrap/cache &&
-
-            # Try to set ownership, but don't fail if we don't have permission
-            chown -R $SANITIZED_SSH_USERNAME:$SANITIZED_SSH_USERNAME /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/bootstrap/cache || echo \"Warning: Could not set ownership, continuing anyway\"
-          "
-
-          # Execute the remote command with retry logic
-          ssh_with_retry "$REMOTE_COMMAND" || {
-            echo "Failed to ensure/bootstrap/cache directory exists and is writable"
-            exit 1
-          }
-
-          echo "Bootstrap/cache directory setup completed successfully"
-      - name: Run Post-Deployment Commands via SSH (with verbose output for debugging)
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          # Sanitize SSH_USERNAME by trimming whitespace
-          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          echo "Running post-deployment commands with verbose output for debugging..."
-
-          # Function to execute SSH commands with retry logic
-          ssh_with_retry() {
-            local remote_command="$1"
-            local max_retries=3
-            local retry_count=0
-            local base_delay=15  # Start with 15 seconds between attempts
-            local ssh_opts="-i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o BatchMode=yes"
-
-            # Add initial delay to let any transient conditions clear
-            echo "Waiting 10 seconds before starting SSH command attempts..."
-            sleep 10
-
-            while [ $retry_count -lt $max_retries ]; do
-              attempt=$((retry_count+1))
-              echo "SSH attempt $attempt/$max_retries: Executing remote command"
-
-              # Try the SSH operation with the provided command
-              if ssh $ssh_opts "$SANITIZED_SSH_USERNAME@$SSH_HOST" "$remote_command"; then
-                echo "SSH command executed successfully on attempt $attempt"
-                return 0
-              else
-                exit_code=$?
-                echo "SSH attempt $attempt failed with exit code: $exit_code"
-
-                # Check if it's likely a timeout/connection issue
-                if [ $exit_code -eq 255 ]; then
-                  echo "  -> Likely connection timeout or network issue"
-                else
-                  echo "  -> SSH returned exit code: $exit_code"
-                fi
-
-                retry_count=$((retry_count+1))
-                if [ $retry_count -lt $max_retries ]; then
-                  # Exponential backoff: wait longer between each attempt
-                  wait_time=$((base_delay * (2 ** (retry_count - 1))))
-                  echo "Waiting $wait_time seconds before retry..."
-                  sleep $wait_time
-                fi
-              fi
-            done
-
-            echo "SSH command failed after $max_retries attempts"
-            return 1
-          }
-
-          # Define the remote commands to execute
-          REMOTE_COMMANDS="
-            cd /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html &&
-
-            # Verify .env file exists and is readable
-            if [ ! -f .env ]; then
-              echo 'ERROR: .env file not found - cannot proceed'
+            # Ensure .env file exists and has correct permissions
+            if [ ! -f \"$TARGET_DIR/.env\" ]; then
+              echo 'Error: .env file not found after extraction!'
               exit 1
             fi
-            if [ ! -s .env ]; then
-              echo 'ERROR: .env file is empty - cannot proceed'
-              exit 1
-            fi
-            if [ ! -r .env ]; then
-              echo 'ERROR: .env file is not readable - cannot proceed'
-              exit 1
-            fi
-            # Check for basic .env validity (at least one key=value pair outside comments)
-            if ! grep -v '^#' .env | grep -q '='; then
-              echo 'ERROR: .env file appears to have invalid format - no valid key=value pairs found'
-              exit 1
-            fi
-            # Validate .env file syntax using Symfony Dotenv component
-            if ! php -r 'require __DIR__ . \"/vendor/autoload.php\"; try { Dotenv\Dotenv::createImmutable(__DIR__, \".env\")->load(); } catch (Exception \$e) { echo \".env file is invalid: \" . \$e->getMessage(); exit(1); }'; then
-              exit 1
-            fi
-            # Ensure proper permissions and ownership
-            chmod 644 .env
-            chown $SANITIZED_SSH_USERNAME:$SANITIZED_SSH_USERNAME .env || echo 'Warning: Could not set ownership of .env, continuing anyway'
-            echo 'Environment file verified and permissions set'
+            chmod 644 \"$TARGET_DIR/.env\" || echo 'Warning: Could not set .env permissions'
 
-            # Clear existing caches first, then create fresh ones
-            php artisan optimize:clear -vvv &&
-            php artisan config:cache -vvv &&
-            php artisan route:cache -vvv &&
-            php artisan view:cache -vvv &&
-            # Run database migrations
-            php artisan migrate --force -vvv &&
+            # Navigate to project directory
+            cd \"$TARGET_DIR\"
+
+            # Clear and cache configuration
+            echo 'Clearing caches...'
+            php artisan optimize:clear --no-interaction
+
+            echo 'Caching configuration...'
+            php artisan config:cache --no-interaction
+
+            echo 'Caching routes...'
+            php artisan route:cache --no-interaction
+
+            echo 'Caching views...'
+            php artisan view:cache --no-interaction
+
+            # Run migrations
+            echo 'Running database migrations...'
+            php artisan migrate --force --no-interaction
+
             # Run seeders
-            php artisan db:seed --force -vvv &&
-            echo 'Deployment completed successfully'
-          "
+            echo 'Running database seeders...'
+            php artisan db:seed --force --no-interaction
 
-          # Execute the remote commands with retry logic
-          ssh_with_retry "$REMOTE_COMMANDS" || {
-            echo "Failed to execute post-deployment commands via SSH"
+            echo 'Deployment completed successfully!'
+          " || {
+            echo 'Deployment failed during remote execution'
             exit 1
           }
+
+          echo "Deploy completed successfully"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f deployment.tar.gz
