@@ -201,6 +201,12 @@ jobs:
               fi
             fi
 
+            # Ensure .env file ends with a newline (required for Laravel)
+            if [ "$(tail -c1 \"\$TARGET_DIR/.env\")" != "" ]; then
+              echo >> \"\$TARGET_DIR/.env\"
+              echo 'Added missing newline to .env file'
+            fi
+
             # Navigate to project directory
             cd \"\$TARGET_DIR\"
 
