@@ -107,15 +107,15 @@ jobs:
           # Sanitize SSH_USERNAME by trimming whitespace
           SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
           echo "Validating SSH connection settings..."
-          if [ -z "$SSH_HOST" ]; then
+          if [ -z "$SSH_HOST"]; then
             echo "Error: SSH_HOST secret is empty or not set"
             exit 1
           fi
-          if [ -z "$SSH_PORT" ]; then
+          if [ -z "$SSH_PORT"]; then
             echo "Error: SSH_PORT script is empty or not set"
             exit 1
           fi
-          if [ -z "$SANITIZED_SSH_USERNAME" ]; then
+          if [ -z "$SANITIZED_SSH_USERNAME"]; then
             echo "Error: SSH_USERNAME secret is empty or not set"
             echo "Please set the SSH_USERNAME secret in your repository settings."
             exit 1
@@ -367,7 +367,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           # Sanitize SSH_USERNAME by trimming whitespace
-          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]//' -e 's/[[:space:]]*$//')
           echo "Checking deployed files..."
           ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SANITIZED_SSH_USERNAME@$SSH_HOST "
             echo '=== Main directory ===' && ls -la /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/ | head -20 &&
@@ -533,12 +533,12 @@ jobs:
 
           # Execute the remote command with retry logic
           ssh_with_retry "$REMOTE_COMMAND" || {
-            echo "Failed to ensure bootstrap/cache directory exists and is writable"
+            echo "Failed to ensure/bootstrap/cache directory exists and is writable"
             exit 1
           }
 
           echo "Bootstrap/cache directory setup completed successfully"
-      - name: Run Post-Deployment Commands via SSH
+      - name: Run Post-Deployment Commands via SSH (with verbose output for debugging)
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -547,7 +547,7 @@ jobs:
         run: |
           # Sanitize SSH_USERNAME by trimming whitespace
           SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-          echo "Running post-deployment commands with SSH connection resilience..."
+          echo "Running post-deployment commands with verbose output for debugging..."
 
           # Function to execute SSH commands with retry logic
           ssh_with_retry() {
@@ -626,14 +626,14 @@ jobs:
             echo 'Environment file verified and permissions set'
 
             # Clear existing caches first, then create fresh ones
-            php artisan optimize:clear &&
-            php artisan config:cache &&
-            php artisan route:cache &&
-            php artisan view:cache &&
+            php artisan optimize:clear -vvv &&
+            php artisan config:cache -vvv &&
+            php artisan route:cache -vvv &&
+            php artisan view:cache -vvv &&
             # Run database migrations
-            php artisan migrate --force &&
+            php artisan migrate --force -vvv &&
             # Run seeders
-            php artisan db:seed --force &&
+            php artisan db:seed --force -vvv &&
             echo 'Deployment completed successfully'
           "
 
