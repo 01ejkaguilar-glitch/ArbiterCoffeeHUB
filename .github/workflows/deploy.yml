@@ -1,5 +1,5 @@
-# Workflow manually triggered at: $(date)
-name: Deploy to Hostinger
+# Workflow for Laravel + React single-domain deployment
+name: Deploy to Hostinger (Single Domain)
 
 on:
   push:
@@ -15,7 +15,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.2'
           extensions: mbstring, intl, bcmath, xml
           coverage: none
 
@@ -28,7 +28,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          composer install --prefer-dist --optimize-autoloader
+          composer install --prefer-dist --optimize-autoloader --no-interaction --no-progress
           cd frontend && npm install --legacy-peer-deps && npm run build
 
       - name: Debug SSH secret length
@@ -223,7 +223,7 @@ jobs:
             exit 1
           fi
 
-      - name: Deploy via Rsync (Incremental)
+      - name: Deploy Laravel Application (excluding frontend build)
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -231,48 +231,40 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           echo "Starting deployment with SSH connection resilience..."
-          
-          # Deploy Laravel backend (only changed files)
-          echo "Deploying Laravel backend..."
-          # Function to execute rsync with retry logic for backend
-          rsync_backend_with_retry() {
+
+          # Function to execute rsync with retry logic
+          rsync_with_retry() {
             local source_path="$1"
             local dest_path="$2"
+            local exclude_patterns="$3"
             local max_retries=3
             local retry_count=0
             local base_delay=15  # Start with 15 seconds between attempts
             local ssh_opts="-i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o BatchMode=yes"
-            
+
             # Add initial delay to let any transient conditions clear
-            echo "Waiting 10 seconds before starting backend deployment attempts..."
+            echo "Waiting 10 seconds before starting deployment attempts..."
             sleep 10
-            
+
             while [ $retry_count -lt $max_retries ]; do
               attempt=$((retry_count+1))
-              echo "Backend rsync attempt $attempt/$max_retries: rsync -avz --delete --exclude='.env' --exclude='.git' --exclude='node_modules' --exclude='frontend/' --exclude='frontend/node_modules' --exclude='frontend/.cache' -e \"ssh $ssh_opts\" $source_path $SSH_USERNAME@$SSH_HOST:$dest_path"
-              
+              echo "Rsync attempt $attempt/$max_retries: rsync -avz --delete $exclude_patterns -e \"ssh $ssh_opts\" $source_path $SSH_USERNAME@$SSH_HOST:$dest_path"
+
               # Try the rsync operation
-              if rsync -avz --delete \
-                --exclude='.env' \
-                --exclude='.git' \
-                --exclude='node_modules' \
-                --exclude='frontend/' \
-                --exclude='frontend/node_modules' \
-                --exclude='frontend/.cache' \
-                -e "ssh $ssh_opts" "$source_path" "$SSH_USERNAME@$SSH_HOST:$dest_path"; then
-                echo "Backend rsync operation completed successfully on attempt $attempt"
+              if rsync -avz --delete $exclude_patterns -e "ssh $ssh_opts" "$source_path" "$SSH_USERNAME@$SSH_HOST:$dest_path"; then
+                echo "Rsync operation completed successfully on attempt $attempt"
                 return 0
               else
                 exit_code=$?
-                echo "Backend rsync attempt $attempt failed with exit code: $exit_code"
-                
+                echo "Rsync attempt $attempt failed with exit code: $exit_code"
+
                 # Check if it's likely a timeout/connection issue
                 if [ $exit_code -eq 255 ] || [ $exit_code -eq 23 ]; then
                   echo "  -> Likely connection timeout or network issue"
                 else
                   echo "  -> Rsync returned exit code: $exit_code"
                 fi
-                
+
                 retry_count=$((retry_count+1))
                 if [ $retry_count -lt $max_retries ]; then
                   # Exponential backoff: wait longer between each attempt
@@ -282,54 +274,61 @@ jobs:
                 fi
               fi
             done
-            
-            echo "Backend rsync operation failed after $max_retries attempts"
+
+            echo "Rsync operation failed after $max_retries attempts"
             return 1
           }
-          
-          # Deploy Laravel backend (only changed files)
-          rsync_backend_with_retry "./" "/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/" || {
-            echo "Failed to deploy Laravel backend"
+
+          # Define exclude patterns - we'll handle frontend build separately
+          local exclude_patterns="--exclude='.env' --exclude='.git' --exclude='frontend/node_modules' --exclude='frontend/.cache'"
+
+          # Deploy Laravel application (exclude frontend source since we'll deploy built version)
+          rsync_with_retry "./" "/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/" "$exclude_patterns --exclude='frontend/src' --exclude='frontend/package*.json' --exclude='frontend/public' --exclude='frontend/vite.config.js' --exclude='frontend/tailwind.config.js' --exclude='frontend/postcss.config.js' --exclude='frontend/index.html'" || {
+            echo "Failed to deploy Laravel application"
             exit 1
           }
-          
-          # Deploy React frontend build (only changed files)
+
+      - name: Deploy React Frontend Build
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
           echo "Deploying React frontend build..."
-          # Function to execute rsync with retry logic for frontend
-          rsync_frontend_with_retry() {
+
+          # Function to execute rsync with retry logic
+          rsync_with_retry() {
             local source_path="$1"
             local dest_path="$2"
             local max_retries=3
             local retry_count=0
             local base_delay=15  # Start with 15 seconds between attempts
             local ssh_opts="-i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o BatchMode=yes"
-            
+
             # Add initial delay to let any transient conditions clear
-            echo "Waiting 10 seconds before starting frontend deployment attempts..."
+            echo "Waiting 10 seconds before starting deployment attempts..."
             sleep 10
-            
+
             while [ $retry_count -lt $max_retries ]; do
               attempt=$((retry_count+1))
-              echo "Frontend rsync attempt $attempt/$max_retries: rsync -avz --delete --exclude='.git' --exclude='api/' -e \"ssh $ssh_opts\" $source_path $SSH_USERNAME@$SSH_HOST:$dest_path"
-              
+              echo "Rsync attempt $attempt/$max_retries: rsync -avz --delete -e \"ssh $ssh_opts\" $source_path $SSH_USERNAME@$SSH_HOST:$dest_path"
+
               # Try the rsync operation
-              if rsync -avz --delete \
-                --exclude='.git' \
-                --exclude='api/' \
-                -e "ssh $ssh_opts" "$source_path" "$SSH_USERNAME@$SSH_HOST:$dest_path"; then
-                echo "Frontend rsync operation completed successfully on attempt $attempt"
+              if rsync -avz --delete -e "ssh $ssh_opts" "$source_path" "$SSH_USERNAME@$SSH_HOST:$dest_path"; then
+                echo "Rsync operation completed successfully on attempt $attempt"
                 return 0
               else
                 exit_code=$?
-                echo "Frontend rsync attempt $attempt failed with exit code: $exit_code"
-                
+                echo "Rsync attempt $attempt failed with exit code: $exit_code"
+
                 # Check if it's likely a timeout/connection issue
                 if [ $exit_code -eq 255 ] || [ $exit_code -eq 23 ]; then
                   echo "  -> Likely connection timeout or network issue"
                 else
                   echo "  -> Rsync returned exit code: $exit_code"
                 fi
-                
+
                 retry_count=$((retry_count+1))
                 if [ $retry_count -lt $max_retries ]; then
                   # Exponential backoff: wait longer between each attempt
@@ -339,18 +338,18 @@ jobs:
                 fi
               fi
             done
-            
-            echo "Frontend rsync operation failed after $max_retries attempts"
+
+            echo "Rsync operation failed after $max_retries attempts"
             return 1
           }
-          
-          # Deploy React frontend build (only changed files)
-          rsync_frontend_with_retry "frontend/build/" "/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/" || {
+
+          # Deploy React build to public/build directory
+          rsync_with_retry "frontend/build/" "/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/public/build/" || {
             echo "Failed to deploy React frontend build"
             exit 1
           }
-          
-          echo "Deployment completed successfully"
+
+          echo "Frontend deployment completed successfully"
 
       - name: Verify deployment directory
         env:
@@ -361,8 +360,9 @@ jobs:
         run: |
           echo "Checking deployed files..."
           ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
-            ls -la /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/
-            ls -la /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/
+            echo '=== Main directory ===' && ls -la /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/ | head -20 &&
+            echo '=== Public directory ===' && ls -la /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/public/ &&
+            echo '=== Build directory ===' && ls -la /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/public/build/ | head -10
           "
 
       - name: Setup Environment File
@@ -375,7 +375,7 @@ jobs:
           echo "Setting up .env file on server..."
           ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
             # Navigate to the project directory
-            cd /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/
+            cd /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/
 
             # Ensure bootstrap/cache directory exists and is writable
             mkdir -p bootstrap/cache
@@ -403,23 +403,23 @@ jobs:
               sed -i 's|^CORS_ALLOWED_ORIGINS=.*|CORS_ALLOWED_ORIGINS=https://arbitercoffeeshop.com|' .env
             fi
 
-            # Ensure SANCTUM_STATEFUL_DOMAINS is set correctly
+            # Ensure SANCTUM_STATEFUL_DOMAINS is set correctly (this needs to be domain without protocol for Sanctum)
             if ! grep -q '^SANCTUM_STATEFUL_DOMAINS=' .env; then
               echo \"Adding SANCTUM_STATEFUL_DOMAINS to .env\"
-              echo \"SANCTUM_STATEFUL_DOMAINS=arbitercoffeeshop.com,api.arbitercoffeeshop.com\" >> .env
+              echo \"SANCTUM_STATEFUL_DOMAINS=arbitercoffeeshop.com\" >> .env
             else
-              sed -i 's|^SANCTUM_STATEFUL_DOMAINS=.*|SANCTUM_STATEFUL_DOMAINS=arbitercoffeeshop.com,api.arbitercoffeeshop.com|' .env
+              sed -i 's|^SANCTUM_STATEFUL_DOMAINS=.*|SANCTUM_STATEFUL_DOMAINS=arbitercoffeeshop.com|' .env
             fi
 
-            # Ensure APP_URL is set correctly
+            # Ensure APP_URL is set correctly (single domain)
             if ! grep -q '^APP_URL=' .env; then
               echo \"Adding APP_URL to .env\"
-              echo \"APP_URL=https://api.arbitercoffeeshop.com\" >> .env
+              echo \"APP_URL=https://arbitercoffeeshop.com\" >> .env
             else
-              sed -i 's|^APP_URL=.*|APP_URL=https://api.arbitercoffeeshop.com|' .env
+              sed -i 's|^APP_URL=.*|APP_URL=https://arbitercoffeeshop.com|' .env
             fi
 
-            # Ensure FRONTEND_URL is set correctly
+            # Ensure FRONTEND_URL is set correctly (same as APP_URL for single domain)
             if ! grep -q '^FRONTEND_URL=' .env; then
               echo \"Adding FRONTEND_URL to .env\"
               echo \"FRONTEND_URL=https://arbitercoffeeshop.com\" >> .env
@@ -429,21 +429,21 @@ jobs:
 
             # Ensure APP_ENV is set correctly
             if ! grep -q '^APP_ENV=' .env; then
-              echo "Adding APP_ENV to .env"
-              echo "APP_ENV=production" >> .env
+              echo \"Adding APP_ENV to .env\"
+              echo \"APP_ENV=production\" >> .env
             else
               sed -i 's|^APP_ENV=.*|APP_ENV=production|' .env
             fi
 
             # Ensure APP_DEBUG is set correctly for production
             if ! grep -q '^APP_DEBUG=' .env; then
-              echo "Adding APP_DEBUG to .env"
-              echo "APP_DEBUG=false" >> .env
+              echo \"Adding APP_DEBUG to .env\"
+              echo \"APP_DEBUG=false\" >> .env
             else
               sed -i 's|^APP_DEBUG=.*|APP_DEBUG=false|' .env
             fi
 
-            echo ".env file setup complete."
+            echo \".env file setup complete.\"
           "
 
       - name: Ensure bootstrap/cache directory exists and is writable
@@ -454,7 +454,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           echo "Ensuring bootstrap/cache directory exists and is writable with connection resilience..."
-          
+
           # Function to execute SSH commands with retry logic
           ssh_with_retry() {
             local remote_command="$1"
@@ -462,15 +462,15 @@ jobs:
             local retry_count=0
             local base_delay=15  # Start with 15 seconds between attempts
             local ssh_opts="-i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o BatchMode=yes"
-            
+
             # Add initial delay to let any transient conditions clear
             echo "Waiting 10 seconds before starting connection attempts..."
             sleep 10
-            
+
             while [ $retry_count -lt $max_retries ]; do
               attempt=$((retry_count+1))
               echo "SSH attempt $attempt/$max_retries: ssh $ssh_opts $SSH_USERNAME@$SSH_HOST \"$remote_command\""
-              
+
               # Try the SSH operation
               if ssh $ssh_opts "$SSH_USERNAME@$SSH_HOST" "$remote_command"; then
                 echo "SSH command executed successfully on attempt $attempt"
@@ -478,14 +478,14 @@ jobs:
               else
                 exit_code=$?
                 echo "SSH attempt $attempt failed with exit code: $exit_code"
-                
+
                 # Check if it's likely a timeout/connection issue
                 if [ $exit_code -eq 255 ]; then
                   echo "  -> Likely connection timeout or network issue"
                 else
                   echo "  -> SSH returned exit code: $exit_code"
                 fi
-                
+
                 retry_count=$((retry_count+1))
                 if [ $retry_count -lt $max_retries ]; then
                   # Exponential backoff: wait longer between each attempt
@@ -495,29 +495,29 @@ jobs:
                 fi
               fi
             done
-            
+
             echo "SSH command failed after $max_retries attempts"
             return 1
           }
-          
+
           # Define the remote command to execute
           REMOTE_COMMAND="
             # Create the directory if it doesn't exist
-            mkdir -p /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/bootstrap/cache &&
+            mkdir -p /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/bootstrap/cache &&
 
             # Ensure directory is writable
-            chmod -R 775 /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/bootstrap/cache &&
+            chmod -R 775 /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/bootstrap/cache &&
 
             # Try to set ownership, but don't fail if we don't have permission
-            chown -R $SSH_USERNAME:$SSH_USERNAME /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api/bootstrap/cache || echo \"Warning: Could not set ownership, continuing anyway\"
+            chown -R $SSH_USERNAME:$SSH_USERNAME /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/bootstrap/cache || echo \"Warning: Could not set ownership, continuing anyway\"
           "
-          
+
           # Execute the remote command with retry logic
           ssh_with_retry "$REMOTE_COMMAND" || {
             echo "Failed to ensure bootstrap/cache directory exists and is writable"
             exit 1
           }
-          
+
           echo "Bootstrap/cache directory setup completed successfully"
       - name: Run Post-Deployment Commands via SSH
         env:
@@ -527,7 +527,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           echo "Running post-deployment commands with SSH connection resilience..."
-          
+
           # Function to execute SSH commands with retry logic
           ssh_with_retry() {
             local remote_command="$1"
@@ -535,15 +535,15 @@ jobs:
             local retry_count=0
             local base_delay=15  # Start with 15 seconds between attempts
             local ssh_opts="-i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o BatchMode=yes"
-            
+
             # Add initial delay to let any transient conditions clear
             echo "Waiting 10 seconds before starting SSH command attempts..."
             sleep 10
-            
+
             while [ $retry_count -lt $max_retries ]; do
               attempt=$((retry_count+1))
               echo "SSH attempt $attempt/$max_retries: Executing remote command"
-              
+
               # Try the SSH operation with the provided command
               if ssh $ssh_opts "$SSH_USERNAME@$SSH_HOST" "$remote_command"; then
                 echo "SSH command executed successfully on attempt $attempt"
@@ -551,14 +551,14 @@ jobs:
               else
                 exit_code=$?
                 echo "SSH attempt $attempt failed with exit code: $exit_code"
-                
+
                 # Check if it's likely a timeout/connection issue
                 if [ $exit_code -eq 255 ]; then
                   echo "  -> Likely connection timeout or network issue"
                 else
                   echo "  -> SSH returned exit code: $exit_code"
                 fi
-                
+
                 retry_count=$((retry_count+1))
                 if [ $retry_count -lt $max_retries ]; then
                   # Exponential backoff: wait longer between each attempt
@@ -568,14 +568,14 @@ jobs:
                 fi
               fi
             done
-            
+
             echo "SSH command failed after $max_retries attempts"
             return 1
           }
-          
+
           # Define the remote commands to execute
           REMOTE_COMMANDS="
-            cd /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/api &&
+            cd /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html &&
 
             # Verify .env file exists and is readable
             if [ ! -f .env ]; then
@@ -596,7 +596,7 @@ jobs:
               exit 1
             fi
             # Validate .env file syntax using Symfony Dotenv component
-            if ! php -r 'require __DIR__ . "/vendor/autoload.php"; try { Dotenv\Dotenv::createImmutable(__DIR__, ".env")->load(); } catch (Exception \$e) { echo ".env file is invalid: " . \$e->getMessage(); exit(1); }'; then
+            if ! php -r 'require __DIR__ . \"/vendor/autoload.php\"; try { Dotenv\Dotenv::createImmutable(__DIR__, \".env\")->load(); } catch (Exception \$e) { echo \".env file is invalid: \" . \$e->getMessage(); exit(1); }'; then
               exit 1
             fi
             # Ensure proper permissions and ownership
