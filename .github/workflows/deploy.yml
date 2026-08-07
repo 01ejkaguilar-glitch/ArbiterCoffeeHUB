@@ -28,7 +28,8 @@ jobs:
           echo "SSH_USERNAME=$(echo '${{ secrets.SSH_USERNAME }}' | xargs)" >> $GITHUB_ENV
           echo "SSH_HOST=$(echo '${{ secrets.SSH_HOST }}' | xargs)" >> $GITHUB_ENV
           echo "SSH_PORT=$(echo '${{ secrets.SSH_PORT }}' | xargs)" >> $GITHUB_ENV
-          echo "SSH_PRIVATE_KEY=$(echo '${{ secrets.SSH_PRIVATE_KEY }}' | xargs)" >> $GITHUB_ENV
+          # Trim whitespace and newlines from private key
+          echo "SSH_PRIVATE_KEY=$(echo '${{ secrets.SSH_PRIVATE_KEY }}' | tr -d '\n' | xargs)" >> $GITHUB_ENV
 
       - name: Build React frontend
         run: |
@@ -70,16 +71,21 @@ jobs:
           mkdir -p ~/.ssh
           echo "Created ~/.ssh directory successfully"
 
-          # Handle SSH private key using heredoc to avoid shell interpretation of key content
+          # Handle SSH private key - ensure no leading/trailing whitespace
           if [ -z "$SSH_PRIVATE_KEY" ]; then
             echo "Error: SSH_PRIVATE_KEY secret is empty or not set"
             exit 1
           fi
 
+          # Validate that it looks like a private key
+          if ! echo "$SSH_PRIVATE_KEY" | grep -q "-----BEGIN.*PRIVATE KEY-----"; then
+            echo "Error: SSH_PRIVATE_KEY does not appear to be a valid private key"
+            exit 1
+          fi
+
           echo "Writing SSH private key to file..."
-          cat > ~/.ssh/id_rsa << EOF
-          $SSH_PRIVATE_KEY
-          EOF
+          # Write key without adding extra whitespace/newlines
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           echo "SSH private key written to file"
 
           chmod 600 ~/.ssh/id_rsa

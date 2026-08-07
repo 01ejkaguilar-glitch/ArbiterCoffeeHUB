@@ -32,7 +32,7 @@ The application is deployed using GitHub Actions with the workflow defined in `.
 
 7. **Set Up SSH Connection**
    - Creates ~/.ssh directory
-   - Writes SSH private key to ~/.ssh/id_rsa using heredoc to prevent shell interpretation
+   - Writes SSH private key to ~/.ssh/id_rsa using printf to avoid shell interpretation
    - Sets proper permissions (600) on the private key
    - Validates all SSH variables are set
    - Adds Hostinger host to known hosts using ssh-keyscan
