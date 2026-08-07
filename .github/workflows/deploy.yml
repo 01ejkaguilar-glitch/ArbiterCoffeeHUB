@@ -280,7 +280,7 @@ jobs:
           }
 
           # Define exclude patterns - we'll handle frontend build separately
-          local exclude_patterns="--exclude='.env' --exclude='.git' --exclude='frontend/node_modules' --exclude='frontend/.cache'"
+          exclude_patterns="--exclude='.env' --exclude='.git' --exclude='frontend/node_modules' --exclude='frontend/.cache'"
 
           # Deploy Laravel application (exclude frontend source since we'll deploy built version)
           rsync_with_retry "./" "/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/" "$exclude_patterns --exclude='frontend/src' --exclude='frontend/package*.json' --exclude='frontend/public' --exclude='frontend/vite.config.js' --exclude='frontend/tailwind.config.js' --exclude='frontend/postcss.config.js' --exclude='frontend/index.html'" || {
@@ -398,7 +398,7 @@ jobs:
             # Ensure CORS_ALLOWED_ORIGINS is set correctly
             if ! grep -q '^CORS_ALLOWED_ORIGINS=' .env; then
               echo \"Adding CORS_ALLOWED_ORIGINS to .env\"
-              echo \"CORS_ALLOWED_ORIGINS=https://arbitercoffeeshop.com\" >> .env
+              echo \"CORS_ALLOWED_ORIGINS=https://arbitercoffeeshop.com\" >> .venv
             else
               sed -i 's|^CORS_ALLOWED_ORIGINS=.*|CORS_ALLOWED_ORIGINS=https://arbitercoffeeshop.com|' .env
             fi
