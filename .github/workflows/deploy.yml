@@ -77,7 +77,7 @@ jobs:
           fi
 
           echo "Writing SSH private key to file..."
-          cat > ~/.ssh/id_rsa << 'EOF'
+          cat > ~/.ssh/id_rsa << EOF
 $SSH_PRIVATE_KEY
 EOF
           echo "SSH private key written to file"
