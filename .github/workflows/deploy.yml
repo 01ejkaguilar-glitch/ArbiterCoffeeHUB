@@ -195,14 +195,14 @@ jobs:
               KEY_OUTPUT=$(php artisan key:generate --show)
               # Check if APP_KEY line exists, if not append it
               if grep -q '^APP_KEY=' \"\$TARGET_DIR/.env\"; then
-                sed -i \"s/^APP_KEY=.*/APP_KEY=$KEY_OUTPUT/\" \"\$TARGET_DIR/.env\"
+                sed -i \"s/^APP_KEY=.*/APP_KEY=\$KEY_OUTPUT/\" \"\$TARGET_DIR/.env\"
               else
-                echo \"APP_KEY=$KEY_OUTPUT\" >> \"\$TARGET_DIR/.env\"
+                echo \"APP_KEY=\$KEY_OUTPUT\" >> \"\$TARGET_DIR/.env\"
               fi
             fi
 
             # Ensure .env file ends with a newline (required for Laravel)
-            if [ "$(tail -c1 $TARGET_DIR/.env)" != "" ]; then
+            if [ "$(tail -c1 \$TARGET_DIR/.env)" != "" ]; then
               echo >> \"\$TARGET_DIR/.env\"
               echo 'Added missing newline to .env file'
             fi
@@ -220,7 +220,7 @@ jobs:
                   echo '.env file is not readable!'
                 fi
                 # Check if the file ends with a newline (common issue)
-                if [ "$(tail -c1 .env)" != "" ]; then
+                if [ -s .env ] && [ "$(tail -c1 .env)" != $'\n' ]; then
                   echo '.env file does not end with a newline'
                 fi
               else
