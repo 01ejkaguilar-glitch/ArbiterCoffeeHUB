@@ -1,0 +1,146 @@
+The issue preventing Laravel from booting correctly on the subdomain (api.arbitercoffeeshop.com) is that the facade application instance is not being set. This results in the error: "Uncaught RuntimeException: A facade root has not been set."
+
+To fix this, edit the file:
+/home/u576753664/domains/arbitercoffeeshop.com/public_html/api/bootstrap/app.php
+
+Change the final return statement from:
+    return Application::configure(basePath: dirname(__DIR__))
+        ->withRouting(...)
+        ->withBroadcasting(...)
+        ->withMiddleware(...)
+        ->withExceptions(...)
+        ->withSchedule(...)
+        ->create();
+
+To:
+    $app = Application::configure(basePath: dirname(__DIR__))
+        ->withRouting(
+            web: __DIR__ . '/../routes/web.php',
+            api: __DIR__ . '/../routes/api.php',
+            commands: __DIR__ . '/../routes/console.php',
+            health: '/up',
+        )
+        ->withBroadcasting(
+            channels: __DIR__ . '/../routes/channels.php',
+        )
+        ->withMiddleware(function (Middleware $middleware): void {
+            // Register Spatie Permission middleware aliases
+            $middleware->alias([
+                'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+                'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+                'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+                'cache.response' => \App\Http\Middleware\CacheResponse::class,
+                'throttle.user' => \App\Http\Middleware\ThrottleByUser::class,
+                'auth.token-refresh' => \App\Http\Middleware\TokenRefreshMiddleware::class,
+            ]);
+
+            // Register Prerender middleware for web routes
+            $middleware->web(append: [
+                \App\Http\Middleware\PrerenderMiddleware::class,
+                \App\Http\Middleware\HttpsRedirectMiddleware::class,
+            ]);
+
+            // Register API performance monitoring and compression middleware
+            $middleware->api(append: [
+                \App\Http\Middleware\ApiPerformanceMonitor::class,
+                \App\Http\Middleware\CompressResponse::class,
+                \App\Http\Middleware\SecurityHeaders::class,
+            ]);
+        })
+        ->withExceptions(function (Exceptions $exceptions): void {
+            $getStatusCode = function (Throwable $e): int {
+                if (method_exists($e, 'getStatusCode')) {
+                    return $e->getStatusCode();
+                }
+
+                if ($e instanceof \Illuminate\Auth\AuthenticationException) {
+                    return 401;
+                }
+
+                if ($e instanceof \Illuminate\Auth\Access\AuthorizationException) {
+                    return 403;
+                }
+
+                if ($e instanceof \Illuminate\Validation\ValidationException) {
+                    return 422;
+                }
+
+                if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                    return 404;
+                }
+
+                return 500;
+            };
+
+            $exceptions->report(function (Throwable $e) {
+                // Temporarily disabled to debug container resolution issues
+                // $errorTracking = app(\App\Services\ErrorTrackingService::class);
+                // $req = app()->bound('request') ? request() : null;
+                // $errorTracking->logException($e, app()->bound('request') ? request() : null);
+                // Don't exit early - let the exception bubble up for debugging
+                // return; // Exit early to avoid the error
+            });
+
+            // Customize exception rendering for API requests
+            $exceptions->render(function (Throwable $e, $request) use ($getStatusCode) {
+                if ($request->is('api/*')) {
+                    // Temporarily disabled to debug container resolution issues
+                    // $errorTracking = app(\App\Services\ErrorTrackingService::class);
+
+                    // Log API errors
+                    // $errorTracking->logApiError(
+                    //     $e->getMessage(),
+                    //     $getStatusCode($e),
+                    //     ['exception' => get_class($e)],
+                    //     $request
+                    // );
+
+                    // Handle ValidationException with standard API validation error format
+                    if ($e instanceof \Illuminate\Validation\ValidationException) {
+                        $errors = $e->errors();
+
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Validation failed',
+                            'errors' => $errors,
+                        ], 422);
+                    }
+
+                    // For all other exceptions, return standard API error format
+                    $message = config('app.debug')
+                        ? $e->getMessage()
+                        : 'An error occurred';
+
+                    return response()->json([
+                        'success' => false,
+                        'message' => $message,
+                    ], $getStatusCode($e));
+                }
+            });
+        })->withSchedule(function ($schedule): void {
+            // Generate monitoring reports daily at 2 AM
+            $schedule->command('monitoring:report')
+                ->dailyAt('02:00')
+                ->withoutOverlapping()
+                ->runInBackground();
+
+            // Clean up old logs weekly on Sunday at 3 AM
+            // $schedule->command('logs:clean --days=30')
+            //     ->weeklyOn(0, '03:00')
+            //     ->withoutOverlapping()
+                ->runInBackground();
+
+            // Health check monitoring every 5 minutes
+            // $schedule->command('health:check')
+            //     ->everyFiveMinutes()
+            //     ->withoutOverlapping()
+            //     ->runInBackground();
+        })->create();
+
+    Illuminate\Support\Facades\Facade::setFacadeApplication($app);
+
+    return $app;
+
+After making this change, clear Laravel's cached configuration if possible (by running `php artisan config:cache` and `php artisan route:cache` via SSH or the hosting API's cron job feature).
+
+Once the change is applied, the API should correctly process requests and return the appropriate CORS headers, resolving the CORS errors observed in the browser console.

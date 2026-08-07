@@ -63,7 +63,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             return 500;
         };
 
-        $exceptions->report(function (Throwable $e) {
+        $exceptions->report(function (Throwable $e): void {
             // Temporarily disabled to debug container resolution issues
             // $errorTracking = app(\App\Services\ErrorTrackingService::class);
             // $req = app()->bound('request') ? request() : null;
@@ -73,7 +73,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         });
 
         // Customize exception rendering for API requests
-        $exceptions->render(function (Throwable $e, $request) use ($getStatusCode) {
+        $exceptions->render(function (Throwable $e, $request) use ($getStatusCode): void {
             if ($request->is('api/*')) {
                 // Temporarily disabled to debug container resolution issues
                 // $errorTracking = app(\App\Services\ErrorTrackingService::class);
@@ -119,13 +119,13 @@ $app = Application::configure(basePath: dirname(__DIR__))
         // $schedule->command('logs:clean --days=30')
         //     ->weeklyOn(0, '03:00')
         //     ->withoutOverlapping()
-        //     ->runInBackground();
+        ->runInBackground();
 
         // Health check monitoring every 5 minutes
         // $schedule->command('health:check')
-        //     ->everyFiveMinutes()
-        //     ->withoutOverlapping()
-        //     ->runInBackground();
+        ->everyFiveMinutes()
+        ->withoutOverlapping()
+        ->runInBackground();
     })->create();
 
     Illuminate\Support\Facades\Facade::setFacadeApplication($app);
