@@ -192,7 +192,7 @@ jobs:
             # Ensure APP_KEY is set
             if ! grep -q '^APP_KEY=' \"\$TARGET_DIR/.env\" || grep -q '^APP_KEY=$' \"\$TARGET_DIR/.env\"; then
               echo 'Generating APP_KEY...'
-              KEY_OUTPUT=\$(php artisan key:generate --show)
+              KEY_OUTPUT=`php artisan key:generate --show`
               # Check if APP_KEY line exists, if not append it
               if grep -q '^APP_KEY=' \"\$TARGET_DIR/.env\"; then
                 sed -i \"s/^APP_KEY=.*/APP_KEY=\$KEY_OUTPUT/\" \"\$TARGET_DIR/.env\"
@@ -215,7 +215,7 @@ jobs:
             if ! php artisan --version --no-interaction; then
               echo 'Laravel failed to bootstrap. Checking .env file...'
               if [ -f .env ]; then
-                echo ".env file exists. Size: \$(wc -c < .env) bytes"
+                echo ".env file exists. Size: `wc -c < .env` bytes"
                 if [ ! -r .env ]; then
                   echo '.env file is not readable!'
                 fi
