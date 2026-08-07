@@ -20,7 +20,7 @@
 - ����� ��� ��� � ��� � � ✅ Fixed ERESOLVE dependency conflict: Added --legacy-peer-deps flag
 - ����� ��� ��� � ��� � � ✅ Fixed directory copy error: Replaced cp with find command excluding deploy_temp
 - ����� ��� ��� � ��� � � ✅ Fixed YAML syntax error: Corrected indentation on SSH_PRIVATE_KEY line
-- ����� ��� ��� � ��� � � ✅ Fixed .env handling: Added validation, APP_KEY generation, and ensured proper newlines and variable expansion
+- ����� ��� ��� � ��� � � ✅ Fixed .env handling: Added validation, APP_KEY generation, ensured proper newlines, variable expansion, fixed syntax error in error handling, and improved command substitution compatibility
 - ����� ��� ��� � ��� � � ✅ Ensured proper environment variable expansion in deployment commands
 
 ### 3. Environment Configuration
