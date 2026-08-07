@@ -13,7 +13,7 @@
 - ����� ��� ��� � Fixed SSH private key handling: Added "--" to grep to prevent key content interpretation as options
 - ����� ��� ��� � Maintained printf-based key writing (avoids shell interpretation)  
 - ����� ��� ��� � Added SSH key validation (empty check and BEGIN/END markers)
-- ����� ��� ��� � Maintained whitespace trimming in sanitization step
+- ����� ��� ��� � Trimmed leading/trailing whitespace in sanitization step while preserving internal SSH key structure
 - ����� ��� ��� � Fixed "local: can only be used in a function" syntax errors
 - ����� ��� ��� � Fixed npm ci error: Added package-lock.json generation check
 - ����� ��� ��� � Fixed ERESOLVE dependency conflict: Added --legacy-peer-deps flag

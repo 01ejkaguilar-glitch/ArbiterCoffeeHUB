@@ -12,7 +12,7 @@
 ### 2. GitHub Actions Workflow
 - � ✅ Fixed SSH private key handling: Changed from heredoc to printf to avoid shell interpretation
 - � ✅ Added SSH key validation (empty check and BEGIN/END markers)
-- � ✅ Maintained whitespace trimming in sanitization step
+- � ✅ Trimmed leading/trailing whitespace in sanitization step while preserving internal SSH key structure
 - � ✅ Fixed "local: can only be used in a function" syntax error
 - � ✅ Fixed npm ci error: Added package-lock.json generation check
 - � ✅ Fixed ERESOLVE dependency conflict: Added --legacy-peer-deps flag

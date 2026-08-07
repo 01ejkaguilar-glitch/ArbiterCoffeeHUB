@@ -18,7 +18,7 @@ The application is deployed using GitHub Actions with the workflow defined in `.
    - Installs Laravel dependencies using Composer
 
 4. **Sanitize SSH Variables**
-   - Trims whitespace from SSH-related secrets (USERNAME, HOST, PORT, PRIVATE_KEY)
+   - Trims leading/trailing whitespace from SSH-related secrets (USERNAME, HOST, PORT, PRIVATE_KEY) while preserving internal key structure
    - Sets them as environment variables for use in subsequent steps
 
 5. **Build React Frontend**
