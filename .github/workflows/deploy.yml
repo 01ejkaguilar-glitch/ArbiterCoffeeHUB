@@ -56,7 +56,7 @@ jobs:
             exit 1
           fi
 
-          if [ -z "$SSH_PORT" ]; then
+          if [ -z "$SSH_PORT"]; then
             echo "Error: SSH_PORT secret is empty or not set"
             exit 1
           fi
@@ -104,16 +104,18 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
+          # Sanitize SSH_USERNAME by trimming whitespace
+          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
           echo "Validating SSH connection settings..."
           if [ -z "$SSH_HOST" ]; then
             echo "Error: SSH_HOST secret is empty or not set"
             exit 1
           fi
           if [ -z "$SSH_PORT" ]; then
-            echo "Error: SSH_PORT secret is empty or not set"
+            echo "Error: SSH_PORT script is empty or not set"
             exit 1
           fi
-          if [ -z "$SSH_USERNAME" ]; then
+          if [ -z "$SANITIZED_SSH_USERNAME" ]; then
             echo "Error: SSH_USERNAME secret is empty or not set"
             echo "Please set the SSH_USERNAME secret in your repository settings."
             exit 1
@@ -124,7 +126,7 @@ jobs:
           fi
           echo "SSH_HOST: $SSH_HOST"
           echo "SSH_PORT: $SSH_PORT"
-          echo "SSH_USERNAME: $SSH_USERNAME"
+          echo "SSH_USERNAME: $SANITIZED_SSH_USERNAME"
 
       - name: Test DNS resolution
         env:
@@ -173,7 +175,9 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
-          echo "Testing SSH connection to $SSH_USERNAME@$SSH_HOST:$SSH_PORT..."
+          # Sanitize SSH_USERNAME by trimming whitespace
+          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+          echo "Testing SSH connection to $SANITIZED_SSH_USERNAME@$SSH_HOST:$SSH_PORT..."
           echo "SSH client version: $(ssh -V 2>&1)"
           echo "SSH key file: ~/.ssh/id_rsa (exists: $(test -f ~/.ssh/id_rsa && echo 'yes' || echo 'no'))"
 
@@ -188,10 +192,10 @@ jobs:
 
           while [ $retry_count -lt $max_retries ]; do
             attempt=$((retry_count+1))
-            echo "Attempt $attempt/$max_retries: ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo 'SSH connection test'"
+            echo "Attempt $attempt/$max_retries: ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p $SSH_PORT $SANITIZED_SSH_USERNAME@$SSH_HOST echo 'SSH connection test'"
 
             # Try the connection
-            if ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection successful"; then
+            if ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o StrictHostKeyChecking=no -p $SSH_PORT $SANITIZED_SSH_USERNAME@$SSH_HOST echo "SSH connection successful"; then
               echo "SSH connection established and command executed successfully"
               break
             else
@@ -219,7 +223,7 @@ jobs:
             echo "SSH connection failed after $max_retries attempts"
             echo "Trying to diagnose with verbose SSH (but limiting output) on the last attempt..."
             # Try a verbose connection on the last attempt to see where it fails
-            ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o LogLevel=verbose -p $SSH_PORT $SSH_USERNAME@$SSH_HOST echo "SSH connection test" 2>&1 | head -30
+            ssh -i ~/.ssh/id_rsa -o BatchMode=yes -o ConnectTimeout=30 -o LogLevel=verbose -p $SSH_PORT $SANITIZED_SSH_USERNAME@$SSH_HOST echo "SSH connection test" 2>&1 | head -30
             exit 1
           fi
 
@@ -230,6 +234,8 @@ jobs:
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
+          # Sanitize SSH_USERNAME by trimming whitespace
+          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
           echo "Starting deployment with SSH connection resilience..."
 
           # Function to execute rsync with retry logic
@@ -248,10 +254,10 @@ jobs:
 
             while [ $retry_count -lt $max_retries ]; do
               attempt=$((retry_count+1))
-              echo "Rsync attempt $attempt/$max_retries: rsync -avz --delete $exclude_patterns -e \"ssh $ssh_opts\" $source_path $SSH_USERNAME@$SSH_HOST:$dest_path"
+              echo "Rsync attempt $attempt/$max_retries: rsync -avz --delete $exclude_patterns -e \"ssh $ssh_opts\" $SANITIZED_SSH_USERNAME@$SSH_HOST:$dest_path"
 
               # Try the rsync operation
-              if rsync -avz --delete $exclude_patterns -e "ssh $ssh_opts" "$source_path" "$SSH_USERNAME@$SSH_HOST:$dest_path"; then
+              if rsync -avz --delete $exclude_patterns -e "ssh $ssh_opts" "$source_path" "$SANITIZED_SSH_USERNAME@$SSH_HOST:$dest_path"; then
                 echo "Rsync operation completed successfully on attempt $attempt"
                 return 0
               else
@@ -283,7 +289,7 @@ jobs:
           exclude_patterns="--exclude='.env' --exclude='.git' --exclude='frontend/node_modules' --exclude='frontend/.cache'"
 
           # Deploy Laravel application (exclude frontend source since we'll deploy built version)
-          rsync_with_retry "./" "/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/" "$exclude_patterns --exclude='frontend/src' --exclude='frontend/package*.json' --exclude='frontend/public' --exclude='frontend/vite.config.js' --exclude='frontend/tailwind.config.js' --exclude='frontend/postcss.config.js' --exclude='frontend/index.html'" || {
+          rsync_with_retry "./" "/home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/" "$exclude_patterns --exclude='frontend/src' --exclude='frontend/package*.json' --exclude='frontend/public' --exclude='frontend/vite.config.js' --exclude='frontend/tailwind.config.js' --exclude='frontend/postcss.config.js' --exclude='frontend/index.html'" || {
             echo "Failed to deploy Laravel application"
             exit 1
           }
@@ -295,6 +301,8 @@ jobs:
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
+          # Sanitize SSH_USERNAME by trimming whitespace
+          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
           echo "Deploying React frontend build..."
 
           # Function to execute rsync with retry logic
@@ -312,10 +320,10 @@ jobs:
 
             while [ $retry_count -lt $max_retries ]; do
               attempt=$((retry_count+1))
-              echo "Rsync attempt $attempt/$max_retries: rsync -avz --delete -e \"ssh $ssh_opts\" $source_path $SSH_USERNAME@$SSH_HOST:$dest_path"
+              echo "Rsync attempt $attempt/$max_retries: rsync -avz --delete -e \"ssh $ssh_opts\" $SANITIZED_SSH_USERNAME@$SSH_HOST:$dest_path"
 
               # Try the rsync operation
-              if rsync -avz --delete -e "ssh $ssh_opts" "$source_path" "$SSH_USERNAME@$SSH_HOST:$dest_path"; then
+              if rsync -avz --delete -e "ssh $ssh_opts" "$source_path" "$SANITIZED_SSH_USERNAME@$SSH_HOST:$dest_path"; then
                 echo "Rsync operation completed successfully on attempt $attempt"
                 return 0
               else
@@ -344,7 +352,7 @@ jobs:
           }
 
           # Deploy React build to public/build directory
-          rsync_with_retry "frontend/build/" "/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/public/build/" || {
+          rsync_with_retry "frontend/build/" "/home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/public/build/" || {
             echo "Failed to deploy React frontend build"
             exit 1
           }
@@ -358,11 +366,13 @@ jobs:
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
+          # Sanitize SSH_USERNAME by trimming whitespace
+          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
           echo "Checking deployed files..."
-          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
-            echo '=== Main directory ===' && ls -la /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/ | head -20 &&
-            echo '=== Public directory ===' && ls -la /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/public/ &&
-            echo '=== Build directory ===' && ls -la /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/public/build/ | head -10
+          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SANITIZED_SSH_USERNAME@$SSH_HOST "
+            echo '=== Main directory ===' && ls -la /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/ | head -20 &&
+            echo '=== Public directory ===' && ls -la /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/public/ &&
+            echo '=== Build directory ===' && ls -la /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/public/build/ | head -10
           "
 
       - name: Setup Environment File
@@ -372,15 +382,17 @@ jobs:
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
+          # Sanitize SSH_USERNAME by trimming whitespace
+          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
           echo "Setting up .env file on server..."
-          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
+          ssh -i ~/.ssh/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no $SANITIZED_SSH_USERNAME@$SSH_HOST "
             # Navigate to the project directory
-            cd /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/
+            cd /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/
 
             # Ensure bootstrap/cache directory exists and is writable
             mkdir -p bootstrap/cache
             chmod -R 775 bootstrap/cache
-            chown -R $SSH_USERNAME:$SSH_USERNAME bootstrap/cache || echo \"Warning: Could not set ownership of bootstrap/cache, continuing anyway\"
+            chown -R $SANITIZED_SSH_USERNAME:$SANITIZED_SSH_USERNAME bootstrap/cache || echo \"Warning: Could not set ownership of bootstrap/cache, continuing anyway\"
 
             # Check if .env file exists
             if [ ! -f .env ]; then
@@ -392,13 +404,18 @@ jobs:
             if ! grep -q '^APP_KEY=' .env || grep -q '^APP_KEY=$' .env; then
               echo \"Generating APP_KEY...\"
               KEY_OUTPUT=\$(php artisan key:generate --show)
-              sed -i \"s/^APP_KEY=.*/APP_KEY=\$KEY_OUTPUT/\" .env
+              # Check if APP_KEY line exists, if not append it
+              if grep -q '^APP_KEY=' .env; then
+                sed -i \"s/^APP_KEY=.*/APP_KEY=$KEY_OUTPUT/\" .env
+              else
+                echo \"APP_KEY=$KEY_OUTPUT\" >> .env
+              fi
             fi
 
             # Ensure CORS_ALLOWED_ORIGINS is set correctly
             if ! grep -q '^CORS_ALLOWED_ORIGINS=' .env; then
               echo \"Adding CORS_ALLOWED_ORIGINS to .env\"
-              echo \"CORS_ALLOWED_ORIGINS=https://arbitercoffeeshop.com\" >> .venv
+              echo \"CORS_ALLOWED_ORIGINS=https://arbitercoffeeshop.com\" >> .env
             else
               sed -i 's|^CORS_ALLOWED_ORIGINS=.*|CORS_ALLOWED_ORIGINS=https://arbitercoffeeshop.com|' .env
             fi
@@ -453,6 +470,8 @@ jobs:
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
+          # Sanitize SSH_USERNAME by trimming whitespace
+          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
           echo "Ensuring bootstrap/cache directory exists and is writable with connection resilience..."
 
           # Function to execute SSH commands with retry logic
@@ -469,10 +488,10 @@ jobs:
 
             while [ $retry_count -lt $max_retries ]; do
               attempt=$((retry_count+1))
-              echo "SSH attempt $attempt/$max_retries: ssh $ssh_opts $SSH_USERNAME@$SSH_HOST \"$remote_command\""
+              echo "SSH attempt $attempt/$max_retries: ssh $ssh_opts $SANITIZED_SSH_USERNAME@$SSH_HOST \"$remote_command\""
 
               # Try the SSH operation
-              if ssh $ssh_opts "$SSH_USERNAME@$SSH_HOST" "$remote_command"; then
+              if ssh $ssh_opts "$SANITIZED_SSH_USERNAME@$SSH_HOST" "$remote_command"; then
                 echo "SSH command executed successfully on attempt $attempt"
                 return 0
               else
@@ -503,13 +522,13 @@ jobs:
           # Define the remote command to execute
           REMOTE_COMMAND="
             # Create the directory if it doesn't exist
-            mkdir -p /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/bootstrap/cache &&
+            mkdir -p /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/bootstrap/cache &&
 
             # Ensure directory is writable
-            chmod -R 775 /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/bootstrap/cache &&
+            chmod -R 775 /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/bootstrap/cache &&
 
             # Try to set ownership, but don't fail if we don't have permission
-            chown -R $SSH_USERNAME:$SSH_USERNAME /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/bootstrap/cache || echo \"Warning: Could not set ownership, continuing anyway\"
+            chown -R $SANITIZED_SSH_USERNAME:$SANITIZED_SSH_USERNAME /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html/bootstrap/cache || echo \"Warning: Could not set ownership, continuing anyway\"
           "
 
           # Execute the remote command with retry logic
@@ -526,6 +545,8 @@ jobs:
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
+          # Sanitize SSH_USERNAME by trimming whitespace
+          SANITIZED_SSH_USERNAME=$(echo "$SSH_USERNAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
           echo "Running post-deployment commands with SSH connection resilience..."
 
           # Function to execute SSH commands with retry logic
@@ -545,7 +566,7 @@ jobs:
               echo "SSH attempt $attempt/$max_retries: Executing remote command"
 
               # Try the SSH operation with the provided command
-              if ssh $ssh_opts "$SSH_USERNAME@$SSH_HOST" "$remote_command"; then
+              if ssh $ssh_opts "$SANITIZED_SSH_USERNAME@$SSH_HOST" "$remote_command"; then
                 echo "SSH command executed successfully on attempt $attempt"
                 return 0
               else
@@ -575,7 +596,7 @@ jobs:
 
           # Define the remote commands to execute
           REMOTE_COMMANDS="
-            cd /home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html &&
+            cd /home/$SANITIZED_SSH_USERNAME/domains/arbitercoffeeshop.com/public_html &&
 
             # Verify .env file exists and is readable
             if [ ! -f .env ]; then
@@ -601,7 +622,7 @@ jobs:
             fi
             # Ensure proper permissions and ownership
             chmod 644 .env
-            chown $SSH_USERNAME:$SSH_USERNAME .env || echo 'Warning: Could not set ownership of .env, continuing anyway'
+            chown $SANITIZED_SSH_USERNAME:$SANITIZED_SSH_USERNAME .env || echo 'Warning: Could not set ownership of .env, continuing anyway'
             echo 'Environment file verified and permissions set'
 
             # Clear existing caches first, then create fresh ones
