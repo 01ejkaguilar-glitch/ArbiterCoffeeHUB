@@ -25,11 +25,23 @@ jobs:
       - name: Sanitize SSH variables
         id: sanitize
         run: |
-          echo "SSH_USERNAME=$(echo '${{ secrets.SSH_USERNAME }}' | xargs)" >> $GITHUB_ENV
-          echo "SSH_HOST=$(echo '${{ secrets.SSH_HOST }}' | xargs)" >> $GITHUB_ENV
-          echo "SSH_PORT=$(echo '${{ secrets.SSH_PORT }}' | xargs)" >> $GITHUB_ENV
-          # Trim leading and trailing whitespace from private key (preserve internal structure)
-          echo "SSH_PRIVATE_KEY=$(echo '${{ secrets.SSH_PRIVATE_KEY }}' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')" >> $GITHUB_ENV
+          # Use delimiter syntax to avoid issues with special characters in secrets
+          echo "SSH_USERNAME<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.SSH_USERNAME }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+          echo "SSH_HOST<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.SSH_HOST }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+          echo "SSH_PORT<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.SSH_PORT }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+          # For SSH private key, trim leading/trailing whitespace but preserve internal structure
+          echo "SSH_PRIVATE_KEY<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Build React frontend
         run: |
