@@ -133,7 +133,6 @@ return [
     Illuminate\Validation\ValidationServiceProvider::class,
     Illuminate\View\ViewServiceProvider::class,
     Illuminate\Authentication\SessionGuardServiceProvider::class,
-    Illuminate\Contracts\Debug\ExceptionHandler::class,
 
     /*
      * Application Service Providers...

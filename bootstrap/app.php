@@ -75,15 +75,16 @@ return Application::configure(basePath: dirname(__DIR__))
         // Customize exception rendering for API requests
         $exceptions->render(function (Throwable $e, $request) use ($getStatusCode) {
             if ($request->is('api/*')) {
-                $errorTracking = app(\App\Services\ErrorTrackingService::class);
+                // Temporarily disabled to debug container resolution issues
+                // $errorTracking = app(\App\Services\ErrorTrackingService::class);
 
                 // Log API errors
-                $errorTracking->logApiError(
-                    $e->getMessage(),
-                    $getStatusCode($e),
-                    ['exception' => get_class($e)],
-                    $request
-                );
+                // $errorTracking->logApiError(
+                //     $e->getMessage(),
+                //     $getStatusCode($e),
+                //     ['exception' => get_class($e)],
+                //     $request
+                // );
 
                 // Handle ValidationException with standard API validation error format
                 if ($e instanceof \Illuminate\Validation\ValidationException) {

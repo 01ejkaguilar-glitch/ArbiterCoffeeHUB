@@ -1,0 +1,3 @@
+<?php
+echo "Laravel index.php backup - original file renamed for testing";
+?>

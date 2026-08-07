@@ -1,0 +1,32 @@
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0* Host api.arbitercoffeeshop.com:80 was resolved.
+* IPv6: 2a02:4780:60:5b15:93cd:8ef6:60e:413d, 2a02:4780:5f:9abf:5329:e8a5:f17c:db28
+* IPv4: 145.79.29.0, 145.79.24.47
+*   Trying [2a02:4780:60:5b15:93cd:8ef6:60e:413d]:80...
+* Established connection to api.arbitercoffeeshop.com (2a02:4780:60:5b15:93cd:8ef6:60e:413d port 80) from 2405:8d40:4c83:2c79:d9cb:d591:7604:c634 port 33950 
+* using HTTP/1.x
+> GET /api/v1/test HTTP/1.1
+> Host: api.arbitercoffeeshop.com
+> User-Agent: curl/8.19.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 301 Moved Permanently
+< Date: Thu, 06 Aug 2026 20:04:30 GMT
+< Content-Type: text/html
+< Content-Length: 795
+< Connection: keep-alive
+< location: https://api.arbitercoffeeshop.com/api/v1/test
+< platform: hostinger
+< panel: hpanel
+< content-security-policy: upgrade-insecure-requests
+< Age: 17
+< Server: hcdn
+< alt-svc: h3=":443"; ma=86400
+< x-hcdn-request-id: b1efe94cdea1c53a1f76000201057bba-kul-edge2
+< x-hcdn-cache-status: HIT
+< 
+{ [795 bytes data]
+100    795 100    795   0      0   3597      0                              0100    795 100    795   0      0   3570      0                              0100    795 100    795   0      0   3552      0                              0
+* Connection #0 to host api.arbitercoffeeshop.com:80 left intact
