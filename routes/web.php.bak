@@ -4,16 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\FailedJobController;
-use Illuminate\Support\Facades\Log;
-
-// Debug route to see if Laravel is receiving the request
-Route::get('/{any}', function () {
-    Log::debug('DEBUG ROUTE HIT', ['uri' => $_SERVER['REQUEST_URI'] ?? '', 'method' => $_SERVER['REQUEST_METHOD'] ?? '']);
-    return response()->json([
-        'uri' => $_SERVER['REQUEST_URI'] ?? '',
-        'method' => $_SERVER['REQUEST_METHOD'] ?? '',
-    ]);
-})->where('any', '.*')->middleware('web');
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -53,44 +43,35 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::delete('/failed-jobs/clear-all', [FailedJobController::class, 'clearAll'])->name('admin.failed-jobs.clear-all');
 });
 
-/**
- * Fallback route: serve React build files if they exist, otherwise index.html.
- * This will only be triggered when no other route matches (including API routes).
- */
-Route::fallback(function () {
+// Frontend Routes - Serve React app for all non-API, non-auth routes
+Route::get('/{any}', function () {
     $uri = $_SERVER['REQUEST_URI'];
     $uri = parse_url($uri, PHP_URL_PATH);
     if ($uri === null) {
         $uri = '/';
     }
 
-    // Remove leading slash for path building
-    $requestPath = ltrim($uri, '/');
-
-    // Build absolute path to file in build directory
-    $filePath = base_path() . '/build/' . $requestPath;
-
-    // Debug info
-    $debug = [
-        'uri' => $uri,
-        'requestPath' => $requestPath,
-        'filePath' => $filePath,
-        'file_exists' => file_exists($filePath),
-        'is_dir' => is_dir($filePath),
-        'base_path' => base_path(),
-    ];
-
-    // If the requested path is a file within the build directory, serve it
-    if ($requestPath !== '' && file_exists($filePath) && !is_dir($filePath)) {
-        return response()->file($filePath);
+    // Exclude API routes from this fallback
+    if (preg_match('|^/api/|', $uri)) {
+        // Let Laravel handle this route (will likely fall through to api.php or return 404)
+        return response('', 404);
     }
 
-    // Otherwise, serve the SPA index.html
-    $indexPath = base_path() . '/build/index.html';
+    // Build the absolute path to the requested file in the build directory
+    $requestedPath = base_path().'/build'.$uri;
+    $realRequestedPath = realpath($requestedPath);
+    $basePath = realpath(base_path().'/build');
+
+    // Check if the requested path is within the base directory and is a file
+    if ($realRequestedPath !== false && strpos($realRequestedPath, $basePath) === 0 && is_file($realRequestedPath)) {
+        return response()->file($realRequestedPath);
+    }
+
+    // Otherwise, serve the index.html
+    $indexPath = base_path().'/build/index.html';
     if (file_exists($indexPath)) {
         return response()->file($indexPath);
     }
 
-    // If even index.html missing, return debug
-    return response()->json($debug, 404);
-});
+    return abort(404);
+})->where('any', '.*')->middleware('web');
