@@ -22,8 +22,22 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
 
+      - name: Sanitize SSH variables
+        id: sanitize
+        run: |
+          echo "SSH_USERNAME=$(echo '${{ secrets.SSH_USERNAME }}' | xargs)" >> $GITHUB_ENV
+          echo "SSH_HOST=$(echo '${{ secrets.SSH_HOST }}' | xargs)" >> $GITHUB_ENV
+          echo "SSH_PORT=$(echo '${{ secrets.SSH_PORT }}' | xargs)" >> $GITHUB_ENV
+          # Note: SSH_PRIVATE_KEY we keep as is; we will trim newlines when using
+
       - name: Build React frontend
         run: |
+          cd frontend
+          # Ensure package-lock.json exists for npm ci
+          if [ ! -f package-lock.json ]; then
+            echo "package-lock.json not found, generating with npm install..."
+            npm install
+          fi
           npm ci
           npm run build
 
@@ -48,15 +62,16 @@ jobs:
       - name: Set up SSH connection
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          # Trim whitespace from private key (important for newlines)
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           # Add Hostinger host to known hosts
-          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -p ${SSH_PORT} ${SSH_HOST} >> ~/.ssh/known_hosts
 
       - name: Test SSH connection
         run: |
-          echo "Testing SSH connection to ${{ secrets.SSH_HOST }}..."
-          if ! ssh -p ${{ secrets.SSH_PORT }} -o BatchMode=yes -o ConnectTimeout=10 ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'echo "SSH connection test successful"'; then
+          echo "Testing SSH connection to ${SSH_HOST}..."
+          if ! ssh -p ${SSH_PORT} -o BatchMode=yes -o ConnectTimeout=10 ${SSH_USERNAME}@${SSH_HOST} 'echo "SSH connection test successful"'; then
             echo "SSH connection test failed"
             exit 1
           fi
@@ -91,15 +106,15 @@ jobs:
       - name: Deploy application
         run: |
           echo "Uploading deployment archive..."
-          scp -P ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no deployment.tar.gz ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/tmp/
+          scp -P ${SSH_PORT} -o StrictHostKeyChecking=no deployment.tar.gz ${SSH_USERNAME}@${SSH_HOST}:/tmp/
 
           echo "Extracting and deploying application..."
-          ssh -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "
+          ssh -p ${SSH_PORT} -o StrictHostKeyChecking=no ${SSH_USERNAME}@${SSH_HOST} "
             set -e
             echo 'Starting deployment process...'
 
             # Create target directory
-            TARGET_DIR='/home/${{ secrets.SSH_USERNAME }}/domains/arbitercoffeeshop.com/public_html'
+            TARGET_DIR='/home/${SSH_USERNAME}/domains/arbitercoffeeshop.com/public_html'
             mkdir -p \"$TARGET_DIR\"
 
             # Extract archive
@@ -116,7 +131,7 @@ jobs:
             chmod -R 775 \"$TARGET_DIR/storage\" \"$TARGET_DIR/bootstrap/cache\"
 
             # Try to set ownership if possible (ignore if not permitted)
-            chown -R ${{ secrets.SSH_USERNAME }}:${{ secrets.SSH_USERNAME }} \"$TARGET_DIR/storage\" \"$TARGET_DIR/bootstrap/cache\" 2>/dev/null || echo 'Warning: Could not set ownership on storage/cache, continuing...'
+            chown -R ${SSH_USERNAME}:${SSH_USERNAME} \"$TARGET_DIR/storage\" \"$TARGET_DIR/bootstrap/cache\" 2>/dev/null || echo 'Warning: Could not set ownership on storage/cache, continuing...'
 
             # Ensure .env file exists and has correct permissions
             if [ ! -f \"$TARGET_DIR/.env\" ]; then
