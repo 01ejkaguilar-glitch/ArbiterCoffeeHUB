@@ -84,16 +84,8 @@ jobs:
           rm -rf deploy_temp
           mkdir -p deploy_temp
 
-          # Copy all necessary files
-          cp -r ./* deploy_temp/
-          cp -r .[^.]* deploy_temp/ 2>/dev/null || true # Copy hidden files
-
-          # Remove unnecessary files/directories
-          rm -rf deploy_temp/node_modules
-          rm -rf deploy_temp/frontend/node_modules
-          rm -rf deploy_temp/frontend/.cache
-          rm -rf deploy_temp/.git
-          rm -rf deploy_temp/.github
+          # Copy all necessary files (excluding the deploy_temp directory itself)
+          find . -maxdepth 1 -mindepth 1 ! -name 'deploy_temp' ! -name '.git' ! -name '.github' ! -name 'node_modules' ! -name 'frontend/node_modules' ! -name 'frontend/.cache' -exec cp -r {} deploy_temp/ \;
 
           # Create tarball
           tar -czf deployment.tar.gz -C deploy_temp .
