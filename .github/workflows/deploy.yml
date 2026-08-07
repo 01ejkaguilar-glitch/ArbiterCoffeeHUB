@@ -26,21 +26,22 @@ jobs:
         id: sanitize
         run: |
           # Use delimiter syntax to avoid issues with special characters in secrets
+          # Remove carriage returns and trim whitespace for all SSH-related secrets
           echo "SSH_USERNAME<<EOF" >> $GITHUB_ENV
-          echo "${{ secrets.SSH_USERNAME }}" >> $GITHUB_ENV
+          echo "${{ secrets.SSH_USERNAME }}" | tr -d '\r' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
           echo "SSH_HOST<<EOF" >> $GITHUB_ENV
-          echo "${{ secrets.SSH_HOST }}" >> $GITHUB_ENV
+          echo "${{ secrets.SSH_HOST }}" | tr -d '\r' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
           echo "SSH_PORT<<EOF" >> $GITHUB_ENV
-          echo "${{ secrets.SSH_PORT }}" >> $GITHUB_ENV
+          echo "${{ secrets.SSH_PORT }}" | tr -d '\r' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-          # For SSH private key, trim leading/trailing whitespace but preserve internal structure
+          # For SSH private key, remove carriage returns and trim leading/trailing whitespace but preserve internal structure
           echo "SSH_PRIVATE_KEY<<EOF" >> $GITHUB_ENV
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' >> $GITHUB_ENV
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
       - name: Build React frontend
@@ -202,6 +203,25 @@ jobs:
 
             # Navigate to project directory
             cd \"\$TARGET_DIR\"
+
+            # Check if Laravel can bootstrap
+            echo 'Checking Laravel bootstrap...'
+            if ! php artisan --version --no-interaction; then
+              echo 'Laravel failed to bootstrap. Checking .env file...'
+              if [ -f .env ]; then
+                echo ".env file exists. Size: $(wc -c < .env) bytes"
+                if [ ! -r .env ]; then
+                  echo '.env file is not readable!'
+                fi
+                # Check if the file ends with a newline (common issue)
+                if [ "$(tail -c1 .env)" != "" ]; then
+                  echo '.env file does not end with a newline'
+                fi
+              else
+                echo '.env file does not exist!'
+              fi
+              exit 1
+            fi
 
             # Clear and cache configuration
             echo 'Clearing caches...'

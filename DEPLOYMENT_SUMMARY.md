@@ -57,6 +57,7 @@ The application is deployed using GitHub Actions with the workflow defined in `.
       - Attempt to set ownership (continues if not permitted)
       - Verify .env file exists and set correct permissions (644)
       - Generate APP_KEY if missing or empty
+      - Check Laravel can bootstrap (runs `php artisan --version`)
       - Navigate to project directory
       - Run Laravel commands:
         * `php artisan optimize:clear` - Clear all cached data
