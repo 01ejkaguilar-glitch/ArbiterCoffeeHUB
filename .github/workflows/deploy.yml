@@ -220,7 +220,7 @@ jobs:
                   echo '.env file is not readable!'
                 fi
                 # Check if the file ends with a newline (common issue)
-                if [ -s .env ] && [ "\$(tail -c1 .env)" != \$\'\\n\' ]; then
+                if [ -s .env ] && [ "$(tail -c1 .env)" != "" ]; then
                   echo '.env file does not end with a newline'
                 fi
               else
