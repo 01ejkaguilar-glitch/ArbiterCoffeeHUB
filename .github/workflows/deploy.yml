@@ -164,51 +164,51 @@ jobs:
 
             # Create target directory
             TARGET_DIR=\"/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html\"
-            mkdir -p \"\$TARGET_DIR\"
+            mkdir -p "$TARGET_DIR"
 
             # Extract archive
             echo 'Extracting archive...'
-            tar -xzf /tmp/deployment.tar.gz -C \"\$TARGET_DIR\"
+            tar -xzf /tmp/deployment.tar.gz -C "$TARGET_DIR"
             rm /tmp/deployment.tar.gz
 
             # Set permissions
             echo 'Setting permissions...'
-            find \"\$TARGET_DIR\" -type f -exec chmod 644 {} \;
-            find \"\$TARGET_DIR\" -type d -exec chmod 755 {} \;
+            find "$TARGET_DIR" -type f -exec chmod 644 {} \;
+            find "$TARGET_DIR" -type d -exec chmod 755 {} \;
 
             # Ensure storage and bootstrap/cache directories are writable
-            chmod -R 775 \"\$TARGET_DIR/storage\" \"\$TARGET_DIR/bootstrap/cache\"
+            chmod -R 775 "$TARGET_DIR/storage" "$TARGET_DIR/bootstrap/cache"
 
             # Try to set ownership if possible (ignore if not permitted)
-            chown -R $SSH_USERNAME:$SSH_USERNAME \"\$TARGET_DIR/storage\" \"\$TARGET_DIR/bootstrap/cache\" 2>/dev/null || echo 'Warning: Could not set ownership on storage/cache, continuing...'
+            chown -R $SSH_USERNAME:$SSH_USERNAME "$TARGET_DIR/storage" "$TARGET_DIR/bootstrap/cache" 2>/dev/null || echo 'Warning: Could not set ownership on storage/cache, continuing...'
 
             # Ensure .env file exists and has correct permissions
-            if [ ! -f \"\$TARGET_DIR/.env\" ]; then
+            if [ ! -f "$TARGET_DIR/.env" ]; then
               echo 'Error: .env file not found after extraction!'
               exit 1
             fi
-            chmod 644 \"\$TARGET_DIR/.env\" || echo 'Warning: Could not set .env permissions'
+            chmod 644 "$TARGET_DIR/.env" || echo 'Warning: Could not set .env permissions'
 
             # Ensure APP_KEY is set
-            if ! grep -q '^APP_KEY=' \"\$TARGET_DIR/.env\" || grep -q '^APP_KEY=$' \"\$TARGET_DIR/.env\"; then
+            if ! grep -q '^APP_KEY=' "$TARGET_DIR/.env" || grep -q '^APP_KEY=$' "$TARGET_DIR/.env"; then
               echo 'Generating APP_KEY...'
               KEY_OUTPUT=`php artisan key:generate --show`
               # Check if APP_KEY line exists, if not append it
-              if grep -q '^APP_KEY=' \"\$TARGET_DIR/.env\"; then
-                sed -i \"s/^APP_KEY=.*/APP_KEY=\$KEY_OUTPUT/\" \"\$TARGET_DIR/.env\"
+              if grep -q '^APP_KEY=' "$TARGET_DIR/.env"; then
+                sed -i "s@^APP_KEY=.*@APP_KEY=$KEY_OUTPUT@" "$TARGET_DIR/.env"
               else
-                echo \"APP_KEY=\$KEY_OUTPUT\" >> \"\$TARGET_DIR/.env\"
+                echo "APP_KEY=$KEY_OUTPUT" >> "$TARGET_DIR/.env"
               fi
             fi
 
             # Ensure .env file ends with a newline (required for Laravel)
-            if [ "`tail -c1 \$TARGET_DIR/.env`" != "" ]; then
-              echo >> \"\$TARGET_DIR/.env\"
+            if [ "`tail -c1 $TARGET_DIR/.env`" != "" ]; then
+              echo >> "$TARGET_DIR/.env"
               echo 'Added missing newline to .env file'
             fi
 
             # Navigate to project directory
-            cd \"\$TARGET_DIR\"
+            cd "$TARGET_DIR"
 
             # Check if Laravel can bootstrap
             echo 'Checking Laravel bootstrap...'
