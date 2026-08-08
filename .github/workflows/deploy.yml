@@ -163,7 +163,7 @@ jobs:
             echo 'Starting deployment process...'
 
             # Create target directory
-            TARGET_DIR=\"/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html\"
+            TARGET_DIR="/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html"
             mkdir -p "$TARGET_DIR"
 
             # Extract archive
