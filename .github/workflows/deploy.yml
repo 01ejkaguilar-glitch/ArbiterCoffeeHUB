@@ -158,16 +158,18 @@ jobs:
           scp -P $SSH_PORT -o StrictHostKeyChecking=no deployment.tar.gz $SSH_USERNAME@$SSH_HOST:/tmp/
 
           echo "Extracting and deploying application..."
-          # Pre-compute values that depend on SSH_USERNAME to ensure local expansion
-          LOCAL_TARGET_DIR="/home/${SSH_USERNAME}/domains/arbitercoffeeshop.com/public_html"
-          LOCAL_CHOWN_USER="${SSH_USERNAME}:${SSH_USERNAME}"
 
           ssh -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
             set -e
             echo 'Starting deployment process...'
 
+            # Compute target directory using SSH_USERNAME available on remote host
+            TARGET_DIR=\"/home/${SSH_USERNAME}/domains/arbitercoffeeshop.com/public_html\"
+            CHOWN_USER=\"${SSH_USERNAME}:${SSH_USERNAME}\"
+            echo \"Computed TARGET_DIR: $TARGET_DIR\"
+            echo \"Computed CHOWN_USER: $CHOWN_USER\"
+
             # Create target directory
-            TARGET_DIR=\"$LOCAL_TARGET_DIR\"
             mkdir -p \"$TARGET_DIR\"
 
             # Extract archive
@@ -184,7 +186,8 @@ jobs:
             chmod -R 775 \"$TARGET_DIR/storage\" \"$TARGET_DIR/bootstrap/cache\"
 
             # Try to set ownership if possible (ignore if not permitted)
-            chown -R $LOCAL_CHOWN_USER \"$TARGET_DIR/storage\" \"$TARGET_DIR/bootstrap/cache\" 2>/dev/null || echo 'Warning: Could not set ownership on storage/cache, continuing...'
+            chown -R $CHOWN_USER \"$TARGET_DIR/storage\" \"$TARGET_DIR/bootstrap/cache\" 2>/dev/null || echo 'Warning: Could not set ownership on storage/cache, continuing...'
+"
 
             # Ensure .env file exists and has correct permissions
             if [ ! -f \"$TARGET_DIR/.env\" ]; then
