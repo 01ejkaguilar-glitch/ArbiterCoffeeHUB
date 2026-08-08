@@ -163,7 +163,7 @@ jobs:
             echo 'Starting deployment process...'
 
             # Create target directory
-            TARGET_DIR="/home/$SSH_USERNAME/domains/arbitercoffeeshop.com/public_html"
+            TARGET_DIR="/home/${SSH_USERNAME}/domains/arbitercoffeeshop.com/public_html"
             mkdir -p "$TARGET_DIR"
 
             # Extract archive
@@ -180,7 +180,7 @@ jobs:
             chmod -R 775 "$TARGET_DIR/storage" "$TARGET_DIR/bootstrap/cache"
 
             # Try to set ownership if possible (ignore if not permitted)
-            chown -R $SSH_USERNAME:$SSH_USERNAME "$TARGET_DIR/storage" "$TARGET_DIR/bootstrap/cache" 2>/dev/null || echo 'Warning: Could not set ownership on storage/cache, continuing...'
+            chown -R ${SSH_USERNAME}:${SSH_USERNAME} "$TARGET_DIR/storage" "$TARGET_DIR/bootstrap/cache" 2>/dev/null || echo 'Warning: Could not set ownership on storage/cache, continuing...'
 
             # Ensure .env file exists and has correct permissions
             if [ ! -f "$TARGET_DIR/.env" ]; then
