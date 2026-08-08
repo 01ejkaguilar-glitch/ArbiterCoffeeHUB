@@ -159,13 +159,13 @@ jobs:
 
           echo "Extracting and deploying application..."
 
+          # Compute target directory and ownership locally
+          TARGET_DIR="/home/${SSH_USERNAME}/domains/arbitercoffeeshop.com/public_html"
+          CHOWN_USER="${SSH_USERNAME}:${SSH_USERNAME}"
+
           ssh -p $SSH_PORT -o StrictHostKeyChecking=no $SSH_USERNAME@$SSH_HOST "
             set -e
             echo 'Starting deployment process...'
-
-            # Compute target directory using SSH_USERNAME available on remote host
-            TARGET_DIR=\"/home/${SSH_USERNAME}/domains/arbitercoffeeshop.com/public_html\"
-            CHOWN_USER=\"${SSH_USERNAME}:${SSH_USERNAME}\"
             echo \"Computed TARGET_DIR: $TARGET_DIR\"
             echo \"Computed CHOWN_USER: $CHOWN_USER\"
 
