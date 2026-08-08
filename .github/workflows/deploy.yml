@@ -216,6 +216,11 @@ jobs:
             # Navigate to project directory
             cd \"$TARGET_DIR\"
 
+            # Validate .env file syntax using Symfony Dotenv component
+            if ! php -r 'require __DIR__ . \"/vendor/autoload.php\"; try { Dotenv\Dotenv::createImmutable(__DIR__, \".env\")->load(); } catch (Exception \$e) { echo \".env file is invalid: \" . \$e->getMessage(); exit(1); }'; then
+              exit 1
+            fi
+
             # Check if Laravel can bootstrap
             echo 'Checking Laravel bootstrap...'
             if ! php artisan --version --no-interaction; then
