@@ -187,7 +187,6 @@ jobs:
 
             # Try to set ownership if possible (ignore if not permitted)
             chown -R $CHOWN_USER \"$TARGET_DIR/storage\" \"$TARGET_DIR/bootstrap/cache\" 2>/dev/null || echo 'Warning: Could not set ownership on storage/cache, continuing...'
-"
 
             # Ensure .env file exists and has correct permissions
             if [ ! -f \"$TARGET_DIR/.env\" ]; then
